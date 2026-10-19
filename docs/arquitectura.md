@@ -91,12 +91,12 @@ flowchart TD
 - **Puerto expuesto al host:** **`5433:5432`** (mitigación técnica para evitar colisión con el PostgreSQL local del host).
 - **Bases de datos independientes:**
   - `airflow_db`: Metadatos de tareas, ejecuciones, variables y conexiones de Airflow.
-  - `analytics_db`: Data Mart de producción con schema `analytics`, tablas `daily_sales_kpis`, `customer_360_kpis` y tabla de auditoría `pipeline_execution_logs`.
+  - `analytics_db`: Data Mart de producción con schema `analytics`, tablas `daily_sales_kpis`, `customer_360_kpis`, tabla de auditoría `pipeline_execution_logs` y tabla de control operativa `pipeline_task_metrics`.
 
 ### 2.4 Apache Airflow 2.8.1 (Orquestador de Pipelines)
 - **Webserver UI:** `http://localhost:8080` (Credenciales por defecto: `admin / admin`).
 - **Ejecutor:** `LocalExecutor` para máxima eficiencia y bajo consumo de recursos en desarrollo.
-- **DAG inicial:** `medallion_pipeline_e2e` con reintentos configurados y registro en base de datos.
+- **DAG maestro:** `dag_medallion_pipeline` (7 tareas secuenciales) con 3 reintentos, alertas por log/correo, manifiestos de ejecución por `run_id` y limpieza de particiones Gold para reprocesamientos idempotentes.
 
 ### 2.5 Evaluación y Estrategia de Gobernanza: OpenMetadata vs Apache Atlas
 - **Comparativa Técnica:**

@@ -100,6 +100,15 @@ class S3Client:
         raw_bytes = self.read_bytes(bucket_name, object_name)
         return json.loads(raw_bytes.decode("utf-8"))
 
+    def delete_object(self, bucket_name: str, object_name: str) -> None:
+        """Elimina un objeto de un bucket (usado en limpieza de particiones)."""
+        try:
+            self._s3.delete_object(Bucket=bucket_name, Key=object_name)
+            logger.info(f"Objeto eliminado: s3://{bucket_name}/{object_name}")
+        except Exception as e:
+            logger.error(f"Error eliminando objeto '{bucket_name}/{object_name}': {e}")
+            raise
+
     def list_objects(self, bucket_name: str, prefix: str = "") -> List[str]:
         """Lista las claves de objetos dentro de un bucket y prefijo."""
         self.ensure_bucket_exists(bucket_name)
