@@ -4,7 +4,7 @@
 > **Versión del Plan:** 1.0  
 > **Fecha:** 19 de octubre de 2026  
 > **Rama:** `develop`  
-> **Equipo:** Dylan Gamero (Líder), Luis Gómez (Sublíder), Jeffry, Sergio, Esteban Padilla, Héctor, Sebastián Ortiz.
+> **Equipo:** Dylan Gamero (Líder), Luis Gómez (Sublíder), Jefri Calderin, Sergio, Esteban Padilla, Héctor, Sebastián Ortiz.
 
 ---
 
@@ -16,10 +16,10 @@ Para que los 7 integrantes del equipo puedan desarrollar en paralelo desde el in
 flowchart TD
     subgraph Generacion["Generación y Validación Inicial"]
         GEN["Script Generador de Datos Sintéticos\n(scripts/generate_mock_data.py)"]
-        JEFF["Jeffry\n(Define esquemas raw CSV/JSON/API)"]
+        JEFRI["Jefri\n(Define esquemas raw CSV/JSON/API)"]
         SEBAS["Sebastián Ortiz\n(Inyecta anomalías y errores intencionales)"]
         LUIS["Luis Gómez\n(Valida contratos y publica en data/mock/)"]
-        GEN --- JEFF
+        GEN --- JEFRI
         GEN --- SEBAS
         GEN --- LUIS
     end
@@ -89,10 +89,10 @@ El dominio base del proyecto es **Retail / E-commerce analítico**. Se requieren
 
 | Emisor / Responsable | Artefacto / Archivo Generado | Formato / Ubicación | Receptor (Consumidor) | Impacto / Desbloqueo |
 | :--- | :--- | :--- | :--- | :--- |
-| **Jeffry** (apoyado por Luis) | `scripts/generate_mock_data.py` con datos crudos (`orders.csv`, `customers.json`, `products.csv`, `api_stream.json`) | `data/mock/raw/` y bucket MinIO `landing/mock/` | **Esteban Padilla** (Spark) y **Jeffry** (Conectores) | Permite construir los transformadores Spark y probar los conectores locales inmediatamente. |
+| **Jefri Calderin** (apoyado por Luis) | `scripts/generate_mock_data.py` con datos crudos (`orders.csv`, `customers.json`, `products.csv`, `api_stream.json`) | `data/mock/raw/` y bucket MinIO `landing/mock/` | **Esteban Padilla** (Spark) y **Jefri Calderin** (Conectores) | Permite construir los transformadores Spark y probar los conectores locales inmediatamente. |
 | **Sebastián Ortiz** | Inyección de casos inválidos (`dirty_data.csv`) y catálogo de reglas de calidad | `data/mock/raw/corrupt/` y `config/quality_rules/rules.json` | **Esteban Padilla** (Silver) y **Sebastián Ortiz** (Quarantine) | Desbloquea el filtro de calidad en Spark y el almacenamiento de registros rechazados en Quarantine. |
 | **Luis Gómez** | Muestras procesadas de capa Gold sintética (`daily_sales.parquet`, `customer_360.parquet`, `product_performance.parquet`) | `data/mock/gold/` | **Sergio** (Dashboards) y **Dylan Gamero** (Chatbot) | **Desbloqueo crítico:** Permite que Sergio empiece a maquetar Streamlit y Dylan empiece a calibrar prompts y DuckDB sin esperar a que Spark procese la data real. |
-| **Luis Gómez** | Especificación OpenAPI simulada de la API REST de ventas | `data/mock/api/mock_sales_api.json` | **Jeffry** (Conector API REST) y **Héctor** (DAGs) | Permite a Jeffry codificar el conector HTTP con paginación y a Héctor armar los operadores de llamada en Airflow. |
+| **Luis Gómez** | Especificación OpenAPI simulada de la API REST de ventas | `data/mock/api/mock_sales_api.json` | **Jefri Calderin** (Conector API REST) y **Héctor** (DAGs) | Permite a Jefri Calderin codificar el conector HTTP con paginación y a Héctor armar los operadores de llamada en Airflow. |
 
 ---
 
@@ -102,13 +102,13 @@ El dominio base del proyecto es **Retail / E-commerce analítico**. Se requieren
 flowchart TD
     subgraph F1["Fase 1: Fundaciones y Desbloqueo"]
         direction TB
-        MOCK["Mock Data y Contratos\n(Jeffry, Luis, Sebastián)"]
+        MOCK["Mock Data y Contratos\n(Jefri Calderin, Luis, Sebastián)"]
         ENV["Setup Docker Compose y Repo\n(Luis)"]
     end
 
     subgraph F2["Fase 2: Desarrollo Desacoplado en Paralelo"]
         direction TB
-        CON["Conectores CSV / JSON / API\n(Jeffry)"]
+        CON["Conectores CSV / JSON / API\n(Jefri Calderin)"]
         SPK["Spark Bronze a Silver y Gold\n(Esteban)"]
         QUA["Motor de Calidad y Quarantine\n(Sebastián)"]
         DSH["Dashboards Streamlit / Plotly\n(Sergio)"]
@@ -134,12 +134,12 @@ flowchart TD
 
 ### Paso 1: Inicialización de Datos Falsos y Contratos
 1. Luis Gómez inicializa la estructura de carpetas estándar en el repositorio según el Capítulo 14 del documento técnico.
-2. Jeffry y Sebastián ejecutan el script de datos falsos generando `data/mock/raw/` y `data/mock/gold/`.
+2. Jefri Calderin y Sebastián ejecutan el script de datos falsos generando `data/mock/raw/` y `data/mock/gold/`.
 3. Luis documenta los contratos de datos (nombres de columnas, tipos y grano analítico) en `documentation/contracts/`.
 4. Sergio y Dylan descargan los archivos Parquet de `data/mock/gold/` y validan que sus entornos de desarrollo leen correctamente los datos con DuckDB y Pandas.
 
 ### Paso 2: Desarrollo Desacoplado en Paralelo
-- **Jeffry:** Crea `base_connector.py`, `csv_connector.py`, `json_connector.py` y `rest_api_connector.py` usando `data/mock/raw/` como origen y MinIO local como destino.
+- **Jefri Calderin:** Crea `base_connector.py`, `csv_connector.py`, `json_connector.py` y `rest_api_connector.py` usando `data/mock/raw/` como origen y MinIO local como destino.
 - **Esteban:** Implementa transformaciones PySpark desde Landing/Bronze a Silver con limpieza y tipado, consumiendo las anomalías provistas por Sebastián.
 - **Sebastián:** Desarrolla los módulos de verificación de reglas (nulos, rangos, unicidad) y escribe el escritor de Quarantine en formato Parquet/JSON.
 - **Sergio:** Diseña las vistas en Streamlit/Plotly para `daily_sales` y `customer_360` usando la capa mock de Gold.
@@ -147,7 +147,7 @@ flowchart TD
 - **Héctor:** Levanta el contenedor de Airflow, crea las conexiones hacia MinIO y diseña los DAGs iniciales con tareas simuladas (`DummyOperator` / `PythonOperator`).
 
 ### Paso 3: Integración E2E y Sustitución de Mocks por Flujo Real
-1. Esteban conecta sus scripts de Spark al bucket real de MinIO poblado por los conectores de Jeffry.
+1. Esteban conecta sus scripts de Spark al bucket real de MinIO poblado por los conectores de Jefri Calderin.
 2. Esteban genera los Parquet reales en Gold.
 3. Sergio y Dylan cambian la ruta de lectura de DuckDB y Streamlit desde `data/mock/gold/` a `minio/gold/`.
 4. Héctor reemplaza las tareas simuladas de Airflow por los disparadores reales de conectores y `spark-submit`.
@@ -170,7 +170,7 @@ Se ejecuta la matriz de pruebas funcionales y técnicas del Capítulo 17 y se co
 - **Quiero:** Definir el árbol de directorios del proyecto, los contratos técnicos de esquemas y el archivo `docker-compose.yml` base
 - **Para:** Garantizar un entorno de trabajo estandarizado, sin conflictos entre integrantes y reproducible en local.
 - **Complejidad:** Alta | **Prioridad:** P0 (Bloqueante inicial)
-- **Colaboradores:** Jeffry, Esteban Padilla, Dylan Gamero.
+- **Colaboradores:** Jefri Calderin, Esteban Padilla, Dylan Gamero.
 
 ##### Especificación Paso a Paso:
 1. Crear la estructura de carpetas descrita en el Capítulo 14 (`app/`, `ingestion/`, `processing/`, `orchestration/`, `governance/`, `config/`, `tests/`, `data/mock/`).
@@ -220,7 +220,7 @@ Se ejecuta la matriz de pruebas funcionales y técnicas del Capítulo 17 y se co
 ---
 
 ### Módulo: Ingesta de Datos y Conectores
-**Responsable:** Jeffry
+**Responsable:** Jefri Calderin
 
 #### US-03: Generador de Datos Sintéticos (Mock Data) y Semillas para el Equipo
 - **Rol:** Como Ingeniero de Ingesta
@@ -308,7 +308,7 @@ Se ejecuta la matriz de pruebas funcionales y técnicas del Capítulo 17 y se co
 - **Quiero:** Construir el job de Apache Spark que lea los datos de Bronze, aplique tipado, deduplicación y filtros de calidad
 - **Para:** Publicar en la zona Silver datasets confiables, limpios y libres de inconsistencias.
 - **Complejidad:** Alta | **Prioridad:** P1
-- **Colaboradores:** Sebastián Ortiz (Quarantine), Jeffry (Bronze).
+- **Colaboradores:** Sebastián Ortiz (Quarantine), Jefri Calderin (Bronze).
 
 ##### Especificación Paso a Paso:
 1. Crear `processing/silver/clean_orders.py` y `processing/silver/clean_customers.py`.
@@ -432,7 +432,7 @@ Se ejecuta la matriz de pruebas funcionales y técnicas del Capítulo 17 y se co
 - **Quiero:** Diseñar e implementar el DAG maestro en Apache Airflow que orqueste la ejecución ordenada de ingesta, Spark y validación
 - **Para:** Lograr un flujo de datos desatendido, automático, con control estricto de dependencias y tiempos.
 - **Complejidad:** Media | **Prioridad:** P1
-- **Colaboradores:** Jeffry, Esteban Padilla, Sebastián Ortiz.
+- **Colaboradores:** Jefri Calderin, Esteban Padilla, Sebastián Ortiz.
 
 ##### Especificación Paso a Paso:
 1. Crear el DAG `orchestration/dags/dag_medallion_pipeline.py`.
@@ -613,10 +613,10 @@ La siguiente tabla resume qué entrega cada integrante, a quién, en qué format
 | Responsable | Entregable Concreto | Receptor Principal | Formato / Ubicación | Qué desbloquea |
 | :--- | :--- | :--- | :--- | :--- |
 | **Luis Gómez** | Contratos de esquemas JSON y estructura de carpetas | Todo el equipo | `config/datasets/*.json` y repo | Desarrollo sin colisiones de nombres ni ramas. |
-| **Jeffry** | Script de Mock Data y archivos crudos sintéticos | Esteban Padilla, Héctor | `scripts/generate_mock_data.py` y `data/mock/raw/` | Desarrollo de transformaciones Spark e ingesta sin esperar fuentes reales. |
+| **Jefri Calderin** | Script de Mock Data y archivos crudos sintéticos | Esteban Padilla, Héctor | `scripts/generate_mock_data.py` y `data/mock/raw/` | Desarrollo de transformaciones Spark e ingesta sin esperar fuentes reales. |
 | **Luis Gómez** | Muestras Parquet de capa Gold | Sergio, Dylan Gamero | `data/mock/gold/*.parquet` | Maquetación inmediata de Dashboards y Chatbot IA en paralelo desde el inicio. |
 | **Sebastián Ortiz** | Inyección de errores sintéticos y reglas de validación | Esteban Padilla, Héctor | `config/quality_rules/*.json` y `data/mock/raw/corrupt/` | Construcción de filtros de calidad y zona Quarantine. |
-| **Jeffry** | Conectores CSV, JSON y REST API terminados | Esteban Padilla, Héctor | `ingestion/*_connector.py` | Poblado real continuo de Landing y Bronze en MinIO. |
+| **Jefri Calderin** | Conectores CSV, JSON y REST API terminados | Esteban Padilla, Héctor | `ingestion/*_connector.py` | Poblado real continuo de Landing y Bronze en MinIO. |
 | **Esteban Padilla** | Jobs PySpark de Silver y Gold | Sergio, Dylan, Héctor | `processing/silver/`, `processing/gold/` | Sustitución de los datos mock por los datos procesados reales. |
 | **Dylan Gamero** | Motor de consulta DuckDB y API Backend | Sergio (Frontend) | `app/backend/api/` (puerto 8000) | Consumo unificado de datos para visualizaciones y consultas. |
 | **Dylan Gamero** | Servicio de Chatbot IA con validación SQL | Sergio (Frontend) | `app/backend/services/chatbot_service.py` | Pestaña conversacional operativa en la UI. |
@@ -643,7 +643,7 @@ flowchart LR
     P01 & P02 & P06 --> P12["P12: DAG Airflow Completo"]
 ```
 
-1. **P01 (CSV) & P02 (API):** Jeffry y Héctor demuestran la ingesta hacia Landing y Bronze.
+1. **P01 (CSV) & P02 (API):** Jefri Calderin y Héctor demuestran la ingesta hacia Landing y Bronze.
 2. **P03 & P04 (Errores y Quarantine):** Sebastián y Esteban demuestran el rechazo automático de filas corruptas sin abortar el job.
 3. **P05 (Idempotencia):** Esteban y Héctor corren el DAG dos veces y demuestran que las filas en Gold no varían.
 4. **P06 (Cálculo Gold):** Esteban y Sergio validan que `SUM(total_revenue)` en Gold sea igual al valor auditado.
