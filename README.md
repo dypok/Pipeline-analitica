@@ -111,9 +111,10 @@ Pipeline-analitica/
 │   ├── bronze/                     # BronzeLoader con inmutabilidad y metadatos SHA256
 │   ├── silver/                     # SilverTransformer (tipado, deduplicación, Parquet)
 │   ├── gold/                       # GoldAggregator (KPIs diarios y Data Mart Postgres)
-│   └── quality/                    # DataQualityValidator (reglas y segregación Quarantine)
+│   ├── quality/                    # DataQualityValidator (reglas y segregación Quarantine)
+│   └── orchestration/              # PartitionManager, GoldQualityGate y TaskMetricsRecorder (US-10/US-11)
 ├── dags/
-│   └── medallion_pipeline_dag.py   # DAG de producción para Apache Airflow
+│   └── dag_medallion_pipeline.py   # DAG maestro de producción para Apache Airflow
 ├── tests/
 │   ├── conftest.py                 # Fixtures de Pytest
 │   ├── test_config.py              # Tests de configuración
@@ -207,13 +208,13 @@ docker compose down -v
 
 ### Opción B: Ejecución Orquestada en Apache Airflow
 1. Abre [http://localhost:8080](http://localhost:8080) e inicia sesión (`admin` / `admin`).
-2. Localiza el DAG **`medallion_pipeline_e2e`**.
+2. Localiza el DAG **`dag_medallion_pipeline`**.
 3. Haz clic en **Trigger DAG** (o ejecútalo vía terminal):
    ```bash
-   docker exec medallion-airflow-scheduler airflow dags trigger medallion_pipeline_e2e
+   docker exec medallion-airflow-scheduler airflow dags trigger dag_medallion_pipeline
    ```
-4. Monitorea la ejecución secuencial de sus 6 tareas:
-   - `generate_mock_data` -> `ingest_to_landing` -> `load_to_bronze` -> `transform_to_silver` -> `aggregate_to_gold` -> `audit_and_log`.
+4. Monitorea la ejecución secuencial de sus 7 tareas:
+   - `validate_environment` -> `extract_and_land` -> `process_bronze` -> `process_silver_and_quarantine` -> `process_gold` -> `quality_gate` -> `publish_metrics`.
 
 ---
 

@@ -128,7 +128,7 @@ services:
       AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "false"
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "false"
-      _PIP_ADDITIONAL_REQUIREMENTS: "minio boto3 pandas pyarrow duckdb psycopg2-binary sqlalchemy requests pyyaml pydantic"
+      _PIP_ADDITIONAL_REQUIREMENTS: "minio boto3 pandas pyarrow duckdb psycopg2-binary sqlalchemy requests pyyaml pydantic python-dotenv"
       MINIO_ENDPOINT: http://minio:9000
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-miniopassword123}
@@ -162,7 +162,7 @@ services:
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
       AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "false"
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
-      _PIP_ADDITIONAL_REQUIREMENTS: "minio boto3 pandas pyarrow duckdb psycopg2-binary sqlalchemy requests pyyaml pydantic"
+      _PIP_ADDITIONAL_REQUIREMENTS: "minio boto3 pandas pyarrow duckdb psycopg2-binary sqlalchemy requests pyyaml pydantic python-dotenv"
       MINIO_ENDPOINT: http://minio:9000
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-miniopassword123}

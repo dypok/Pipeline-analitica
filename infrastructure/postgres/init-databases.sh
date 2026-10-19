@@ -60,8 +60,23 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "analytics_db" <<-E
         error_message TEXT
     );
 
+    -- Tabla de control operativa: métricas por tarea y corrida de Airflow (US-11)
+    CREATE TABLE IF NOT EXISTS analytics.pipeline_task_metrics (
+        run_id VARCHAR(200) NOT NULL,
+        task_id VARCHAR(100) NOT NULL,
+        pipeline_name VARCHAR(100) NOT NULL,
+        layer VARCHAR(20),
+        status VARCHAR(20) NOT NULL,
+        duration_seconds NUMERIC(12, 3) DEFAULT 0,
+        records_processed INT DEFAULT 0,
+        records_quarantined INT DEFAULT 0,
+        recorded_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (run_id, task_id)
+    );
+
     CREATE INDEX IF NOT EXISTS idx_daily_sales_date ON analytics.daily_sales_kpis(kpi_date);
     CREATE INDEX IF NOT EXISTS idx_customer_tier ON analytics.customer_360_kpis(customer_tier);
+    CREATE INDEX IF NOT EXISTS idx_task_metrics_run ON analytics.pipeline_task_metrics(run_id);
 EOSQL
 
 echo "=== [PostgreSQL Init] Inicialización completada con éxito ==="

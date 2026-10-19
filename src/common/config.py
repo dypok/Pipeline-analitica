@@ -62,6 +62,11 @@ class Settings:
         return os.getenv(env_var, buckets.get(layer.lower(), layer.lower()))
 
     @property
+    def storage_paths(self) -> Dict[str, str]:
+        """Rutas lógicas dentro de los buckets (p. ej. gold_daily_sales)."""
+        return self._raw.get("storage", {}).get("paths", {})
+
+    @property
     def analytics_db_url(self) -> str:
         return os.getenv(
             "ANALYTICS_DATABASE_URL",

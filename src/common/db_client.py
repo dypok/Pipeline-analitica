@@ -18,6 +18,7 @@ class DatabaseClient:
         settings = get_settings()
         self.db_url = db_url or settings.analytics_db_url
         self._engine: Optional[Engine] = None
+        self._task_metrics_table_ready = False
 
     @property
     def engine(self) -> Engine:
@@ -78,6 +79,71 @@ class DatabaseClient:
                 )
         except Exception as e:
             logger.warning(f"No se pudo guardar log de ejecución en DB: {e}")
+
+    def _ensure_task_metrics_table(self) -> None:
+        """Crea la tabla de control de métricas operativas si no existe."""
+        if self._task_metrics_table_ready:
+            return
+        ddl = text("""
+            CREATE TABLE IF NOT EXISTS analytics.pipeline_task_metrics (
+                run_id VARCHAR(200) NOT NULL,
+                task_id VARCHAR(100) NOT NULL,
+                pipeline_name VARCHAR(100) NOT NULL,
+                layer VARCHAR(20),
+                status VARCHAR(20) NOT NULL,
+                duration_seconds NUMERIC(12, 3) DEFAULT 0,
+                records_processed INT DEFAULT 0,
+                records_quarantined INT DEFAULT 0,
+                recorded_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (run_id, task_id)
+            );
+        """)
+        with self.engine.begin() as conn:
+            conn.execute(ddl)
+        self._task_metrics_table_ready = True
+
+    def log_task_metric(
+        self,
+        run_id: str,
+        task_id: str,
+        pipeline_name: str,
+        layer: str,
+        status: str,
+        duration_seconds: float = 0.0,
+        records_processed: int = 0,
+        records_quarantined: int = 0,
+    ) -> None:
+        """Registra/actualiza la métrica operativa de una tarea (idempotente por run_id+task_id)."""
+        self._ensure_task_metrics_table()
+        sql = text("""
+            INSERT INTO analytics.pipeline_task_metrics (
+                run_id, task_id, pipeline_name, layer, status,
+                duration_seconds, records_processed, records_quarantined, recorded_at
+            ) VALUES (
+                :run_id, :task_id, :pipeline_name, :layer, :status,
+                :duration_seconds, :records_processed, :records_quarantined, CURRENT_TIMESTAMP
+            )
+            ON CONFLICT (run_id, task_id) DO UPDATE SET
+                status = EXCLUDED.status,
+                duration_seconds = EXCLUDED.duration_seconds,
+                records_processed = EXCLUDED.records_processed,
+                records_quarantined = EXCLUDED.records_quarantined,
+                recorded_at = CURRENT_TIMESTAMP;
+        """)
+        with self.engine.begin() as conn:
+            conn.execute(
+                sql,
+                {
+                    "run_id": run_id,
+                    "task_id": task_id,
+                    "pipeline_name": pipeline_name,
+                    "layer": layer,
+                    "status": status,
+                    "duration_seconds": round(float(duration_seconds), 3),
+                    "records_processed": records_processed,
+                    "records_quarantined": records_quarantined,
+                },
+            )
 
     def upsert_daily_sales_kpis(self, records: List[Dict[str, Any]]) -> int:
         """Inserta o actualiza métricas de la capa Gold en analytics.daily_sales_kpis."""
