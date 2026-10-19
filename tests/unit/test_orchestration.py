@@ -1,7 +1,11 @@
 """Pruebas unitarias de los helpers de orquestación (US-10 / US-11)."""
 
+from datetime import timedelta
+from types import SimpleNamespace
+
 from src.orchestration.partition_manager import PartitionManager
 from src.orchestration.quality_gate import GoldQualityGate
+from src.orchestration.sla_monitor import DEFAULT_TASK_SLAS, SLAMonitor
 from src.orchestration.task_metrics import TaskMetricsRecorder
 
 
@@ -117,3 +121,45 @@ def test_task_metrics_recorder_swallows_errors():
     recorder = TaskMetricsRecorder(db_client=BrokenDb())
     assert recorder.record_task("r", "t", "p", "GOLD", "SUCCESS", 0.0) is False
     assert recorder.record_run("r", "p", "SUCCESS") is False
+
+
+def test_sla_monitor_covers_every_dag_task():
+    expected = {
+        "validate_environment",
+        "extract_and_land",
+        "process_bronze",
+        "process_silver_and_quarantine",
+        "process_gold",
+        "quality_gate",
+        "publish_metrics",
+    }
+    assert set(DEFAULT_TASK_SLAS) == expected
+
+
+def test_sla_monitor_sla_for_uses_override_and_fallback():
+    monitor = SLAMonitor(task_slas={"process_gold": timedelta(minutes=7)})
+    assert monitor.sla_for("process_gold") == timedelta(minutes=7)
+    assert monitor.sla_for("desconocida") == timedelta(minutes=30)
+
+
+def test_sla_monitor_build_alert_message_reports_expired_and_blocking():
+    slas = [SimpleNamespace(task_id="process_bronze")]
+    blocking = [SimpleNamespace(task_id="extract_and_land")]
+    message = SLAMonitor.build_alert_message("dag_medallion_pipeline", "manual__1", slas, blocking)
+    assert "[SLA MISS]" in message
+    assert "process_bronze" in message
+    assert "extract_and_land" in message
+
+
+def test_sla_monitor_build_alert_message_handles_empty_inputs():
+    message = SLAMonitor.build_alert_message("dag_medallion_pipeline", "manual__1", [], [])
+    assert "Tareas vencidas: n/d" in message
+    assert "Tareas bloqueantes: n/d" in message
+
+
+def test_sla_monitor_summarize_normalizes_events():
+    slas = [SimpleNamespace(task_id="quality_gate", dag_id="d", timestamp="2026-01-01T00:00:00")]
+    blocking = [SimpleNamespace(task_id="process_gold", run_id="manual__1", state="running")]
+    summary = SLAMonitor.summarize(slas, blocking)
+    assert summary[0] == {"task_id": "quality_gate", "dag_id": "d", "expected_at": "2026-01-01T00:00:00"}
+    assert summary[1] == {"task_id": "process_gold", "run_id": "manual__1", "state": "running"}
