@@ -1,7 +1,7 @@
 """Validador de calidad de datos y segregación a Quarantine."""
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 import re
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -75,6 +75,41 @@ class DataQualityValidator:
 
         return True, None
 
+    def validate_product(self, record: Dict[str, Any]) -> Tuple[bool, Optional[str]]:
+        """Valida un producto según reglas de catálogo y precios."""
+        prod_id = record.get("product_id")
+        if not prod_id:
+            return False, "product_id ausente"
+
+        name = record.get("product_name")
+        if not name or not str(name).strip():
+            return False, "product_name ausente o vacío"
+
+        try:
+            price = float(record.get("unit_price", 0))
+            if price <= 0:
+                return False, f"unit_price inválido (debe ser > 0): {price}"
+        except (ValueError, TypeError):
+            return False, f"unit_price no numérico: {record.get('unit_price')}"
+
+        return True, None
+
+    def validate_return(self, record: Dict[str, Any]) -> Tuple[bool, Optional[str]]:
+        """Valida un registro de devolución."""
+        ret_id = record.get("return_id")
+        order_id = record.get("order_id")
+        if not ret_id or not order_id:
+            return False, "return_id u order_id ausente"
+
+        try:
+            refund = float(record.get("refund_amount", 0))
+            if refund < 0:
+                return False, f"refund_amount negativo: {refund}"
+        except (ValueError, TypeError):
+            return False, f"refund_amount no numérico: {record.get('refund_amount')}"
+
+        return True, None
+
     def partition_records(
         self, records: List[Dict[str, Any]], entity_type: str = "orders"
     ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], ValidationReport]:
@@ -83,7 +118,13 @@ class DataQualityValidator:
         quarantine_list: List[Dict[str, Any]] = []
         reasons_summary: Dict[str, int] = {}
 
-        validator_func = self.validate_order if entity_type == "orders" else self.validate_customer
+        validators = {
+            "orders": self.validate_order,
+            "customers": self.validate_customer,
+            "products": self.validate_product,
+            "returns": self.validate_return,
+        }
+        validator_func = validators.get(entity_type, self.validate_order)
 
         for rec in records:
             is_valid, reason = validator_func(rec)
@@ -92,9 +133,24 @@ class DataQualityValidator:
             else:
                 reason_str = reason or "Regla no superada"
                 reasons_summary[reason_str] = reasons_summary.get(reason_str, 0) + 1
+
+                # Clasificación de código de error
+                error_code = "ERR_VALIDATION_FAILED"
+                if "ausente" in reason_str.lower() or "vacío" in reason_str.lower():
+                    error_code = "ERR_NULL_KEY"
+                elif "monto inválido" in reason_str.lower() or "negativo" in reason_str.lower():
+                    error_code = "ERR_NEGATIVE_AMOUNT"
+                elif "estado desconocido" in reason_str.lower():
+                    error_code = "ERR_INVALID_STATUS"
+                elif "fecha" in reason_str.lower():
+                    error_code = "ERR_INVALID_DATE"
+                elif "email" in reason_str.lower():
+                    error_code = "ERR_INVALID_EMAIL"
+
                 quarantine_rec = {
-                    "rejected_at": datetime.utcnow().isoformat(),
+                    "rejected_at": datetime.now(timezone.utc).isoformat(),
                     "entity_type": entity_type,
+                    "error_code": error_code,
                     "quarantine_reason": reason_str,
                     "raw_record": rec,
                 }
