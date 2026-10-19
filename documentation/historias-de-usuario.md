@@ -10,11 +10,11 @@
 
 ## 1. Estrategia de Datos Falsos (Mock Data) y Protocolo de Desbloqueo
 
-Para que los 7 integrantes del equipo puedan desarrollar en paralelo desde el Día 1 sin depender de que los conectores reales, los clústeres de Spark o los servicios de Airflow estén finalizados, se define una estrategia de desacoplamiento basada en **Mock Data por Capas**.
+Para que los 7 integrantes del equipo puedan desarrollar en paralelo desde el inicio sin depender de que los conectores reales, los clústeres de Spark o los servicios de Airflow estén finalizados, se define una estrategia de desacoplamiento basada en **Mock Data por Capas**.
 
 ```mermaid
 flowchart TD
-    subgraph Generacion["Generación y Validación (Día 1)"]
+    subgraph Generacion["Generación y Validación Inicial"]
         GEN["Script Generador de Datos Sintéticos\n(scripts/generate_mock_data.py)"]
         JEFF["Jeffry\n(Define esquemas raw CSV/JSON/API)"]
         SEBAS["Sebastián Ortiz\n(Inyecta anomalías y errores intencionales)"]
@@ -99,33 +99,46 @@ El dominio base del proyecto es **Retail / E-commerce analítico**. Se requieren
 ## 2. Plan Paso a Paso de Implementación
 
 ```mermaid
-gantt
-    title Roadmap de Implementación Intermodular
-    dateFormat  YYYY-MM-DD
-    section Fase 1: Fundaciones
-    Mock Data & Contratos (Jeffry, Luis, Sebastián) :p1, 2026-10-20, 2d
-    Setup Docker Compose & Repo (Luis)               :p2, 2026-10-20, 2d
-    section Fase 2: Desarrollo Paralelo
-    Conectores CSV/JSON/API (Jeffry)                :p3, after p1, 4d
-    Spark Bronze -> Silver -> Gold (Esteban)        :p4, after p1, 5d
-    Motor de Calidad & Quarantine (Sebastián)       :p5, after p1, 4d
-    Dashboards Streamlit / Plotly (Sergio)          :p6, after p1, 5d
-    FastAPI + DuckDB + Chatbot LLM (Dylan)          :p7, after p1, 5d
-    section Fase 3: Automatización & Gobierno
-    Orquestación de DAGs Airflow (Héctor)           :p8, after p4, 4d
-    Linaje OpenMetadata & Atlas (Sebastián, Héctor) :p9, after p5, 4d
-    section Fase 4: Integración & Cierre
-    Pruebas E2E P01-P12 & Ajustes (Luis, Todos)     :p10, after p8, 3d
-    Documentación y Presentación Final (Todos)      :p11, after p10, 2d
+flowchart TD
+    subgraph F1["Fase 1: Fundaciones y Desbloqueo"]
+        direction TB
+        MOCK["Mock Data y Contratos\n(Jeffry, Luis, Sebastián)"]
+        ENV["Setup Docker Compose y Repo\n(Luis)"]
+    end
+
+    subgraph F2["Fase 2: Desarrollo Desacoplado en Paralelo"]
+        direction TB
+        CON["Conectores CSV / JSON / API\n(Jeffry)"]
+        SPK["Spark Bronze a Silver y Gold\n(Esteban)"]
+        QUA["Motor de Calidad y Quarantine\n(Sebastián)"]
+        DSH["Dashboards Streamlit / Plotly\n(Sergio)"]
+        CHT["FastAPI + DuckDB + Chatbot LLM\n(Dylan)"]
+    end
+
+    subgraph F3["Fase 3: Automatización y Gobierno"]
+        direction TB
+        AIR["Orquestación de DAGs Airflow\n(Héctor)"]
+        GOV["Linaje OpenMetadata y Atlas\n(Sebastián, Héctor)"]
+    end
+
+    subgraph F4["Fase 4: Integración y Cierre"]
+        direction TB
+        E2E["Pruebas E2E P01-P12 y Ajustes\n(Luis, Todos)"]
+        DOC["Documentación y Presentación Final\n(Todos)"]
+    end
+
+    F1 --> F2
+    F2 --> F3
+    F3 --> F4
 ```
 
-### Paso 1: Inicialización de Datos Falsos y Contratos (Día 1-2)
+### Paso 1: Inicialización de Datos Falsos y Contratos
 1. Luis Gómez inicializa la estructura de carpetas estándar en el repositorio según el Capítulo 14 del documento técnico.
 2. Jeffry y Sebastián ejecutan el script de datos falsos generando `data/mock/raw/` y `data/mock/gold/`.
 3. Luis documenta los contratos de datos (nombres de columnas, tipos y grano analítico) en `documentation/contracts/`.
 4. Sergio y Dylan descargan los archivos Parquet de `data/mock/gold/` y validan que sus entornos de desarrollo leen correctamente los datos con DuckDB y Pandas.
 
-### Paso 2: Desarrollo Desacoplado en Paralelo (Día 3-6)
+### Paso 2: Desarrollo Desacoplado en Paralelo
 - **Jeffry:** Crea `base_connector.py`, `csv_connector.py`, `json_connector.py` y `rest_api_connector.py` usando `data/mock/raw/` como origen y MinIO local como destino.
 - **Esteban:** Implementa transformaciones PySpark desde Landing/Bronze a Silver con limpieza y tipado, consumiendo las anomalías provistas por Sebastián.
 - **Sebastián:** Desarrolla los módulos de verificación de reglas (nulos, rangos, unicidad) y escribe el escritor de Quarantine en formato Parquet/JSON.
@@ -133,14 +146,14 @@ gantt
 - **Dylan:** Configura la API en FastAPI, integra DuckDB sobre los archivos Gold, configura el validador SQL seguro (solo `SELECT`) y afina los prompts para traducción lenguaje natural -> SQL.
 - **Héctor:** Levanta el contenedor de Airflow, crea las conexiones hacia MinIO y diseña los DAGs iniciales con tareas simuladas (`DummyOperator` / `PythonOperator`).
 
-### Paso 3: Integración E2E y Sustitución de Mocks por Flujo Real (Día 7-9)
+### Paso 3: Integración E2E y Sustitución de Mocks por Flujo Real
 1. Esteban conecta sus scripts de Spark al bucket real de MinIO poblado por los conectores de Jeffry.
 2. Esteban genera los Parquet reales en Gold.
 3. Sergio y Dylan cambian la ruta de lectura de DuckDB y Streamlit desde `data/mock/gold/` a `minio/gold/`.
 4. Héctor reemplaza las tareas simuladas de Airflow por los disparadores reales de conectores y `spark-submit`.
 5. Sebastián y Héctor configuran los emitores de metadatos para OpenMetadata y Apache Atlas.
 
-### Paso 4: Pruebas de Aceptación P01 a P12 (Día 10)
+### Paso 4: Pruebas de Aceptación P01 a P12
 Se ejecuta la matriz de pruebas funcionales y técnicas del Capítulo 17 y se corrigen discrepancias.
 
 ---
@@ -601,7 +614,7 @@ La siguiente tabla resume qué entrega cada integrante, a quién, en qué format
 | :--- | :--- | :--- | :--- | :--- |
 | **Luis Gómez** | Contratos de esquemas JSON y estructura de carpetas | Todo el equipo | `config/datasets/*.json` y repo | Desarrollo sin colisiones de nombres ni ramas. |
 | **Jeffry** | Script de Mock Data y archivos crudos sintéticos | Esteban Padilla, Héctor | `scripts/generate_mock_data.py` y `data/mock/raw/` | Desarrollo de transformaciones Spark e ingesta sin esperar fuentes reales. |
-| **Luis Gómez** | Muestras Parquet de capa Gold | Sergio, Dylan Gamero | `data/mock/gold/*.parquet` | Maquetación inmediata de Dashboards y Chatbot IA el Día 1. |
+| **Luis Gómez** | Muestras Parquet de capa Gold | Sergio, Dylan Gamero | `data/mock/gold/*.parquet` | Maquetación inmediata de Dashboards y Chatbot IA en paralelo desde el inicio. |
 | **Sebastián Ortiz** | Inyección de errores sintéticos y reglas de validación | Esteban Padilla, Héctor | `config/quality_rules/*.json` y `data/mock/raw/corrupt/` | Construcción de filtros de calidad y zona Quarantine. |
 | **Jeffry** | Conectores CSV, JSON y REST API terminados | Esteban Padilla, Héctor | `ingestion/*_connector.py` | Poblado real continuo de Landing y Bronze en MinIO. |
 | **Esteban Padilla** | Jobs PySpark de Silver y Gold | Sergio, Dylan, Héctor | `processing/silver/`, `processing/gold/` | Sustitución de los datos mock por los datos procesados reales. |
