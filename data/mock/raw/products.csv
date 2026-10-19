@@ -1,0 +1,201 @@
+product_id,product_name,category,subcategory,unit_price,cost_price,supplier_id
+PROD-0001,Python Clean Architecture Model 882,Books,Python Clean Architecture,42.28,25.71,SUPP-001
+PROD-0002,Smartwatch Model 422,Electronics,Smartwatch,272.43,142.71,SUPP-015
+PROD-0003,Tennis Racket Model 775,Sports,Tennis Racket,95.97,48.62,SUPP-018
+PROD-0004,Cotton T-Shirt Model 599,Clothing,Cotton T-Shirt,19.83,10.45,SUPP-013
+PROD-0005,Mechanical Keyboard Model 685,Electronics,Mechanical Keyboard,95.63,60.44,SUPP-018
+PROD-0006,Tennis Racket Model 500,Sports,Tennis Racket,106.23,56.44,SUPP-002
+PROD-0007,Casual Pants Model 884,Clothing,Casual Pants,48.64,28.0,SUPP-012
+PROD-0008,Running Sneakers Model 957,Clothing,Running Sneakers,50.22,31.04,SUPP-005
+PROD-0009,Running Sneakers Model 489,Clothing,Running Sneakers,113.81,70.2,SUPP-011
+PROD-0010,Smartwatch Model 157,Electronics,Smartwatch,149.38,85.37,SUPP-012
+PROD-0011,Sunscreen SPF 50 Model 186,Beauty,Sunscreen SPF 50,17.7,11.14,SUPP-019
+PROD-0012,Hydrating Serum Model 120,Beauty,Hydrating Serum,45.41,23.74,SUPP-006
+PROD-0013,Python Clean Architecture Model 681,Books,Python Clean Architecture,19.12,12.08,SUPP-014
+PROD-0014,Cloud Computing Fundamentals Model 122,Books,Cloud Computing Fundamentals,21.67,13.85,SUPP-019
+PROD-0015,Casual Pants Model 927,Clothing,Casual Pants,47.81,26.99,SUPP-004
+PROD-0016,Yoga Mat Model 614,Sports,Yoga Mat,35.73,19.34,SUPP-016
+PROD-0017,Organic Shampoo Model 306,Beauty,Organic Shampoo,13.0,7.28,SUPP-014
+PROD-0018,Yoga Mat Model 371,Sports,Yoga Mat,40.21,24.41,SUPP-010
+PROD-0019,Wireless Headphones Model 739,Electronics,Wireless Headphones,149.59,86.82,SUPP-008
+PROD-0020,Hydrating Serum Model 444,Beauty,Hydrating Serum,40.12,24.7,SUPP-019
+PROD-0021,Denim Jacket Model 314,Clothing,Denim Jacket,63.32,38.39,SUPP-014
+PROD-0022,Denim Jacket Model 543,Clothing,Denim Jacket,67.58,37.87,SUPP-010
+PROD-0023,Organic Shampoo Model 627,Beauty,Organic Shampoo,13.6,7.89,SUPP-020
+PROD-0024,Football Model 983,Sports,Football,21.97,11.07,SUPP-017
+PROD-0025,Cookware Set Model 374,Home & Kitchen,Cookware Set,89.92,56.84,SUPP-015
+PROD-0026,Perfume Eau de Parfum Model 634,Beauty,Perfume Eau de Parfum,114.77,74.06,SUPP-002
+PROD-0027,Blender Model 964,Home & Kitchen,Blender,55.06,30.18,SUPP-010
+PROD-0028,Tennis Racket Model 749,Sports,Tennis Racket,81.87,54.53,SUPP-003
+PROD-0029,Microwave Oven Model 362,Home & Kitchen,Microwave Oven,117.37,65.42,SUPP-006
+PROD-0030,Sunscreen SPF 50 Model 128,Beauty,Sunscreen SPF 50,21.33,11.15,SUPP-007
+PROD-0031,Blender Model 532,Home & Kitchen,Blender,55.17,33.76,SUPP-014
+PROD-0032,Hydrating Serum Model 364,Beauty,Hydrating Serum,22.07,12.24,SUPP-001
+PROD-0033,Winter Coat Model 901,Clothing,Winter Coat,91.12,61.1,SUPP-016
+PROD-0034,Smartphone Model 405,Electronics,Smartphone,822.77,425.2,SUPP-020
+PROD-0035,Smartwatch Model 506,Electronics,Smartwatch,276.26,175.24,SUPP-003
+PROD-0036,Sunscreen SPF 50 Model 223,Beauty,Sunscreen SPF 50,17.43,10.71,SUPP-017
+PROD-0037,Python Clean Architecture Model 225,Books,Python Clean Architecture,32.89,17.04,SUPP-020
+PROD-0038,Running Sneakers Model 533,Clothing,Running Sneakers,115.75,74.94,SUPP-008
+PROD-0039,Air Fryer Model 550,Home & Kitchen,Air Fryer,61.75,33.52,SUPP-009
+PROD-0040,Cycling Helmet Model 483,Sports,Cycling Helmet,63.83,32.63,SUPP-018
+PROD-0041,Hydrating Serum Model 384,Beauty,Hydrating Serum,26.08,15.25,SUPP-008
+PROD-0042,Blender Model 121,Home & Kitchen,Blender,55.89,32.06,SUPP-010
+PROD-0043,Hydrating Serum Model 807,Beauty,Hydrating Serum,44.45,28.11,SUPP-002
+PROD-0044,Sunscreen SPF 50 Model 931,Beauty,Sunscreen SPF 50,17.82,10.28,SUPP-012
+PROD-0045,Hydrating Serum Model 497,Beauty,Hydrating Serum,33.72,18.45,SUPP-015
+PROD-0046,Smartwatch Model 192,Electronics,Smartwatch,283.33,193.68,SUPP-010
+PROD-0047,Blender Model 746,Home & Kitchen,Blender,38.68,26.23,SUPP-015
+PROD-0048,Casual Pants Model 942,Clothing,Casual Pants,56.57,31.39,SUPP-003
+PROD-0049,Tennis Racket Model 834,Sports,Tennis Racket,123.69,84.76,SUPP-011
+PROD-0050,Yoga Mat Model 167,Sports,Yoga Mat,39.73,25.42,SUPP-017
+PROD-0051,Casual Pants Model 564,Clothing,Casual Pants,49.08,32.52,SUPP-011
+PROD-0052,Hydrating Serum Model 745,Beauty,Hydrating Serum,41.67,26.18,SUPP-006
+PROD-0053,Dumbbell Set Model 421,Sports,Dumbbell Set,30.2,16.31,SUPP-010
+PROD-0054,Data Engineering Handbook Model 967,Books,Data Engineering Handbook,23.88,13.13,SUPP-005
+PROD-0055,Cloud Computing Fundamentals Model 994,Books,Cloud Computing Fundamentals,34.82,19.63,SUPP-016
+PROD-0056,Sunscreen SPF 50 Model 918,Beauty,Sunscreen SPF 50,18.0,11.47,SUPP-011
+PROD-0057,Cotton T-Shirt Model 997,Clothing,Cotton T-Shirt,11.69,6.7,SUPP-013
+PROD-0058,Football Model 762,Sports,Football,22.94,15.82,SUPP-018
+PROD-0059,Designing Data-Intensive Applications Model 368,Books,Designing Data-Intensive Applications,56.74,39.42,SUPP-007
+PROD-0060,Sunscreen SPF 50 Model 366,Beauty,Sunscreen SPF 50,13.15,8.2,SUPP-020
+PROD-0061,Coffee Maker Model 220,Home & Kitchen,Coffee Maker,106.64,56.95,SUPP-019
+PROD-0062,Gaming Mouse Model 947,Electronics,Gaming Mouse,53.92,35.3,SUPP-015
+PROD-0063,Perfume Eau de Parfum Model 982,Beauty,Perfume Eau de Parfum,49.48,31.8,SUPP-007
+PROD-0064,Running Sneakers Model 976,Clothing,Running Sneakers,108.45,62.51,SUPP-014
+PROD-0065,Cookware Set Model 528,Home & Kitchen,Cookware Set,61.56,40.93,SUPP-007
+PROD-0066,Microwave Oven Model 341,Home & Kitchen,Microwave Oven,190.94,96.57,SUPP-009
+PROD-0067,Cloud Computing Fundamentals Model 187,Books,Cloud Computing Fundamentals,37.68,21.63,SUPP-015
+PROD-0068,Smartwatch Model 803,Electronics,Smartwatch,100.64,56.83,SUPP-013
+PROD-0069,Microwave Oven Model 174,Home & Kitchen,Microwave Oven,179.18,115.97,SUPP-009
+PROD-0070,Mechanical Keyboard Model 582,Electronics,Mechanical Keyboard,49.41,27.99,SUPP-008
+PROD-0071,Winter Coat Model 826,Clothing,Winter Coat,182.72,126.71,SUPP-020
+PROD-0072,Hydrating Serum Model 409,Beauty,Hydrating Serum,15.19,9.13,SUPP-013
+PROD-0073,Cycling Helmet Model 694,Sports,Cycling Helmet,30.95,21.0,SUPP-002
+PROD-0074,Blender Model 998,Home & Kitchen,Blender,36.04,21.57,SUPP-011
+PROD-0075,Dumbbell Set Model 245,Sports,Dumbbell Set,35.83,23.0,SUPP-014
+PROD-0076,Denim Jacket Model 992,Clothing,Denim Jacket,50.66,35.24,SUPP-016
+PROD-0077,Running Sneakers Model 727,Clothing,Running Sneakers,123.73,68.87,SUPP-009
+PROD-0078,Winter Coat Model 854,Clothing,Winter Coat,107.56,72.98,SUPP-011
+PROD-0079,Dumbbell Set Model 154,Sports,Dumbbell Set,66.12,45.26,SUPP-015
+PROD-0080,Air Fryer Model 366,Home & Kitchen,Air Fryer,56.0,30.05,SUPP-016
+PROD-0081,Microwave Oven Model 141,Home & Kitchen,Microwave Oven,141.1,98.63,SUPP-016
+PROD-0082,Cycling Helmet Model 604,Sports,Cycling Helmet,69.5,42.55,SUPP-015
+PROD-0083,Gaming Mouse Model 308,Electronics,Gaming Mouse,72.68,38.14,SUPP-003
+PROD-0084,Cotton T-Shirt Model 676,Clothing,Cotton T-Shirt,26.7,17.35,SUPP-009
+PROD-0085,Sunscreen SPF 50 Model 885,Beauty,Sunscreen SPF 50,25.42,17.65,SUPP-017
+PROD-0086,Designing Data-Intensive Applications Model 793,Books,Designing Data-Intensive Applications,39.57,20.39,SUPP-016
+PROD-0087,Wireless Headphones Model 503,Electronics,Wireless Headphones,42.86,27.27,SUPP-004
+PROD-0088,Winter Coat Model 257,Clothing,Winter Coat,181.5,94.6,SUPP-011
+PROD-0089,Smartphone Model 564,Electronics,Smartphone,603.13,386.93,SUPP-016
+PROD-0090,Organic Shampoo Model 771,Beauty,Organic Shampoo,20.7,10.37,SUPP-002
+PROD-0091,Cloud Computing Fundamentals Model 232,Books,Cloud Computing Fundamentals,23.12,14.94,SUPP-019
+PROD-0092,Coffee Maker Model 861,Home & Kitchen,Coffee Maker,94.12,52.39,SUPP-002
+PROD-0093,Mechanical Keyboard Model 361,Electronics,Mechanical Keyboard,116.39,67.07,SUPP-013
+PROD-0094,Air Fryer Model 121,Home & Kitchen,Air Fryer,156.16,105.11,SUPP-003
+PROD-0095,Air Fryer Model 223,Home & Kitchen,Air Fryer,92.74,53.83,SUPP-005
+PROD-0096,Casual Pants Model 801,Clothing,Casual Pants,57.04,36.92,SUPP-010
+PROD-0097,Designing Data-Intensive Applications Model 624,Books,Designing Data-Intensive Applications,37.57,19.51,SUPP-012
+PROD-0098,Microwave Oven Model 676,Home & Kitchen,Microwave Oven,142.36,82.23,SUPP-009
+PROD-0099,Cloud Computing Fundamentals Model 728,Books,Cloud Computing Fundamentals,17.26,10.09,SUPP-012
+PROD-0100,Microwave Oven Model 449,Home & Kitchen,Microwave Oven,168.3,87.28,SUPP-017
+PROD-0101,Dumbbell Set Model 639,Sports,Dumbbell Set,72.09,46.33,SUPP-016
+PROD-0102,Hydrating Serum Model 407,Beauty,Hydrating Serum,25.17,14.79,SUPP-016
+PROD-0103,Air Fryer Model 635,Home & Kitchen,Air Fryer,125.27,70.16,SUPP-008
+PROD-0104,Cycling Helmet Model 625,Sports,Cycling Helmet,50.58,30.86,SUPP-002
+PROD-0105,Mechanical Keyboard Model 932,Electronics,Mechanical Keyboard,76.87,39.89,SUPP-019
+PROD-0106,Running Sneakers Model 116,Clothing,Running Sneakers,66.66,34.42,SUPP-017
+PROD-0107,Gaming Mouse Model 963,Electronics,Gaming Mouse,61.39,32.9,SUPP-006
+PROD-0108,Yoga Mat Model 421,Sports,Yoga Mat,17.5,11.82,SUPP-010
+PROD-0109,Cloud Computing Fundamentals Model 449,Books,Cloud Computing Fundamentals,33.93,20.02,SUPP-009
+PROD-0110,Air Fryer Model 365,Home & Kitchen,Air Fryer,70.36,45.69,SUPP-020
+PROD-0111,Hydrating Serum Model 219,Beauty,Hydrating Serum,30.18,15.2,SUPP-013
+PROD-0112,Laptop Model 989,Electronics,Laptop,1386.96,821.13,SUPP-013
+PROD-0113,Perfume Eau de Parfum Model 469,Beauty,Perfume Eau de Parfum,64.22,42.55,SUPP-020
+PROD-0114,Perfume Eau de Parfum Model 114,Beauty,Perfume Eau de Parfum,104.37,54.01,SUPP-005
+PROD-0115,Coffee Maker Model 979,Home & Kitchen,Coffee Maker,95.28,60.9,SUPP-007
+PROD-0116,Laptop Model 546,Electronics,Laptop,1177.34,622.85,SUPP-008
+PROD-0117,Sunscreen SPF 50 Model 585,Beauty,Sunscreen SPF 50,13.98,9.14,SUPP-005
+PROD-0118,Yoga Mat Model 596,Sports,Yoga Mat,18.49,12.58,SUPP-015
+PROD-0119,Yoga Mat Model 401,Sports,Yoga Mat,40.79,25.17,SUPP-007
+PROD-0120,Cloud Computing Fundamentals Model 525,Books,Cloud Computing Fundamentals,16.27,8.16,SUPP-014
+PROD-0121,Football Model 137,Sports,Football,31.11,19.0,SUPP-010
+PROD-0122,Tennis Racket Model 794,Sports,Tennis Racket,98.61,60.96,SUPP-020
+PROD-0123,Dumbbell Set Model 690,Sports,Dumbbell Set,76.43,46.29,SUPP-014
+PROD-0124,Winter Coat Model 584,Clothing,Winter Coat,77.62,52.67,SUPP-014
+PROD-0125,Smartwatch Model 814,Electronics,Smartwatch,213.22,134.17,SUPP-015
+PROD-0126,Yoga Mat Model 452,Sports,Yoga Mat,19.84,12.8,SUPP-016
+PROD-0127,Dumbbell Set Model 716,Sports,Dumbbell Set,63.0,38.9,SUPP-011
+PROD-0128,Perfume Eau de Parfum Model 526,Beauty,Perfume Eau de Parfum,50.49,28.21,SUPP-013
+PROD-0129,Organic Shampoo Model 736,Beauty,Organic Shampoo,24.33,16.06,SUPP-006
+PROD-0130,Blender Model 232,Home & Kitchen,Blender,69.9,36.15,SUPP-016
+PROD-0131,Air Fryer Model 605,Home & Kitchen,Air Fryer,67.19,40.21,SUPP-014
+PROD-0132,Cotton T-Shirt Model 467,Clothing,Cotton T-Shirt,14.19,7.23,SUPP-001
+PROD-0133,Running Sneakers Model 132,Clothing,Running Sneakers,102.54,54.85,SUPP-017
+PROD-0134,Wireless Headphones Model 675,Electronics,Wireless Headphones,87.37,54.48,SUPP-004
+PROD-0135,Microwave Oven Model 887,Home & Kitchen,Microwave Oven,116.1,65.95,SUPP-012
+PROD-0136,Mechanical Keyboard Model 718,Electronics,Mechanical Keyboard,65.06,34.5,SUPP-017
+PROD-0137,Hydrating Serum Model 918,Beauty,Hydrating Serum,39.72,27.22,SUPP-015
+PROD-0138,Yoga Mat Model 900,Sports,Yoga Mat,44.24,29.04,SUPP-020
+PROD-0139,Mechanical Keyboard Model 991,Electronics,Mechanical Keyboard,48.15,25.09,SUPP-004
+PROD-0140,Blender Model 880,Home & Kitchen,Blender,35.21,19.66,SUPP-015
+PROD-0141,Cloud Computing Fundamentals Model 442,Books,Cloud Computing Fundamentals,33.31,17.32,SUPP-012
+PROD-0142,Coffee Maker Model 887,Home & Kitchen,Coffee Maker,97.89,57.54,SUPP-014
+PROD-0143,Laptop Model 617,Electronics,Laptop,1601.78,952.63,SUPP-010
+PROD-0144,Coffee Maker Model 469,Home & Kitchen,Coffee Maker,51.28,32.98,SUPP-014
+PROD-0145,Sunscreen SPF 50 Model 906,Beauty,Sunscreen SPF 50,15.49,10.08,SUPP-014
+PROD-0146,Air Fryer Model 569,Home & Kitchen,Air Fryer,138.19,80.52,SUPP-014
+PROD-0147,Python Clean Architecture Model 834,Books,Python Clean Architecture,46.31,27.25,SUPP-001
+PROD-0148,Data Engineering Handbook Model 544,Books,Data Engineering Handbook,22.97,12.93,SUPP-006
+PROD-0149,Smartwatch Model 688,Electronics,Smartwatch,244.61,154.6,SUPP-005
+PROD-0150,Gaming Mouse Model 402,Electronics,Gaming Mouse,78.9,52.06,SUPP-017
+PROD-0151,Tennis Racket Model 838,Sports,Tennis Racket,138.58,88.71,SUPP-010
+PROD-0152,Organic Shampoo Model 640,Beauty,Organic Shampoo,26.37,13.23,SUPP-009
+PROD-0153,Designing Data-Intensive Applications Model 657,Books,Designing Data-Intensive Applications,49.51,29.17,SUPP-007
+PROD-0154,Cloud Computing Fundamentals Model 894,Books,Cloud Computing Fundamentals,32.44,21.98,SUPP-013
+PROD-0155,Blender Model 842,Home & Kitchen,Blender,30.48,18.52,SUPP-013
+PROD-0156,Sunscreen SPF 50 Model 195,Beauty,Sunscreen SPF 50,23.97,14.58,SUPP-007
+PROD-0157,Python Clean Architecture Model 123,Books,Python Clean Architecture,33.64,21.91,SUPP-006
+PROD-0158,Mechanical Keyboard Model 843,Electronics,Mechanical Keyboard,89.44,49.04,SUPP-010
+PROD-0159,Football Model 365,Sports,Football,20.43,10.46,SUPP-012
+PROD-0160,Organic Shampoo Model 559,Beauty,Organic Shampoo,12.23,7.97,SUPP-004
+PROD-0161,Winter Coat Model 924,Clothing,Winter Coat,158.42,93.57,SUPP-008
+PROD-0162,Sunscreen SPF 50 Model 788,Beauty,Sunscreen SPF 50,20.06,11.17,SUPP-019
+PROD-0163,Microwave Oven Model 628,Home & Kitchen,Microwave Oven,152.75,83.94,SUPP-011
+PROD-0164,Designing Data-Intensive Applications Model 250,Books,Designing Data-Intensive Applications,53.8,30.79,SUPP-004
+PROD-0165,Perfume Eau de Parfum Model 535,Beauty,Perfume Eau de Parfum,106.28,54.88,SUPP-002
+PROD-0166,Microwave Oven Model 512,Home & Kitchen,Microwave Oven,110.07,56.75,SUPP-017
+PROD-0167,Cloud Computing Fundamentals Model 550,Books,Cloud Computing Fundamentals,36.8,22.7,SUPP-014
+PROD-0168,Perfume Eau de Parfum Model 247,Beauty,Perfume Eau de Parfum,98.54,57.49,SUPP-006
+PROD-0169,Designing Data-Intensive Applications Model 983,Books,Designing Data-Intensive Applications,41.97,24.83,SUPP-017
+PROD-0170,Data Engineering Handbook Model 864,Books,Data Engineering Handbook,44.31,26.19,SUPP-002
+PROD-0171,Cookware Set Model 972,Home & Kitchen,Cookware Set,76.93,53.11,SUPP-020
+PROD-0172,Yoga Mat Model 635,Sports,Yoga Mat,18.63,11.45,SUPP-002
+PROD-0173,Coffee Maker Model 401,Home & Kitchen,Coffee Maker,59.72,41.7,SUPP-010
+PROD-0174,Yoga Mat Model 531,Sports,Yoga Mat,38.74,20.47,SUPP-019
+PROD-0175,Wireless Headphones Model 102,Electronics,Wireless Headphones,137.8,74.84,SUPP-016
+PROD-0176,Mechanical Keyboard Model 592,Electronics,Mechanical Keyboard,71.15,47.96,SUPP-014
+PROD-0177,Python Clean Architecture Model 586,Books,Python Clean Architecture,34.97,23.78,SUPP-013
+PROD-0178,Sunscreen SPF 50 Model 879,Beauty,Sunscreen SPF 50,29.52,17.74,SUPP-015
+PROD-0179,Tennis Racket Model 919,Sports,Tennis Racket,64.9,41.9,SUPP-003
+PROD-0180,Cloud Computing Fundamentals Model 653,Books,Cloud Computing Fundamentals,24.68,16.78,SUPP-011
+PROD-0181,Gaming Mouse Model 986,Electronics,Gaming Mouse,73.95,47.86,SUPP-003
+PROD-0182,Coffee Maker Model 674,Home & Kitchen,Coffee Maker,75.76,49.94,SUPP-010
+PROD-0183,Hydrating Serum Model 654,Beauty,Hydrating Serum,37.54,19.41,SUPP-020
+PROD-0184,Data Engineering Handbook Model 614,Books,Data Engineering Handbook,53.51,32.34,SUPP-016
+PROD-0185,Smartphone Model 381,Electronics,Smartphone,712.04,431.76,SUPP-001
+PROD-0186,Air Fryer Model 554,Home & Kitchen,Air Fryer,141.27,94.34,SUPP-019
+PROD-0187,Mechanical Keyboard Model 603,Electronics,Mechanical Keyboard,90.51,52.53,SUPP-002
+PROD-0188,Wireless Headphones Model 424,Electronics,Wireless Headphones,88.07,51.34,SUPP-017
+PROD-0189,Cycling Helmet Model 272,Sports,Cycling Helmet,29.1,20.25,SUPP-018
+PROD-0190,Cotton T-Shirt Model 414,Clothing,Cotton T-Shirt,13.65,8.92,SUPP-005
+PROD-0191,Dumbbell Set Model 127,Sports,Dumbbell Set,33.83,23.42,SUPP-006
+PROD-0192,Hydrating Serum Model 522,Beauty,Hydrating Serum,25.43,13.22,SUPP-005
+PROD-0193,Running Sneakers Model 153,Clothing,Running Sneakers,76.92,51.19,SUPP-004
+PROD-0194,Air Fryer Model 620,Home & Kitchen,Air Fryer,132.73,81.92,SUPP-016
+PROD-0195,Cloud Computing Fundamentals Model 575,Books,Cloud Computing Fundamentals,38.73,21.45,SUPP-011
+PROD-0196,Cloud Computing Fundamentals Model 119,Books,Cloud Computing Fundamentals,16.64,8.42,SUPP-008
+PROD-0197,Winter Coat Model 881,Clothing,Winter Coat,185.62,117.87,SUPP-008
+PROD-0198,Designing Data-Intensive Applications Model 966,Books,Designing Data-Intensive Applications,35.66,20.73,SUPP-003
+PROD-0199,Sunscreen SPF 50 Model 272,Beauty,Sunscreen SPF 50,30.01,15.86,SUPP-018
+PROD-0200,Cookware Set Model 562,Home & Kitchen,Cookware Set,135.26,93.64,SUPP-018
