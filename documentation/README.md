@@ -12,12 +12,19 @@ Bienvenido a la carpeta de documentación del proyecto **Plataforma Extensible d
   - Orquestación con Apache Airflow, linaje con OpenMetadata y gobernanza con Apache Atlas.
   - Distribución del equipo de trabajo, plan de implementación por fases y matrices de riesgos y pruebas.
 
+- [**Plan de Trabajo, Historias de Usuario y Estrategia de Datos**](file:///home/dypok/Projects/pipeline-analitica/documentation/historias-de-usuario.md)
+  - 15 Historias de Usuario (US-01 a US-15) detalladas con formato Gherkin y pruebas técnicas de funcionamiento.
+  - Estrategia de generación de datos sintéticos/falsos (Mock Data) para desbloquear el desarrollo desde el Día 1.
+  - Matriz de paso a paso, dependencias y trazabilidad de entrega de datos entre los 7 integrantes.
+  - Protocolo de pruebas de aceptación y verificación cruzada (P01 a P12).
+
 ## Estructura de Documentación
 
 ```text
 documentation/
 |-- README.md                     <-- Índice de la documentación
 |-- arquitectura-medallion.md     <-- Documento técnico y arquitectura Medallion v2.0
+|-- historias-de-usuario.md       <-- Plan de trabajo, US detalladas, mock data y pruebas
 `-- changelog/                    <-- Registro diario de cambios
     `-- DD-MM-YYYY-changelog.md
 ```
