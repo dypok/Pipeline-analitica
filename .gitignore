@@ -55,6 +55,7 @@ derby.log
 # Local Data / Object Storage mounts
 data/minio/
 data/local/
+storage/
 *.parquet.tmp
 
 # IDEs & System files

@@ -1,0 +1,121 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Mock Sales API - Retail Medallion Platform",
+    "description": "Especificación simulada de la API REST externa de ventas para pruebas de ingesta (US-05).",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8000/api/v1/mock-sales",
+      "description": "Servidor mock local"
+    }
+  ],
+  "paths": {
+    "/orders": {
+      "get": {
+        "summary": "Obtener órdenes de venta paginadas",
+        "description": "Retorna lista de órdenes con paginación basada en número de página o cursor.",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1
+            },
+            "description": "Número de página actual"
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 100
+            },
+            "description": "Cantidad de registros por página"
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Token de cursor para paginación incremental"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Listado de órdenes exitoso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedOrdersResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests (Rate limit excedido)",
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer"
+                },
+                "description": "Segundos a esperar antes de reintentar"
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno del servidor simulado"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "PaginatedOrdersResponse": {
+        "type": "object",
+        "properties": {
+          "page": { "type": "integer" },
+          "page_size": { "type": "integer" },
+          "total_pages": { "type": "integer" },
+          "total_records": { "type": "integer" },
+          "next_token": { "type": "string", "nullable": true },
+          "data": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/OrderPayload" }
+          }
+        }
+      },
+      "OrderPayload": {
+        "type": "object",
+        "properties": {
+          "order_id": { "type": "string" },
+          "customer_id": { "type": "string" },
+          "timestamp": { "type": "string" },
+          "status": { "type": "string" },
+          "country": { "type": "string" },
+          "payment": { "type": "string" },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "item_id": { "type": "string" },
+                "product_id": { "type": "string" },
+                "quantity": { "type": "integer" },
+                "unit_price": { "type": "number" },
+                "total_amount": { "type": "number" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

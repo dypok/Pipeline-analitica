@@ -1,0 +1,1802 @@
+[
+  {
+    "product_id": "PROD-0001",
+    "product_name": "Python Clean Architecture Model 882",
+    "category": "Books",
+    "subcategory": "Python Clean Architecture",
+    "unit_price": 42.28,
+    "cost_price": 25.71,
+    "supplier_id": "SUPP-001"
+  },
+  {
+    "product_id": "PROD-0002",
+    "product_name": "Smartwatch Model 422",
+    "category": "Electronics",
+    "subcategory": "Smartwatch",
+    "unit_price": 272.43,
+    "cost_price": 142.71,
+    "supplier_id": "SUPP-015"
+  },
+  {
+    "product_id": "PROD-0003",
+    "product_name": "Tennis Racket Model 775",
+    "category": "Sports",
+    "subcategory": "Tennis Racket",
+    "unit_price": 95.97,
+    "cost_price": 48.62,
+    "supplier_id": "SUPP-018"
+  },
+  {
+    "product_id": "PROD-0004",
+    "product_name": "Cotton T-Shirt Model 599",
+    "category": "Clothing",
+    "subcategory": "Cotton T-Shirt",
+    "unit_price": 19.83,
+    "cost_price": 10.45,
+    "supplier_id": "SUPP-013"
+  },
+  {
+    "product_id": "PROD-0005",
+    "product_name": "Mechanical Keyboard Model 685",
+    "category": "Electronics",
+    "subcategory": "Mechanical Keyboard",
+    "unit_price": 95.63,
+    "cost_price": 60.44,
+    "supplier_id": "SUPP-018"
+  },
+  {
+    "product_id": "PROD-0006",
+    "product_name": "Tennis Racket Model 500",
+    "category": "Sports",
+    "subcategory": "Tennis Racket",
+    "unit_price": 106.23,
+    "cost_price": 56.44,
+    "supplier_id": "SUPP-002"
+  },
+  {
+    "product_id": "PROD-0007",
+    "product_name": "Casual Pants Model 884",
+    "category": "Clothing",
+    "subcategory": "Casual Pants",
+    "unit_price": 48.64,
+    "cost_price": 28.0,
+    "supplier_id": "SUPP-012"
+  },
+  {
+    "product_id": "PROD-0008",
+    "product_name": "Running Sneakers Model 957",
+    "category": "Clothing",
+    "subcategory": "Running Sneakers",
+    "unit_price": 50.22,
+    "cost_price": 31.04,
+    "supplier_id": "SUPP-005"
+  },
+  {
+    "product_id": "PROD-0009",
+    "product_name": "Running Sneakers Model 489",
+    "category": "Clothing",
+    "subcategory": "Running Sneakers",
+    "unit_price": 113.81,
+    "cost_price": 70.2,
+    "supplier_id": "SUPP-011"
+  },
+  {
+    "product_id": "PROD-0010",
+    "product_name": "Smartwatch Model 157",
+    "category": "Electronics",
+    "subcategory": "Smartwatch",
+    "unit_price": 149.38,
+    "cost_price": 85.37,
+    "supplier_id": "SUPP-012"
+  },
+  {
+    "product_id": "PROD-0011",
+    "product_name": "Sunscreen SPF 50 Model 186",
+    "category": "Beauty",
+    "subcategory": "Sunscreen SPF 50",
+    "unit_price": 17.7,
+    "cost_price": 11.14,
+    "supplier_id": "SUPP-019"
+  },
+  {
+    "product_id": "PROD-0012",
+    "product_name": "Hydrating Serum Model 120",
+    "category": "Beauty",
+    "subcategory": "Hydrating Serum",
+    "unit_price": 45.41,
+    "cost_price": 23.74,
+    "supplier_id": "SUPP-006"
+  },
+  {
+    "product_id": "PROD-0013",
+    "product_name": "Python Clean Architecture Model 681",
+    "category": "Books",
+    "subcategory": "Python Clean Architecture",
+    "unit_price": 19.12,
+    "cost_price": 12.08,
+    "supplier_id": "SUPP-014"
+  },
+  {
+    "product_id": "PROD-0014",
+    "product_name": "Cloud Computing Fundamentals Model 122",
+    "category": "Books",
+    "subcategory": "Cloud Computing Fundamentals",
+    "unit_price": 21.67,
+    "cost_price": 13.85,
+    "supplier_id": "SUPP-019"
+  },
+  {
+    "product_id": "PROD-0015",
+    "product_name": "Casual Pants Model 927",
+    "category": "Clothing",
+    "subcategory": "Casual Pants",
+    "unit_price": 47.81,
+    "cost_price": 26.99,
+    "supplier_id": "SUPP-004"
+  },
+  {
+    "product_id": "PROD-0016",
+    "product_name": "Yoga Mat Model 614",
+    "category": "Sports",
+    "subcategory": "Yoga Mat",
+    "unit_price": 35.73,
+    "cost_price": 19.34,
+    "supplier_id": "SUPP-016"
+  },
+  {
+    "product_id": "PROD-0017",
+    "product_name": "Organic Shampoo Model 306",
+    "category": "Beauty",
+    "subcategory": "Organic Shampoo",
+    "unit_price": 13.0,
+    "cost_price": 7.28,
+    "supplier_id": "SUPP-014"
+  },
+  {
+    "product_id": "PROD-0018",
+    "product_name": "Yoga Mat Model 371",
+    "category": "Sports",
+    "subcategory": "Yoga Mat",
+    "unit_price": 40.21,
+    "cost_price": 24.41,
+    "supplier_id": "SUPP-010"
+  },
+  {
+    "product_id": "PROD-0019",
+    "product_name": "Wireless Headphones Model 739",
+    "category": "Electronics",
+    "subcategory": "Wireless Headphones",
+    "unit_price": 149.59,
+    "cost_price": 86.82,
+    "supplier_id": "SUPP-008"
+  },
+  {
+    "product_id": "PROD-0020",
+    "product_name": "Hydrating Serum Model 444",
+    "category": "Beauty",
+    "subcategory": "Hydrating Serum",
+    "unit_price": 40.12,
+    "cost_price": 24.7,
+    "supplier_id": "SUPP-019"
+  },
+  {
+    "product_id": "PROD-0021",
+    "product_name": "Denim Jacket Model 314",
+    "category": "Clothing",
+    "subcategory": "Denim Jacket",
+    "unit_price": 63.32,
+    "cost_price": 38.39,
+    "supplier_id": "SUPP-014"
+  },
+  {
+    "product_id": "PROD-0022",
+    "product_name": "Denim Jacket Model 543",
+    "category": "Clothing",
+    "subcategory": "Denim Jacket",
+    "unit_price": 67.58,
+    "cost_price": 37.87,
+    "supplier_id": "SUPP-010"
+  },
+  {
+    "product_id": "PROD-0023",
+    "product_name": "Organic Shampoo Model 627",
+    "category": "Beauty",
+    "subcategory": "Organic Shampoo",
+    "unit_price": 13.6,
+    "cost_price": 7.89,
+    "supplier_id": "SUPP-020"
+  },
+  {
+    "product_id": "PROD-0024",
+    "product_name": "Football Model 983",
+    "category": "Sports",
+    "subcategory": "Football",
+    "unit_price": 21.97,
+    "cost_price": 11.07,
+    "supplier_id": "SUPP-017"
+  },
+  {
+    "product_id": "PROD-0025",
+    "product_name": "Cookware Set Model 374",
+    "category": "Home & Kitchen",
+    "subcategory": "Cookware Set",
+    "unit_price": 89.92,
+    "cost_price": 56.84,
+    "supplier_id": "SUPP-015"
+  },
+  {
+    "product_id": "PROD-0026",
+    "product_name": "Perfume Eau de Parfum Model 634",
+    "category": "Beauty",
+    "subcategory": "Perfume Eau de Parfum",
+    "unit_price": 114.77,
+    "cost_price": 74.06,
+    "supplier_id": "SUPP-002"
+  },
+  {
+    "product_id": "PROD-0027",
+    "product_name": "Blender Model 964",
+    "category": "Home & Kitchen",
+    "subcategory": "Blender",
+    "unit_price": 55.06,
+    "cost_price": 30.18,
+    "supplier_id": "SUPP-010"
+  },
+  {
+    "product_id": "PROD-0028",
+    "product_name": "Tennis Racket Model 749",
+    "category": "Sports",
+    "subcategory": "Tennis Racket",
+    "unit_price": 81.87,
+    "cost_price": 54.53,
+    "supplier_id": "SUPP-003"
+  },
+  {
+    "product_id": "PROD-0029",
+    "product_name": "Microwave Oven Model 362",
+    "category": "Home & Kitchen",
+    "subcategory": "Microwave Oven",
+    "unit_price": 117.37,
+    "cost_price": 65.42,
+    "supplier_id": "SUPP-006"
+  },
+  {
+    "product_id": "PROD-0030",
+    "product_name": "Sunscreen SPF 50 Model 128",
+    "category": "Beauty",
+    "subcategory": "Sunscreen SPF 50",
+    "unit_price": 21.33,
+    "cost_price": 11.15,
+    "supplier_id": "SUPP-007"
+  },
+  {
+    "product_id": "PROD-0031",
+    "product_name": "Blender Model 532",
+    "category": "Home & Kitchen",
+    "subcategory": "Blender",
+    "unit_price": 55.17,
+    "cost_price": 33.76,
+    "supplier_id": "SUPP-014"
+  },
+  {
+    "product_id": "PROD-0032",
+    "product_name": "Hydrating Serum Model 364",
+    "category": "Beauty",
+    "subcategory": "Hydrating Serum",
+    "unit_price": 22.07,
+    "cost_price": 12.24,
+    "supplier_id": "SUPP-001"
+  },
+  {
+    "product_id": "PROD-0033",
+    "product_name": "Winter Coat Model 901",
+    "category": "Clothing",
+    "subcategory": "Winter Coat",
+    "unit_price": 91.12,
+    "cost_price": 61.1,
+    "supplier_id": "SUPP-016"
+  },
+  {
+    "product_id": "PROD-0034",
+    "product_name": "Smartphone Model 405",
+    "category": "Electronics",
+    "subcategory": "Smartphone",
+    "unit_price": 822.77,
+    "cost_price": 425.2,
+    "supplier_id": "SUPP-020"
+  },
+  {
+    "product_id": "PROD-0035",
+    "product_name": "Smartwatch Model 506",
+    "category": "Electronics",
+    "subcategory": "Smartwatch",
+    "unit_price": 276.26,
+    "cost_price": 175.24,
+    "supplier_id": "SUPP-003"
+  },
+  {
+    "product_id": "PROD-0036",
+    "product_name": "Sunscreen SPF 50 Model 223",
+    "category": "Beauty",
+    "subcategory": "Sunscreen SPF 50",
+    "unit_price": 17.43,
+    "cost_price": 10.71,
+    "supplier_id": "SUPP-017"
+  },
+  {
+    "product_id": "PROD-0037",
+    "product_name": "Python Clean Architecture Model 225",
+    "category": "Books",
+    "subcategory": "Python Clean Architecture",
+    "unit_price": 32.89,
+    "cost_price": 17.04,
+    "supplier_id": "SUPP-020"
+  },
+  {
+    "product_id": "PROD-0038",
+    "product_name": "Running Sneakers Model 533",
+    "category": "Clothing",
+    "subcategory": "Running Sneakers",
+    "unit_price": 115.75,
+    "cost_price": 74.94,
+    "supplier_id": "SUPP-008"
+  },
+  {
+    "product_id": "PROD-0039",
+    "product_name": "Air Fryer Model 550",
+    "category": "Home & Kitchen",
+    "subcategory": "Air Fryer",
+    "unit_price": 61.75,
+    "cost_price": 33.52,
+    "supplier_id": "SUPP-009"
+  },
+  {
+    "product_id": "PROD-0040",
+    "product_name": "Cycling Helmet Model 483",
+    "category": "Sports",
+    "subcategory": "Cycling Helmet",
+    "unit_price": 63.83,
+    "cost_price": 32.63,
+    "supplier_id": "SUPP-018"
+  },
+  {
+    "product_id": "PROD-0041",
+    "product_name": "Hydrating Serum Model 384",
+    "category": "Beauty",
+    "subcategory": "Hydrating Serum",
+    "unit_price": 26.08,
+    "cost_price": 15.25,
+    "supplier_id": "SUPP-008"
+  },
+  {
+    "product_id": "PROD-0042",
+    "product_name": "Blender Model 121",
+    "category": "Home & Kitchen",
+    "subcategory": "Blender",
+    "unit_price": 55.89,
+    "cost_price": 32.06,
+    "supplier_id": "SUPP-010"
+  },
+  {
+    "product_id": "PROD-0043",
+    "product_name": "Hydrating Serum Model 807",
+    "category": "Beauty",
+    "subcategory": "Hydrating Serum",
+    "unit_price": 44.45,
+    "cost_price": 28.11,
+    "supplier_id": "SUPP-002"
+  },
+  {
+    "product_id": "PROD-0044",
+    "product_name": "Sunscreen SPF 50 Model 931",
+    "category": "Beauty",
+    "subcategory": "Sunscreen SPF 50",
+    "unit_price": 17.82,
+    "cost_price": 10.28,
+    "supplier_id": "SUPP-012"
+  },
+  {
+    "product_id": "PROD-0045",
+    "product_name": "Hydrating Serum Model 497",
+    "category": "Beauty",
+    "subcategory": "Hydrating Serum",
+    "unit_price": 33.72,
+    "cost_price": 18.45,
+    "supplier_id": "SUPP-015"
+  },
+  {
+    "product_id": "PROD-0046",
+    "product_name": "Smartwatch Model 192",
+    "category": "Electronics",
+    "subcategory": "Smartwatch",
+    "unit_price": 283.33,
+    "cost_price": 193.68,
+    "supplier_id": "SUPP-010"
+  },
+  {
+    "product_id": "PROD-0047",
+    "product_name": "Blender Model 746",
+    "category": "Home & Kitchen",
+    "subcategory": "Blender",
+    "unit_price": 38.68,
+    "cost_price": 26.23,
+    "supplier_id": "SUPP-015"
+  },
+  {
+    "product_id": "PROD-0048",
+    "product_name": "Casual Pants Model 942",
+    "category": "Clothing",
+    "subcategory": "Casual Pants",
+    "unit_price": 56.57,
+    "cost_price": 31.39,
+    "supplier_id": "SUPP-003"
+  },
+  {
+    "product_id": "PROD-0049",
+    "product_name": "Tennis Racket Model 834",
+    "category": "Sports",
+    "subcategory": "Tennis Racket",
+    "unit_price": 123.69,
+    "cost_price": 84.76,
+    "supplier_id": "SUPP-011"
+  },
+  {
+    "product_id": "PROD-0050",
+    "product_name": "Yoga Mat Model 167",
+    "category": "Sports",
+    "subcategory": "Yoga Mat",
+    "unit_price": 39.73,
+    "cost_price": 25.42,
+    "supplier_id": "SUPP-017"
+  },
+  {
+    "product_id": "PROD-0051",
+    "product_name": "Casual Pants Model 564",
+    "category": "Clothing",
+    "subcategory": "Casual Pants",
+    "unit_price": 49.08,
+    "cost_price": 32.52,
+    "supplier_id": "SUPP-011"
+  },
+  {
+    "product_id": "PROD-0052",
+    "product_name": "Hydrating Serum Model 745",
+    "category": "Beauty",
+    "subcategory": "Hydrating Serum",
+    "unit_price": 41.67,
+    "cost_price": 26.18,
+    "supplier_id": "SUPP-006"
+  },
+  {
+    "product_id": "PROD-0053",
+    "product_name": "Dumbbell Set Model 421",
+    "category": "Sports",
+    "subcategory": "Dumbbell Set",
+    "unit_price": 30.2,
+    "cost_price": 16.31,
+    "supplier_id": "SUPP-010"
+  },
+  {
+    "product_id": "PROD-0054",
+    "product_name": "Data Engineering Handbook Model 967",
+    "category": "Books",
+    "subcategory": "Data Engineering Handbook",
+    "unit_price": 23.88,
+    "cost_price": 13.13,
+    "supplier_id": "SUPP-005"
+  },
+  {
+    "product_id": "PROD-0055",
+    "product_name": "Cloud Computing Fundamentals Model 994",
+    "category": "Books",
+    "subcategory": "Cloud Computing Fundamentals",
+    "unit_price": 34.82,
+    "cost_price": 19.63,
+    "supplier_id": "SUPP-016"
+  },
+  {
+    "product_id": "PROD-0056",
+    "product_name": "Sunscreen SPF 50 Model 918",
+    "category": "Beauty",
+    "subcategory": "Sunscreen SPF 50",
+    "unit_price": 18.0,
+    "cost_price": 11.47,
+    "supplier_id": "SUPP-011"
+  },
+  {
+    "product_id": "PROD-0057",
+    "product_name": "Cotton T-Shirt Model 997",
+    "category": "Clothing",
+    "subcategory": "Cotton T-Shirt",
+    "unit_price": 11.69,
+    "cost_price": 6.7,
+    "supplier_id": "SUPP-013"
+  },
+  {
+    "product_id": "PROD-0058",
+    "product_name": "Football Model 762",
+    "category": "Sports",
+    "subcategory": "Football",
+    "unit_price": 22.94,
+    "cost_price": 15.82,
+    "supplier_id": "SUPP-018"
+  },
+  {
+    "product_id": "PROD-0059",
+    "product_name": "Designing Data-Intensive Applications Model 368",
+    "category": "Books",
+    "subcategory": "Designing Data-Intensive Applications",
+    "unit_price": 56.74,
+    "cost_price": 39.42,
+    "supplier_id": "SUPP-007"
+  },
+  {
+    "product_id": "PROD-0060",
+    "product_name": "Sunscreen SPF 50 Model 366",
+    "category": "Beauty",
+    "subcategory": "Sunscreen SPF 50",
+    "unit_price": 13.15,
+    "cost_price": 8.2,
+    "supplier_id": "SUPP-020"
+  },
+  {
+    "product_id": "PROD-0061",
+    "product_name": "Coffee Maker Model 220",
+    "category": "Home & Kitchen",
+    "subcategory": "Coffee Maker",
+    "unit_price": 106.64,
+    "cost_price": 56.95,
+    "supplier_id": "SUPP-019"
+  },
+  {
+    "product_id": "PROD-0062",
+    "product_name": "Gaming Mouse Model 947",
+    "category": "Electronics",
+    "subcategory": "Gaming Mouse",
+    "unit_price": 53.92,
+    "cost_price": 35.3,
+    "supplier_id": "SUPP-015"
+  },
+  {
+    "product_id": "PROD-0063",
+    "product_name": "Perfume Eau de Parfum Model 982",
+    "category": "Beauty",
+    "subcategory": "Perfume Eau de Parfum",
+    "unit_price": 49.48,
+    "cost_price": 31.8,
+    "supplier_id": "SUPP-007"
+  },
+  {
+    "product_id": "PROD-0064",
+    "product_name": "Running Sneakers Model 976",
+    "category": "Clothing",
+    "subcategory": "Running Sneakers",
+    "unit_price": 108.45,
+    "cost_price": 62.51,
+    "supplier_id": "SUPP-014"
+  },
+  {
+    "product_id": "PROD-0065",
+    "product_name": "Cookware Set Model 528",
+    "category": "Home & Kitchen",
+    "subcategory": "Cookware Set",
+    "unit_price": 61.56,
+    "cost_price": 40.93,
+    "supplier_id": "SUPP-007"
+  },
+  {
+    "product_id": "PROD-0066",
+    "product_name": "Microwave Oven Model 341",
+    "category": "Home & Kitchen",
+    "subcategory": "Microwave Oven",
+    "unit_price": 190.94,
+    "cost_price": 96.57,
+    "supplier_id": "SUPP-009"
+  },
+  {
+    "product_id": "PROD-0067",
+    "product_name": "Cloud Computing Fundamentals Model 187",
+    "category": "Books",
+    "subcategory": "Cloud Computing Fundamentals",
+    "unit_price": 37.68,
+    "cost_price": 21.63,
+    "supplier_id": "SUPP-015"
+  },
+  {
+    "product_id": "PROD-0068",
+    "product_name": "Smartwatch Model 803",
+    "category": "Electronics",
+    "subcategory": "Smartwatch",
+    "unit_price": 100.64,
+    "cost_price": 56.83,
+    "supplier_id": "SUPP-013"
+  },
+  {
+    "product_id": "PROD-0069",
+    "product_name": "Microwave Oven Model 174",
+    "category": "Home & Kitchen",
+    "subcategory": "Microwave Oven",
+    "unit_price": 179.18,
+    "cost_price": 115.97,
+    "supplier_id": "SUPP-009"
+  },
+  {
+    "product_id": "PROD-0070",
+    "product_name": "Mechanical Keyboard Model 582",
+    "category": "Electronics",
+    "subcategory": "Mechanical Keyboard",
+    "unit_price": 49.41,
+    "cost_price": 27.99,
+    "supplier_id": "SUPP-008"
+  },
+  {
+    "product_id": "PROD-0071",
+    "product_name": "Winter Coat Model 826",
+    "category": "Clothing",
+    "subcategory": "Winter Coat",
+    "unit_price": 182.72,
+    "cost_price": 126.71,
+    "supplier_id": "SUPP-020"
+  },
+  {
+    "product_id": "PROD-0072",
+    "product_name": "Hydrating Serum Model 409",
+    "category": "Beauty",
+    "subcategory": "Hydrating Serum",
+    "unit_price": 15.19,
+    "cost_price": 9.13,
+    "supplier_id": "SUPP-013"
+  },
+  {
+    "product_id": "PROD-0073",
+    "product_name": "Cycling Helmet Model 694",
+    "category": "Sports",
+    "subcategory": "Cycling Helmet",
+    "unit_price": 30.95,
+    "cost_price": 21.0,
+    "supplier_id": "SUPP-002"
+  },
+  {
+    "product_id": "PROD-0074",
+    "product_name": "Blender Model 998",
+    "category": "Home & Kitchen",
+    "subcategory": "Blender",
+    "unit_price": 36.04,
+    "cost_price": 21.57,
+    "supplier_id": "SUPP-011"
+  },
+  {
+    "product_id": "PROD-0075",
+    "product_name": "Dumbbell Set Model 245",
+    "category": "Sports",
+    "subcategory": "Dumbbell Set",
+    "unit_price": 35.83,
+    "cost_price": 23.0,
+    "supplier_id": "SUPP-014"
+  },
+  {
+    "product_id": "PROD-0076",
+    "product_name": "Denim Jacket Model 992",
+    "category": "Clothing",
+    "subcategory": "Denim Jacket",
+    "unit_price": 50.66,
+    "cost_price": 35.24,
+    "supplier_id": "SUPP-016"
+  },
+  {
+    "product_id": "PROD-0077",
+    "product_name": "Running Sneakers Model 727",
+    "category": "Clothing",
+    "subcategory": "Running Sneakers",
+    "unit_price": 123.73,
+    "cost_price": 68.87,
+    "supplier_id": "SUPP-009"
+  },
+  {
+    "product_id": "PROD-0078",
+    "product_name": "Winter Coat Model 854",
+    "category": "Clothing",
+    "subcategory": "Winter Coat",
+    "unit_price": 107.56,
+    "cost_price": 72.98,
+    "supplier_id": "SUPP-011"
+  },
+  {
+    "product_id": "PROD-0079",
+    "product_name": "Dumbbell Set Model 154",
+    "category": "Sports",
+    "subcategory": "Dumbbell Set",
+    "unit_price": 66.12,
+    "cost_price": 45.26,
+    "supplier_id": "SUPP-015"
+  },
+  {
+    "product_id": "PROD-0080",
+    "product_name": "Air Fryer Model 366",
+    "category": "Home & Kitchen",
+    "subcategory": "Air Fryer",
+    "unit_price": 56.0,
+    "cost_price": 30.05,
+    "supplier_id": "SUPP-016"
+  },
+  {
+    "product_id": "PROD-0081",
+    "product_name": "Microwave Oven Model 141",
+    "category": "Home & Kitchen",
+    "subcategory": "Microwave Oven",
+    "unit_price": 141.1,
+    "cost_price": 98.63,
+    "supplier_id": "SUPP-016"
+  },
+  {
+    "product_id": "PROD-0082",
+    "product_name": "Cycling Helmet Model 604",
+    "category": "Sports",
+    "subcategory": "Cycling Helmet",
+    "unit_price": 69.5,
+    "cost_price": 42.55,
+    "supplier_id": "SUPP-015"
+  },
+  {
+    "product_id": "PROD-0083",
+    "product_name": "Gaming Mouse Model 308",
+    "category": "Electronics",
+    "subcategory": "Gaming Mouse",
+    "unit_price": 72.68,
+    "cost_price": 38.14,
+    "supplier_id": "SUPP-003"
+  },
+  {
+    "product_id": "PROD-0084",
+    "product_name": "Cotton T-Shirt Model 676",
+    "category": "Clothing",
+    "subcategory": "Cotton T-Shirt",
+    "unit_price": 26.7,
+    "cost_price": 17.35,
+    "supplier_id": "SUPP-009"
+  },
+  {
+    "product_id": "PROD-0085",
+    "product_name": "Sunscreen SPF 50 Model 885",
+    "category": "Beauty",
+    "subcategory": "Sunscreen SPF 50",
+    "unit_price": 25.42,
+    "cost_price": 17.65,
+    "supplier_id": "SUPP-017"
+  },
+  {
+    "product_id": "PROD-0086",
+    "product_name": "Designing Data-Intensive Applications Model 793",
+    "category": "Books",
+    "subcategory": "Designing Data-Intensive Applications",
+    "unit_price": 39.57,
+    "cost_price": 20.39,
+    "supplier_id": "SUPP-016"
+  },
+  {
+    "product_id": "PROD-0087",
+    "product_name": "Wireless Headphones Model 503",
+    "category": "Electronics",
+    "subcategory": "Wireless Headphones",
+    "unit_price": 42.86,
+    "cost_price": 27.27,
+    "supplier_id": "SUPP-004"
+  },
+  {
+    "product_id": "PROD-0088",
+    "product_name": "Winter Coat Model 257",
+    "category": "Clothing",
+    "subcategory": "Winter Coat",
+    "unit_price": 181.5,
+    "cost_price": 94.6,
+    "supplier_id": "SUPP-011"
+  },
+  {
+    "product_id": "PROD-0089",
+    "product_name": "Smartphone Model 564",
+    "category": "Electronics",
+    "subcategory": "Smartphone",
+    "unit_price": 603.13,
+    "cost_price": 386.93,
+    "supplier_id": "SUPP-016"
+  },
+  {
+    "product_id": "PROD-0090",
+    "product_name": "Organic Shampoo Model 771",
+    "category": "Beauty",
+    "subcategory": "Organic Shampoo",
+    "unit_price": 20.7,
+    "cost_price": 10.37,
+    "supplier_id": "SUPP-002"
+  },
+  {
+    "product_id": "PROD-0091",
+    "product_name": "Cloud Computing Fundamentals Model 232",
+    "category": "Books",
+    "subcategory": "Cloud Computing Fundamentals",
+    "unit_price": 23.12,
+    "cost_price": 14.94,
+    "supplier_id": "SUPP-019"
+  },
+  {
+    "product_id": "PROD-0092",
+    "product_name": "Coffee Maker Model 861",
+    "category": "Home & Kitchen",
+    "subcategory": "Coffee Maker",
+    "unit_price": 94.12,
+    "cost_price": 52.39,
+    "supplier_id": "SUPP-002"
+  },
+  {
+    "product_id": "PROD-0093",
+    "product_name": "Mechanical Keyboard Model 361",
+    "category": "Electronics",
+    "subcategory": "Mechanical Keyboard",
+    "unit_price": 116.39,
+    "cost_price": 67.07,
+    "supplier_id": "SUPP-013"
+  },
+  {
+    "product_id": "PROD-0094",
+    "product_name": "Air Fryer Model 121",
+    "category": "Home & Kitchen",
+    "subcategory": "Air Fryer",
+    "unit_price": 156.16,
+    "cost_price": 105.11,
+    "supplier_id": "SUPP-003"
+  },
+  {
+    "product_id": "PROD-0095",
+    "product_name": "Air Fryer Model 223",
+    "category": "Home & Kitchen",
+    "subcategory": "Air Fryer",
+    "unit_price": 92.74,
+    "cost_price": 53.83,
+    "supplier_id": "SUPP-005"
+  },
+  {
+    "product_id": "PROD-0096",
+    "product_name": "Casual Pants Model 801",
+    "category": "Clothing",
+    "subcategory": "Casual Pants",
+    "unit_price": 57.04,
+    "cost_price": 36.92,
+    "supplier_id": "SUPP-010"
+  },
+  {
+    "product_id": "PROD-0097",
+    "product_name": "Designing Data-Intensive Applications Model 624",
+    "category": "Books",
+    "subcategory": "Designing Data-Intensive Applications",
+    "unit_price": 37.57,
+    "cost_price": 19.51,
+    "supplier_id": "SUPP-012"
+  },
+  {
+    "product_id": "PROD-0098",
+    "product_name": "Microwave Oven Model 676",
+    "category": "Home & Kitchen",
+    "subcategory": "Microwave Oven",
+    "unit_price": 142.36,
+    "cost_price": 82.23,
+    "supplier_id": "SUPP-009"
+  },
+  {
+    "product_id": "PROD-0099",
+    "product_name": "Cloud Computing Fundamentals Model 728",
+    "category": "Books",
+    "subcategory": "Cloud Computing Fundamentals",
+    "unit_price": 17.26,
+    "cost_price": 10.09,
+    "supplier_id": "SUPP-012"
+  },
+  {
+    "product_id": "PROD-0100",
+    "product_name": "Microwave Oven Model 449",
+    "category": "Home & Kitchen",
+    "subcategory": "Microwave Oven",
+    "unit_price": 168.3,
+    "cost_price": 87.28,
+    "supplier_id": "SUPP-017"
+  },
+  {
+    "product_id": "PROD-0101",
+    "product_name": "Dumbbell Set Model 639",
+    "category": "Sports",
+    "subcategory": "Dumbbell Set",
+    "unit_price": 72.09,
+    "cost_price": 46.33,
+    "supplier_id": "SUPP-016"
+  },
+  {
+    "product_id": "PROD-0102",
+    "product_name": "Hydrating Serum Model 407",
+    "category": "Beauty",
+    "subcategory": "Hydrating Serum",
+    "unit_price": 25.17,
+    "cost_price": 14.79,
+    "supplier_id": "SUPP-016"
+  },
+  {
+    "product_id": "PROD-0103",
+    "product_name": "Air Fryer Model 635",
+    "category": "Home & Kitchen",
+    "subcategory": "Air Fryer",
+    "unit_price": 125.27,
+    "cost_price": 70.16,
+    "supplier_id": "SUPP-008"
+  },
+  {
+    "product_id": "PROD-0104",
+    "product_name": "Cycling Helmet Model 625",
+    "category": "Sports",
+    "subcategory": "Cycling Helmet",
+    "unit_price": 50.58,
+    "cost_price": 30.86,
+    "supplier_id": "SUPP-002"
+  },
+  {
+    "product_id": "PROD-0105",
+    "product_name": "Mechanical Keyboard Model 932",
+    "category": "Electronics",
+    "subcategory": "Mechanical Keyboard",
+    "unit_price": 76.87,
+    "cost_price": 39.89,
+    "supplier_id": "SUPP-019"
+  },
+  {
+    "product_id": "PROD-0106",
+    "product_name": "Running Sneakers Model 116",
+    "category": "Clothing",
+    "subcategory": "Running Sneakers",
+    "unit_price": 66.66,
+    "cost_price": 34.42,
+    "supplier_id": "SUPP-017"
+  },
+  {
+    "product_id": "PROD-0107",
+    "product_name": "Gaming Mouse Model 963",
+    "category": "Electronics",
+    "subcategory": "Gaming Mouse",
+    "unit_price": 61.39,
+    "cost_price": 32.9,
+    "supplier_id": "SUPP-006"
+  },
+  {
+    "product_id": "PROD-0108",
+    "product_name": "Yoga Mat Model 421",
+    "category": "Sports",
+    "subcategory": "Yoga Mat",
+    "unit_price": 17.5,
+    "cost_price": 11.82,
+    "supplier_id": "SUPP-010"
+  },
+  {
+    "product_id": "PROD-0109",
+    "product_name": "Cloud Computing Fundamentals Model 449",
+    "category": "Books",
+    "subcategory": "Cloud Computing Fundamentals",
+    "unit_price": 33.93,
+    "cost_price": 20.02,
+    "supplier_id": "SUPP-009"
+  },
+  {
+    "product_id": "PROD-0110",
+    "product_name": "Air Fryer Model 365",
+    "category": "Home & Kitchen",
+    "subcategory": "Air Fryer",
+    "unit_price": 70.36,
+    "cost_price": 45.69,
+    "supplier_id": "SUPP-020"
+  },
+  {
+    "product_id": "PROD-0111",
+    "product_name": "Hydrating Serum Model 219",
+    "category": "Beauty",
+    "subcategory": "Hydrating Serum",
+    "unit_price": 30.18,
+    "cost_price": 15.2,
+    "supplier_id": "SUPP-013"
+  },
+  {
+    "product_id": "PROD-0112",
+    "product_name": "Laptop Model 989",
+    "category": "Electronics",
+    "subcategory": "Laptop",
+    "unit_price": 1386.96,
+    "cost_price": 821.13,
+    "supplier_id": "SUPP-013"
+  },
+  {
+    "product_id": "PROD-0113",
+    "product_name": "Perfume Eau de Parfum Model 469",
+    "category": "Beauty",
+    "subcategory": "Perfume Eau de Parfum",
+    "unit_price": 64.22,
+    "cost_price": 42.55,
+    "supplier_id": "SUPP-020"
+  },
+  {
+    "product_id": "PROD-0114",
+    "product_name": "Perfume Eau de Parfum Model 114",
+    "category": "Beauty",
+    "subcategory": "Perfume Eau de Parfum",
+    "unit_price": 104.37,
+    "cost_price": 54.01,
+    "supplier_id": "SUPP-005"
+  },
+  {
+    "product_id": "PROD-0115",
+    "product_name": "Coffee Maker Model 979",
+    "category": "Home & Kitchen",
+    "subcategory": "Coffee Maker",
+    "unit_price": 95.28,
+    "cost_price": 60.9,
+    "supplier_id": "SUPP-007"
+  },
+  {
+    "product_id": "PROD-0116",
+    "product_name": "Laptop Model 546",
+    "category": "Electronics",
+    "subcategory": "Laptop",
+    "unit_price": 1177.34,
+    "cost_price": 622.85,
+    "supplier_id": "SUPP-008"
+  },
+  {
+    "product_id": "PROD-0117",
+    "product_name": "Sunscreen SPF 50 Model 585",
+    "category": "Beauty",
+    "subcategory": "Sunscreen SPF 50",
+    "unit_price": 13.98,
+    "cost_price": 9.14,
+    "supplier_id": "SUPP-005"
+  },
+  {
+    "product_id": "PROD-0118",
+    "product_name": "Yoga Mat Model 596",
+    "category": "Sports",
+    "subcategory": "Yoga Mat",
+    "unit_price": 18.49,
+    "cost_price": 12.58,
+    "supplier_id": "SUPP-015"
+  },
+  {
+    "product_id": "PROD-0119",
+    "product_name": "Yoga Mat Model 401",
+    "category": "Sports",
+    "subcategory": "Yoga Mat",
+    "unit_price": 40.79,
+    "cost_price": 25.17,
+    "supplier_id": "SUPP-007"
+  },
+  {
+    "product_id": "PROD-0120",
+    "product_name": "Cloud Computing Fundamentals Model 525",
+    "category": "Books",
+    "subcategory": "Cloud Computing Fundamentals",
+    "unit_price": 16.27,
+    "cost_price": 8.16,
+    "supplier_id": "SUPP-014"
+  },
+  {
+    "product_id": "PROD-0121",
+    "product_name": "Football Model 137",
+    "category": "Sports",
+    "subcategory": "Football",
+    "unit_price": 31.11,
+    "cost_price": 19.0,
+    "supplier_id": "SUPP-010"
+  },
+  {
+    "product_id": "PROD-0122",
+    "product_name": "Tennis Racket Model 794",
+    "category": "Sports",
+    "subcategory": "Tennis Racket",
+    "unit_price": 98.61,
+    "cost_price": 60.96,
+    "supplier_id": "SUPP-020"
+  },
+  {
+    "product_id": "PROD-0123",
+    "product_name": "Dumbbell Set Model 690",
+    "category": "Sports",
+    "subcategory": "Dumbbell Set",
+    "unit_price": 76.43,
+    "cost_price": 46.29,
+    "supplier_id": "SUPP-014"
+  },
+  {
+    "product_id": "PROD-0124",
+    "product_name": "Winter Coat Model 584",
+    "category": "Clothing",
+    "subcategory": "Winter Coat",
+    "unit_price": 77.62,
+    "cost_price": 52.67,
+    "supplier_id": "SUPP-014"
+  },
+  {
+    "product_id": "PROD-0125",
+    "product_name": "Smartwatch Model 814",
+    "category": "Electronics",
+    "subcategory": "Smartwatch",
+    "unit_price": 213.22,
+    "cost_price": 134.17,
+    "supplier_id": "SUPP-015"
+  },
+  {
+    "product_id": "PROD-0126",
+    "product_name": "Yoga Mat Model 452",
+    "category": "Sports",
+    "subcategory": "Yoga Mat",
+    "unit_price": 19.84,
+    "cost_price": 12.8,
+    "supplier_id": "SUPP-016"
+  },
+  {
+    "product_id": "PROD-0127",
+    "product_name": "Dumbbell Set Model 716",
+    "category": "Sports",
+    "subcategory": "Dumbbell Set",
+    "unit_price": 63.0,
+    "cost_price": 38.9,
+    "supplier_id": "SUPP-011"
+  },
+  {
+    "product_id": "PROD-0128",
+    "product_name": "Perfume Eau de Parfum Model 526",
+    "category": "Beauty",
+    "subcategory": "Perfume Eau de Parfum",
+    "unit_price": 50.49,
+    "cost_price": 28.21,
+    "supplier_id": "SUPP-013"
+  },
+  {
+    "product_id": "PROD-0129",
+    "product_name": "Organic Shampoo Model 736",
+    "category": "Beauty",
+    "subcategory": "Organic Shampoo",
+    "unit_price": 24.33,
+    "cost_price": 16.06,
+    "supplier_id": "SUPP-006"
+  },
+  {
+    "product_id": "PROD-0130",
+    "product_name": "Blender Model 232",
+    "category": "Home & Kitchen",
+    "subcategory": "Blender",
+    "unit_price": 69.9,
+    "cost_price": 36.15,
+    "supplier_id": "SUPP-016"
+  },
+  {
+    "product_id": "PROD-0131",
+    "product_name": "Air Fryer Model 605",
+    "category": "Home & Kitchen",
+    "subcategory": "Air Fryer",
+    "unit_price": 67.19,
+    "cost_price": 40.21,
+    "supplier_id": "SUPP-014"
+  },
+  {
+    "product_id": "PROD-0132",
+    "product_name": "Cotton T-Shirt Model 467",
+    "category": "Clothing",
+    "subcategory": "Cotton T-Shirt",
+    "unit_price": 14.19,
+    "cost_price": 7.23,
+    "supplier_id": "SUPP-001"
+  },
+  {
+    "product_id": "PROD-0133",
+    "product_name": "Running Sneakers Model 132",
+    "category": "Clothing",
+    "subcategory": "Running Sneakers",
+    "unit_price": 102.54,
+    "cost_price": 54.85,
+    "supplier_id": "SUPP-017"
+  },
+  {
+    "product_id": "PROD-0134",
+    "product_name": "Wireless Headphones Model 675",
+    "category": "Electronics",
+    "subcategory": "Wireless Headphones",
+    "unit_price": 87.37,
+    "cost_price": 54.48,
+    "supplier_id": "SUPP-004"
+  },
+  {
+    "product_id": "PROD-0135",
+    "product_name": "Microwave Oven Model 887",
+    "category": "Home & Kitchen",
+    "subcategory": "Microwave Oven",
+    "unit_price": 116.1,
+    "cost_price": 65.95,
+    "supplier_id": "SUPP-012"
+  },
+  {
+    "product_id": "PROD-0136",
+    "product_name": "Mechanical Keyboard Model 718",
+    "category": "Electronics",
+    "subcategory": "Mechanical Keyboard",
+    "unit_price": 65.06,
+    "cost_price": 34.5,
+    "supplier_id": "SUPP-017"
+  },
+  {
+    "product_id": "PROD-0137",
+    "product_name": "Hydrating Serum Model 918",
+    "category": "Beauty",
+    "subcategory": "Hydrating Serum",
+    "unit_price": 39.72,
+    "cost_price": 27.22,
+    "supplier_id": "SUPP-015"
+  },
+  {
+    "product_id": "PROD-0138",
+    "product_name": "Yoga Mat Model 900",
+    "category": "Sports",
+    "subcategory": "Yoga Mat",
+    "unit_price": 44.24,
+    "cost_price": 29.04,
+    "supplier_id": "SUPP-020"
+  },
+  {
+    "product_id": "PROD-0139",
+    "product_name": "Mechanical Keyboard Model 991",
+    "category": "Electronics",
+    "subcategory": "Mechanical Keyboard",
+    "unit_price": 48.15,
+    "cost_price": 25.09,
+    "supplier_id": "SUPP-004"
+  },
+  {
+    "product_id": "PROD-0140",
+    "product_name": "Blender Model 880",
+    "category": "Home & Kitchen",
+    "subcategory": "Blender",
+    "unit_price": 35.21,
+    "cost_price": 19.66,
+    "supplier_id": "SUPP-015"
+  },
+  {
+    "product_id": "PROD-0141",
+    "product_name": "Cloud Computing Fundamentals Model 442",
+    "category": "Books",
+    "subcategory": "Cloud Computing Fundamentals",
+    "unit_price": 33.31,
+    "cost_price": 17.32,
+    "supplier_id": "SUPP-012"
+  },
+  {
+    "product_id": "PROD-0142",
+    "product_name": "Coffee Maker Model 887",
+    "category": "Home & Kitchen",
+    "subcategory": "Coffee Maker",
+    "unit_price": 97.89,
+    "cost_price": 57.54,
+    "supplier_id": "SUPP-014"
+  },
+  {
+    "product_id": "PROD-0143",
+    "product_name": "Laptop Model 617",
+    "category": "Electronics",
+    "subcategory": "Laptop",
+    "unit_price": 1601.78,
+    "cost_price": 952.63,
+    "supplier_id": "SUPP-010"
+  },
+  {
+    "product_id": "PROD-0144",
+    "product_name": "Coffee Maker Model 469",
+    "category": "Home & Kitchen",
+    "subcategory": "Coffee Maker",
+    "unit_price": 51.28,
+    "cost_price": 32.98,
+    "supplier_id": "SUPP-014"
+  },
+  {
+    "product_id": "PROD-0145",
+    "product_name": "Sunscreen SPF 50 Model 906",
+    "category": "Beauty",
+    "subcategory": "Sunscreen SPF 50",
+    "unit_price": 15.49,
+    "cost_price": 10.08,
+    "supplier_id": "SUPP-014"
+  },
+  {
+    "product_id": "PROD-0146",
+    "product_name": "Air Fryer Model 569",
+    "category": "Home & Kitchen",
+    "subcategory": "Air Fryer",
+    "unit_price": 138.19,
+    "cost_price": 80.52,
+    "supplier_id": "SUPP-014"
+  },
+  {
+    "product_id": "PROD-0147",
+    "product_name": "Python Clean Architecture Model 834",
+    "category": "Books",
+    "subcategory": "Python Clean Architecture",
+    "unit_price": 46.31,
+    "cost_price": 27.25,
+    "supplier_id": "SUPP-001"
+  },
+  {
+    "product_id": "PROD-0148",
+    "product_name": "Data Engineering Handbook Model 544",
+    "category": "Books",
+    "subcategory": "Data Engineering Handbook",
+    "unit_price": 22.97,
+    "cost_price": 12.93,
+    "supplier_id": "SUPP-006"
+  },
+  {
+    "product_id": "PROD-0149",
+    "product_name": "Smartwatch Model 688",
+    "category": "Electronics",
+    "subcategory": "Smartwatch",
+    "unit_price": 244.61,
+    "cost_price": 154.6,
+    "supplier_id": "SUPP-005"
+  },
+  {
+    "product_id": "PROD-0150",
+    "product_name": "Gaming Mouse Model 402",
+    "category": "Electronics",
+    "subcategory": "Gaming Mouse",
+    "unit_price": 78.9,
+    "cost_price": 52.06,
+    "supplier_id": "SUPP-017"
+  },
+  {
+    "product_id": "PROD-0151",
+    "product_name": "Tennis Racket Model 838",
+    "category": "Sports",
+    "subcategory": "Tennis Racket",
+    "unit_price": 138.58,
+    "cost_price": 88.71,
+    "supplier_id": "SUPP-010"
+  },
+  {
+    "product_id": "PROD-0152",
+    "product_name": "Organic Shampoo Model 640",
+    "category": "Beauty",
+    "subcategory": "Organic Shampoo",
+    "unit_price": 26.37,
+    "cost_price": 13.23,
+    "supplier_id": "SUPP-009"
+  },
+  {
+    "product_id": "PROD-0153",
+    "product_name": "Designing Data-Intensive Applications Model 657",
+    "category": "Books",
+    "subcategory": "Designing Data-Intensive Applications",
+    "unit_price": 49.51,
+    "cost_price": 29.17,
+    "supplier_id": "SUPP-007"
+  },
+  {
+    "product_id": "PROD-0154",
+    "product_name": "Cloud Computing Fundamentals Model 894",
+    "category": "Books",
+    "subcategory": "Cloud Computing Fundamentals",
+    "unit_price": 32.44,
+    "cost_price": 21.98,
+    "supplier_id": "SUPP-013"
+  },
+  {
+    "product_id": "PROD-0155",
+    "product_name": "Blender Model 842",
+    "category": "Home & Kitchen",
+    "subcategory": "Blender",
+    "unit_price": 30.48,
+    "cost_price": 18.52,
+    "supplier_id": "SUPP-013"
+  },
+  {
+    "product_id": "PROD-0156",
+    "product_name": "Sunscreen SPF 50 Model 195",
+    "category": "Beauty",
+    "subcategory": "Sunscreen SPF 50",
+    "unit_price": 23.97,
+    "cost_price": 14.58,
+    "supplier_id": "SUPP-007"
+  },
+  {
+    "product_id": "PROD-0157",
+    "product_name": "Python Clean Architecture Model 123",
+    "category": "Books",
+    "subcategory": "Python Clean Architecture",
+    "unit_price": 33.64,
+    "cost_price": 21.91,
+    "supplier_id": "SUPP-006"
+  },
+  {
+    "product_id": "PROD-0158",
+    "product_name": "Mechanical Keyboard Model 843",
+    "category": "Electronics",
+    "subcategory": "Mechanical Keyboard",
+    "unit_price": 89.44,
+    "cost_price": 49.04,
+    "supplier_id": "SUPP-010"
+  },
+  {
+    "product_id": "PROD-0159",
+    "product_name": "Football Model 365",
+    "category": "Sports",
+    "subcategory": "Football",
+    "unit_price": 20.43,
+    "cost_price": 10.46,
+    "supplier_id": "SUPP-012"
+  },
+  {
+    "product_id": "PROD-0160",
+    "product_name": "Organic Shampoo Model 559",
+    "category": "Beauty",
+    "subcategory": "Organic Shampoo",
+    "unit_price": 12.23,
+    "cost_price": 7.97,
+    "supplier_id": "SUPP-004"
+  },
+  {
+    "product_id": "PROD-0161",
+    "product_name": "Winter Coat Model 924",
+    "category": "Clothing",
+    "subcategory": "Winter Coat",
+    "unit_price": 158.42,
+    "cost_price": 93.57,
+    "supplier_id": "SUPP-008"
+  },
+  {
+    "product_id": "PROD-0162",
+    "product_name": "Sunscreen SPF 50 Model 788",
+    "category": "Beauty",
+    "subcategory": "Sunscreen SPF 50",
+    "unit_price": 20.06,
+    "cost_price": 11.17,
+    "supplier_id": "SUPP-019"
+  },
+  {
+    "product_id": "PROD-0163",
+    "product_name": "Microwave Oven Model 628",
+    "category": "Home & Kitchen",
+    "subcategory": "Microwave Oven",
+    "unit_price": 152.75,
+    "cost_price": 83.94,
+    "supplier_id": "SUPP-011"
+  },
+  {
+    "product_id": "PROD-0164",
+    "product_name": "Designing Data-Intensive Applications Model 250",
+    "category": "Books",
+    "subcategory": "Designing Data-Intensive Applications",
+    "unit_price": 53.8,
+    "cost_price": 30.79,
+    "supplier_id": "SUPP-004"
+  },
+  {
+    "product_id": "PROD-0165",
+    "product_name": "Perfume Eau de Parfum Model 535",
+    "category": "Beauty",
+    "subcategory": "Perfume Eau de Parfum",
+    "unit_price": 106.28,
+    "cost_price": 54.88,
+    "supplier_id": "SUPP-002"
+  },
+  {
+    "product_id": "PROD-0166",
+    "product_name": "Microwave Oven Model 512",
+    "category": "Home & Kitchen",
+    "subcategory": "Microwave Oven",
+    "unit_price": 110.07,
+    "cost_price": 56.75,
+    "supplier_id": "SUPP-017"
+  },
+  {
+    "product_id": "PROD-0167",
+    "product_name": "Cloud Computing Fundamentals Model 550",
+    "category": "Books",
+    "subcategory": "Cloud Computing Fundamentals",
+    "unit_price": 36.8,
+    "cost_price": 22.7,
+    "supplier_id": "SUPP-014"
+  },
+  {
+    "product_id": "PROD-0168",
+    "product_name": "Perfume Eau de Parfum Model 247",
+    "category": "Beauty",
+    "subcategory": "Perfume Eau de Parfum",
+    "unit_price": 98.54,
+    "cost_price": 57.49,
+    "supplier_id": "SUPP-006"
+  },
+  {
+    "product_id": "PROD-0169",
+    "product_name": "Designing Data-Intensive Applications Model 983",
+    "category": "Books",
+    "subcategory": "Designing Data-Intensive Applications",
+    "unit_price": 41.97,
+    "cost_price": 24.83,
+    "supplier_id": "SUPP-017"
+  },
+  {
+    "product_id": "PROD-0170",
+    "product_name": "Data Engineering Handbook Model 864",
+    "category": "Books",
+    "subcategory": "Data Engineering Handbook",
+    "unit_price": 44.31,
+    "cost_price": 26.19,
+    "supplier_id": "SUPP-002"
+  },
+  {
+    "product_id": "PROD-0171",
+    "product_name": "Cookware Set Model 972",
+    "category": "Home & Kitchen",
+    "subcategory": "Cookware Set",
+    "unit_price": 76.93,
+    "cost_price": 53.11,
+    "supplier_id": "SUPP-020"
+  },
+  {
+    "product_id": "PROD-0172",
+    "product_name": "Yoga Mat Model 635",
+    "category": "Sports",
+    "subcategory": "Yoga Mat",
+    "unit_price": 18.63,
+    "cost_price": 11.45,
+    "supplier_id": "SUPP-002"
+  },
+  {
+    "product_id": "PROD-0173",
+    "product_name": "Coffee Maker Model 401",
+    "category": "Home & Kitchen",
+    "subcategory": "Coffee Maker",
+    "unit_price": 59.72,
+    "cost_price": 41.7,
+    "supplier_id": "SUPP-010"
+  },
+  {
+    "product_id": "PROD-0174",
+    "product_name": "Yoga Mat Model 531",
+    "category": "Sports",
+    "subcategory": "Yoga Mat",
+    "unit_price": 38.74,
+    "cost_price": 20.47,
+    "supplier_id": "SUPP-019"
+  },
+  {
+    "product_id": "PROD-0175",
+    "product_name": "Wireless Headphones Model 102",
+    "category": "Electronics",
+    "subcategory": "Wireless Headphones",
+    "unit_price": 137.8,
+    "cost_price": 74.84,
+    "supplier_id": "SUPP-016"
+  },
+  {
+    "product_id": "PROD-0176",
+    "product_name": "Mechanical Keyboard Model 592",
+    "category": "Electronics",
+    "subcategory": "Mechanical Keyboard",
+    "unit_price": 71.15,
+    "cost_price": 47.96,
+    "supplier_id": "SUPP-014"
+  },
+  {
+    "product_id": "PROD-0177",
+    "product_name": "Python Clean Architecture Model 586",
+    "category": "Books",
+    "subcategory": "Python Clean Architecture",
+    "unit_price": 34.97,
+    "cost_price": 23.78,
+    "supplier_id": "SUPP-013"
+  },
+  {
+    "product_id": "PROD-0178",
+    "product_name": "Sunscreen SPF 50 Model 879",
+    "category": "Beauty",
+    "subcategory": "Sunscreen SPF 50",
+    "unit_price": 29.52,
+    "cost_price": 17.74,
+    "supplier_id": "SUPP-015"
+  },
+  {
+    "product_id": "PROD-0179",
+    "product_name": "Tennis Racket Model 919",
+    "category": "Sports",
+    "subcategory": "Tennis Racket",
+    "unit_price": 64.9,
+    "cost_price": 41.9,
+    "supplier_id": "SUPP-003"
+  },
+  {
+    "product_id": "PROD-0180",
+    "product_name": "Cloud Computing Fundamentals Model 653",
+    "category": "Books",
+    "subcategory": "Cloud Computing Fundamentals",
+    "unit_price": 24.68,
+    "cost_price": 16.78,
+    "supplier_id": "SUPP-011"
+  },
+  {
+    "product_id": "PROD-0181",
+    "product_name": "Gaming Mouse Model 986",
+    "category": "Electronics",
+    "subcategory": "Gaming Mouse",
+    "unit_price": 73.95,
+    "cost_price": 47.86,
+    "supplier_id": "SUPP-003"
+  },
+  {
+    "product_id": "PROD-0182",
+    "product_name": "Coffee Maker Model 674",
+    "category": "Home & Kitchen",
+    "subcategory": "Coffee Maker",
+    "unit_price": 75.76,
+    "cost_price": 49.94,
+    "supplier_id": "SUPP-010"
+  },
+  {
+    "product_id": "PROD-0183",
+    "product_name": "Hydrating Serum Model 654",
+    "category": "Beauty",
+    "subcategory": "Hydrating Serum",
+    "unit_price": 37.54,
+    "cost_price": 19.41,
+    "supplier_id": "SUPP-020"
+  },
+  {
+    "product_id": "PROD-0184",
+    "product_name": "Data Engineering Handbook Model 614",
+    "category": "Books",
+    "subcategory": "Data Engineering Handbook",
+    "unit_price": 53.51,
+    "cost_price": 32.34,
+    "supplier_id": "SUPP-016"
+  },
+  {
+    "product_id": "PROD-0185",
+    "product_name": "Smartphone Model 381",
+    "category": "Electronics",
+    "subcategory": "Smartphone",
+    "unit_price": 712.04,
+    "cost_price": 431.76,
+    "supplier_id": "SUPP-001"
+  },
+  {
+    "product_id": "PROD-0186",
+    "product_name": "Air Fryer Model 554",
+    "category": "Home & Kitchen",
+    "subcategory": "Air Fryer",
+    "unit_price": 141.27,
+    "cost_price": 94.34,
+    "supplier_id": "SUPP-019"
+  },
+  {
+    "product_id": "PROD-0187",
+    "product_name": "Mechanical Keyboard Model 603",
+    "category": "Electronics",
+    "subcategory": "Mechanical Keyboard",
+    "unit_price": 90.51,
+    "cost_price": 52.53,
+    "supplier_id": "SUPP-002"
+  },
+  {
+    "product_id": "PROD-0188",
+    "product_name": "Wireless Headphones Model 424",
+    "category": "Electronics",
+    "subcategory": "Wireless Headphones",
+    "unit_price": 88.07,
+    "cost_price": 51.34,
+    "supplier_id": "SUPP-017"
+  },
+  {
+    "product_id": "PROD-0189",
+    "product_name": "Cycling Helmet Model 272",
+    "category": "Sports",
+    "subcategory": "Cycling Helmet",
+    "unit_price": 29.1,
+    "cost_price": 20.25,
+    "supplier_id": "SUPP-018"
+  },
+  {
+    "product_id": "PROD-0190",
+    "product_name": "Cotton T-Shirt Model 414",
+    "category": "Clothing",
+    "subcategory": "Cotton T-Shirt",
+    "unit_price": 13.65,
+    "cost_price": 8.92,
+    "supplier_id": "SUPP-005"
+  },
+  {
+    "product_id": "PROD-0191",
+    "product_name": "Dumbbell Set Model 127",
+    "category": "Sports",
+    "subcategory": "Dumbbell Set",
+    "unit_price": 33.83,
+    "cost_price": 23.42,
+    "supplier_id": "SUPP-006"
+  },
+  {
+    "product_id": "PROD-0192",
+    "product_name": "Hydrating Serum Model 522",
+    "category": "Beauty",
+    "subcategory": "Hydrating Serum",
+    "unit_price": 25.43,
+    "cost_price": 13.22,
+    "supplier_id": "SUPP-005"
+  },
+  {
+    "product_id": "PROD-0193",
+    "product_name": "Running Sneakers Model 153",
+    "category": "Clothing",
+    "subcategory": "Running Sneakers",
+    "unit_price": 76.92,
+    "cost_price": 51.19,
+    "supplier_id": "SUPP-004"
+  },
+  {
+    "product_id": "PROD-0194",
+    "product_name": "Air Fryer Model 620",
+    "category": "Home & Kitchen",
+    "subcategory": "Air Fryer",
+    "unit_price": 132.73,
+    "cost_price": 81.92,
+    "supplier_id": "SUPP-016"
+  },
+  {
+    "product_id": "PROD-0195",
+    "product_name": "Cloud Computing Fundamentals Model 575",
+    "category": "Books",
+    "subcategory": "Cloud Computing Fundamentals",
+    "unit_price": 38.73,
+    "cost_price": 21.45,
+    "supplier_id": "SUPP-011"
+  },
+  {
+    "product_id": "PROD-0196",
+    "product_name": "Cloud Computing Fundamentals Model 119",
+    "category": "Books",
+    "subcategory": "Cloud Computing Fundamentals",
+    "unit_price": 16.64,
+    "cost_price": 8.42,
+    "supplier_id": "SUPP-008"
+  },
+  {
+    "product_id": "PROD-0197",
+    "product_name": "Winter Coat Model 881",
+    "category": "Clothing",
+    "subcategory": "Winter Coat",
+    "unit_price": 185.62,
+    "cost_price": 117.87,
+    "supplier_id": "SUPP-008"
+  },
+  {
+    "product_id": "PROD-0198",
+    "product_name": "Designing Data-Intensive Applications Model 966",
+    "category": "Books",
+    "subcategory": "Designing Data-Intensive Applications",
+    "unit_price": 35.66,
+    "cost_price": 20.73,
+    "supplier_id": "SUPP-003"
+  },
+  {
+    "product_id": "PROD-0199",
+    "product_name": "Sunscreen SPF 50 Model 272",
+    "category": "Beauty",
+    "subcategory": "Sunscreen SPF 50",
+    "unit_price": 30.01,
+    "cost_price": 15.86,
+    "supplier_id": "SUPP-018"
+  },
+  {
+    "product_id": "PROD-0200",
+    "product_name": "Cookware Set Model 562",
+    "category": "Home & Kitchen",
+    "subcategory": "Cookware Set",
+    "unit_price": 135.26,
+    "cost_price": 93.64,
+    "supplier_id": "SUPP-018"
+  }
+]
