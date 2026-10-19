@@ -75,7 +75,7 @@ flowchart LR
 | **Jeffry** | Ingeniero de Ingesta | `feature/ingesta-minio` | Conectores CSV/JSON, APIs REST y depósito en Landing/Bronze (`src/ingestion`). |
 | **Esteban Padilla** | Ingeniero Spark / Data | `feature/spark-medallion` | Procesamiento PySpark Bronze -> Silver -> Gold, particionado y optimización (`src/silver`, `src/gold`). |
 | **Héctor** | Ingeniero de Orquestación | `feature/airflow-orquestacion` | DAGs de producción en Airflow, SLAs, alertas y gestión de dependencias (`dags/`). |
-| **Sebastián Ortiz** | Calidad & Gobernanza | `feature/calidad-gobierno` | Reglas de validación, Quarantine, linaje de datos y catálogo OpenMetadata (`src/quality`). |
+| **Sebastián Ortiz** | Ingeniero de Calidad & Gobernanza | `feature/calidad-gobierno` | Reglas de validación, Quarantine, linaje de datos y catálogo OpenMetadata (`src/quality`). |
 | **Sergio** | Ingeniero de Visualización | `feature/dashboard` | Dashboards interactivos en Streamlit / Plotly sobre capa Gold. |
 | **Dylan Gamero** | Líder de Proyecto & Chatbot IA | `feature/chatbot-ia` | API FastAPI, integración LLM y consultas en lenguaje natural respaldadas por SQL real. |
 
