@@ -1,0 +1,25 @@
+# Python virtual environments & bytecode
+.venv/
+env/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environment files
+.env
+!.env.example
+
+# DuckDB / Local database files
+*.duckdb
+*.db
+*.sqlite3
+
+# IDE / OS files
+.DS_Store
+.idea/
+.vscode/
