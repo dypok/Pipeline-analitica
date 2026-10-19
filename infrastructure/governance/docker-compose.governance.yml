@@ -1,0 +1,30 @@
+# ==============================================================================
+# MODULO OPCIONAL DE GOBERNANZA — OPENMETADATA
+# ==============================================================================
+# Ejecución bajo demanda:
+#   docker compose -f docker-compose.yml -f infrastructure/governance/docker-compose.governance.yml up -d
+#
+# NOTA DE RECURSOS:
+# Requiere al menos 4-6 GiB de memoria RAM adicional para OpenSearch y el servidor.
+# ==============================================================================
+
+services:
+  openmetadata-server:
+    image: docker.getcollate.io/openmetadata/server:1.3.1
+    container_name: medallion-openmetadata-server
+    restart: unless-stopped
+    ports:
+      - "8585:8585"
+    environment:
+      SERVER_HOST: "0.0.0.0"
+      SERVER_PORT: "8585"
+      DB_HOST: "postgres"
+      DB_PORT: "5432"
+      DB_USER: "${POSTGRES_USER:-medallion_user}"
+      DB_PASSWORD: "${POSTGRES_PASSWORD:-medallion_secret}"
+      OM_DATABASE: "openmetadata_db"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - medallion-network

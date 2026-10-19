@@ -1,0 +1,193 @@
+services:
+  # ----------------------------------------------------------------------------
+  # 1. PostgreSQL: Base de Metadatos (Airflow) y Data Mart Analítico (Gold)
+  # ----------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: medallion-postgres
+    restart: unless-stopped
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-medallion_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-medallion_secret}
+      POSTGRES_DB: ${POSTGRES_AIRFLOW_DB:-airflow_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/postgres/init-databases.sh:/docker-entrypoint-initdb.d/init-databases.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-medallion_user} -d ${POSTGRES_AIRFLOW_DB:-airflow_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - medallion-network
+
+  # ----------------------------------------------------------------------------
+  # 2. MinIO: Almacenamiento de Objetos S3 Compatible (Landing, Bronze, Silver, Gold, Quarantine)
+  # ----------------------------------------------------------------------------
+  minio:
+    image: elestio/minio:latest
+    container_name: medallion-minio
+    restart: unless-stopped
+    ports:
+      - "${MINIO_API_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-miniopassword123}
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9000/minio/health/live || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - medallion-network
+
+  # ----------------------------------------------------------------------------
+  # 3. Apache Spark 3.5.1: Motor de Procesamiento y Transformación Distribuida
+  # ----------------------------------------------------------------------------
+  spark-master:
+    image: apache/spark:3.5.1
+    container_name: medallion-spark-master
+    restart: unless-stopped
+    command: ["/opt/spark/bin/spark-class", "org.apache.spark.deploy.master.Master", "--host", "spark-master", "--port", "7077", "--webui-port", "8081"]
+    ports:
+      - "${SPARK_MASTER_PORT:-7077}:7077"
+      - "${SPARK_MASTER_WEBUI_PORT:-8081}:8081"
+    environment:
+      - SPARK_NO_DAEMONIZE=true
+    volumes:
+      - ./infrastructure/spark/spark-defaults.conf:/opt/spark/conf/spark-defaults.conf:ro
+      - ./src:/opt/spark/work-dir/src:ro
+      - ./config:/opt/spark/work-dir/config:ro
+    networks:
+      - medallion-network
+
+  spark-worker:
+    image: apache/spark:3.5.1
+    container_name: medallion-spark-worker
+    restart: unless-stopped
+    depends_on:
+      - spark-master
+    command: ["/opt/spark/bin/spark-class", "org.apache.spark.deploy.worker.Worker", "--webui-port", "8081", "spark://spark-master:7077"]
+    environment:
+      - SPARK_NO_DAEMONIZE=true
+      - SPARK_WORKER_MEMORY=${SPARK_WORKER_MEMORY:-2g}
+      - SPARK_WORKER_CORES=${SPARK_WORKER_CORES:-2}
+    volumes:
+      - ./infrastructure/spark/spark-defaults.conf:/opt/spark/conf/spark-defaults.conf:ro
+      - ./src:/opt/spark/work-dir/src:ro
+      - ./config:/opt/spark/work-dir/config:ro
+    networks:
+      - medallion-network
+
+  # ----------------------------------------------------------------------------
+  # 4. Apache Airflow 2.8.1: Orquestador de Flujos de Trabajo
+  # ----------------------------------------------------------------------------
+  airflow-init:
+    image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.8.1-python3.11}
+    container_name: medallion-airflow-init
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: ${AIRFLOW_DATABASE_URL}
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      _AIRFLOW_DB_MIGRATE: "true"
+      _AIRFLOW_WWW_USER_CREATE: "true"
+      _AIRFLOW_WWW_USER_USERNAME: ${AIRFLOW_ADMIN_USER:-admin}
+      _AIRFLOW_WWW_USER_PASSWORD: ${AIRFLOW_ADMIN_PASSWORD:-admin}
+      _AIRFLOW_WWW_USER_FIRSTNAME: ${AIRFLOW_ADMIN_FIRSTNAME:-Luis}
+      _AIRFLOW_WWW_USER_LASTNAME: ${AIRFLOW_ADMIN_LASTNAME:-Gomez}
+      _AIRFLOW_WWW_USER_EMAIL: ${AIRFLOW_ADMIN_EMAIL:-admin@medallion.local}
+      _AIRFLOW_WWW_USER_ROLE: "Admin"
+    entrypoint: ["/bin/bash", "-c", "airflow db migrate && airflow users create --username ${AIRFLOW_ADMIN_USER:-admin} --password ${AIRFLOW_ADMIN_PASSWORD:-admin} --firstname ${AIRFLOW_ADMIN_FIRSTNAME:-Luis} --lastname ${AIRFLOW_ADMIN_LASTNAME:-Gomez} --email ${AIRFLOW_ADMIN_EMAIL:-admin@medallion.local} --role Admin || true"]
+    networks:
+      - medallion-network
+
+  airflow-webserver:
+    image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.8.1-python3.11}
+    container_name: medallion-airflow-webserver
+    restart: unless-stopped
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+    ports:
+      - "${AIRFLOW_PORT:-8080}:8080"
+    environment:
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: ${AIRFLOW_DATABASE_URL}
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "false"
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "false"
+      _PIP_ADDITIONAL_REQUIREMENTS: "minio boto3 pandas pyarrow duckdb psycopg2-binary sqlalchemy requests pyyaml pydantic"
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-miniopassword123}
+      ANALYTICS_DATABASE_URL: ${ANALYTICS_DATABASE_URL}
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./src:/opt/airflow/src
+      - ./config:/opt/airflow/config
+      - airflow_logs:/opt/airflow/logs
+    command: webserver
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - medallion-network
+
+  airflow-scheduler:
+    image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.8.1-python3.11}
+    container_name: medallion-airflow-scheduler
+    restart: unless-stopped
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+    environment:
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: ${AIRFLOW_DATABASE_URL}
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "false"
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      _PIP_ADDITIONAL_REQUIREMENTS: "minio boto3 pandas pyarrow duckdb psycopg2-binary sqlalchemy requests pyyaml pydantic"
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-miniopassword123}
+      ANALYTICS_DATABASE_URL: ${ANALYTICS_DATABASE_URL}
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./src:/opt/airflow/src
+      - ./config:/opt/airflow/config
+      - airflow_logs:/opt/airflow/logs
+    command: scheduler
+    networks:
+      - medallion-network
+
+# ------------------------------------------------------------------------------
+# Volúmenes Persistentes y Redes
+# ------------------------------------------------------------------------------
+volumes:
+  postgres_data:
+    driver: local
+  minio_data:
+    driver: local
+  airflow_logs:
+    driver: local
+
+networks:
+  medallion-network:
+    name: medallion-network
+    driver: bridge
