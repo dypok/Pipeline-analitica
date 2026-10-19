@@ -31,10 +31,13 @@ from src.ingestion.file_ingestor import LandingIngestor
 from src.ingestion.sample_generator import MockDataGenerator
 from src.orchestration.partition_manager import PartitionManager
 from src.orchestration.quality_gate import GoldQualityGate
+from src.orchestration.sla_monitor import SLAMonitor
 from src.orchestration.task_metrics import TaskMetricsRecorder
 from src.silver.silver_transformer import SilverTransformer
 
 logger = get_logger("DAGMedallionPipeline")
+
+SLA_MONITOR = SLAMonitor()
 
 # ---------------------------------------------------------------------------
 # Parámetros del DAG (US-10 / US-11)
@@ -64,14 +67,48 @@ def _record_task_metric(context, task_id, layer, started_at, status="SUCCESS", r
         logger.warning(f"No se pudo registrar la métrica de '{task_id}': {e}")
 
 
+def _send_alert_email(subject, body):
+    """Envía una alerta por correo si AIRFLOW_ALERT_EMAIL está configurado (best-effort)."""
+    if not ALERT_EMAIL:
+        return
+    try:
+        from airflow.utils.email import send_email
+
+        send_email(to=[ALERT_EMAIL], subject=subject, html_content=body)
+    except Exception as e:  # el correo nunca debe enmascarar el fallo original
+        logger.warning(f"No se pudo enviar la alerta por correo: {e}")
+
+
 def notify_failure(context):
-    """Alerta por log ante fallos de cualquier tarea (US-10, punto 4)."""
+    """Alerta por log/correo ante fallos de cualquier tarea (US-10, punto 4)."""
     ti = context.get("task_instance")
     task_id = ti.task_id if ti else "desconocida"
     run_id = context.get("run_id", "desconocido")
     exception = context.get("exception")
-    logger.error(f"[ALERTA] Fallo en la tarea '{task_id}' (run_id='{run_id}'): {exception}")
+    message = f"[ALERTA] Fallo en la tarea '{task_id}' (run_id='{run_id}'): {exception}"
+    logger.error(message)
+    _send_alert_email(f"[Airflow][FAIL] {PIPELINE_NAME} :: {task_id}", message)
     _record_task_metric(context, task_id, "UNKNOWN", time.perf_counter(), status="FAILED")
+
+
+def sla_miss_alert(dag, task_list, blocking_task_list, slas, blocking_tis):
+    """Alerta cuando una tarea incumple su SLA (US-11)."""
+    run_id = getattr(slas[0], "run_id", "desconocido") if slas else "desconocido"
+    dag_id = getattr(dag, "dag_id", PIPELINE_NAME)
+    message = SLAMonitor.build_alert_message(dag_id, run_id, slas, blocking_tis)
+    logger.error(message)
+    try:
+        TaskMetricsRecorder().record_task(
+            run_id=run_id,
+            task_id="sla_miss",
+            pipeline_name=PIPELINE_NAME,
+            layer="ALL",
+            status="SLA_MISS",
+            duration_seconds=0.0,
+        )
+    except Exception as e:  # la telemetría nunca debe tumbar el callback
+        logger.warning(f"No se pudo registrar la métrica de SLA: {e}")
+    _send_alert_email(f"[Airflow][SLA MISS] {dag_id}", message)
 
 
 # ---------------------------------------------------------------------------
@@ -259,6 +296,8 @@ default_args = {
     "email_on_retry": False,
     "retries": 3,
     "retry_delay": timedelta(minutes=2),
+    "retry_exponential_backoff": True,
+    "max_retry_delay": timedelta(minutes=30),
     "on_failure_callback": notify_failure,
 }
 
@@ -269,42 +308,50 @@ with DAG(
     schedule="0 3 * * *",
     catchup=False,
     max_active_runs=1,
+    sla_miss_callback=sla_miss_alert,
     tags=["medallion", "airflow", "orquestacion", "retail"],
 ) as dag:
 
     validate_environment = PythonOperator(
         task_id="validate_environment",
         python_callable=task_validate_environment,
+        sla=SLA_MONITOR.sla_for("validate_environment"),
     )
 
     extract_and_land = PythonOperator(
         task_id="extract_and_land",
         python_callable=task_extract_and_land,
+        sla=SLA_MONITOR.sla_for("extract_and_land"),
     )
 
     process_bronze = PythonOperator(
         task_id="process_bronze",
         python_callable=task_process_bronze,
+        sla=SLA_MONITOR.sla_for("process_bronze"),
     )
 
     process_silver_and_quarantine = PythonOperator(
         task_id="process_silver_and_quarantine",
         python_callable=task_process_silver_and_quarantine,
+        sla=SLA_MONITOR.sla_for("process_silver_and_quarantine"),
     )
 
     process_gold = PythonOperator(
         task_id="process_gold",
         python_callable=task_process_gold,
+        sla=SLA_MONITOR.sla_for("process_gold"),
     )
 
     quality_gate = PythonOperator(
         task_id="quality_gate",
         python_callable=task_quality_gate,
+        sla=SLA_MONITOR.sla_for("quality_gate"),
     )
 
     publish_metrics = PythonOperator(
         task_id="publish_metrics",
         python_callable=task_publish_metrics,
+        sla=SLA_MONITOR.sla_for("publish_metrics"),
     )
 
     # Dependencias estrictas y secuenciales (t1 >> t2 >> ... >> t7)
