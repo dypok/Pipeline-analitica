@@ -119,6 +119,7 @@ Reglas Obligatorias:
             "answer": answer_text,
             "sql": safe_sql,
             "data": data,
+            "rows": data,
             "columns": columns,
             "row_count": len(data),
             "execution_time_ms": query_result.get("execution_time_ms", 0),

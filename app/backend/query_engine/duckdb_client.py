@@ -129,7 +129,19 @@ class DuckDBClient:
         if end_date:
             conditions.append(f"order_date <= '{end_date}'")
         if country:
-            conditions.append(f"shipping_country = '{country}'")
+            country_clean = country.strip()
+            aliases = {
+                "colombia": "CO", "méxico": "MX", "mexico": "MX",
+                "argentina": "AR", "chile": "CL", "perú": "PE", "peru": "PE",
+                "estados unidos": "US", "españa": "ES", "espana": "ES",
+                "co": "Colombia", "mx": "México", "ar": "Argentina",
+                "cl": "Chile", "pe": "Perú", "us": "Estados Unidos", "es": "España"
+            }
+            norm = aliases.get(country_clean.lower())
+            if norm:
+                conditions.append(f"(shipping_country = '{country_clean}' OR shipping_country = '{norm}')")
+            else:
+                conditions.append(f"shipping_country = '{country_clean}'")
         if category:
             conditions.append(f"category = '{category}'")
 
