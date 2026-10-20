@@ -38,9 +38,9 @@ echo ===========================================================================
 echo             PLATAFORMA ANALITICA MEDALLION - PANEL DE CONTROL
 echo ===============================================================================
 echo.
-echo   [1] Iniciar Todo (FastAPI Backend + Streamlit Dashboard + Docker si disponible)
+echo   [1] Iniciar Todo (Docker Desktop + MinIO/Airflow/Spark + FastAPI + Streamlit)
 echo   [2] Iniciar Solo Aplicacion Web (FastAPI :8000 + Streamlit :8501 en modo local)
-echo   [3] Iniciar Solo Stack Docker (MinIO, PostgreSQL, Airflow, Spark)
+echo   [3] Iniciar Solo Stack Docker (Abre Docker Desktop e inicia contenedores)
 echo   [4] Ejecutar Suite Completa de Pruebas Unitarias (Pytest - 71 tests)
 echo   [5] Generar Nuevos Datos Mock Sinteticos (scripts/generate_mock_data.py)
 echo   [6] Detener Contenedores Docker y Servidores Locales
@@ -94,17 +94,65 @@ if not exist ".venv\Scripts\python.exe" (
 )
 exit /b 0
 
-:check_docker
+:ensure_docker
+set "DOCKER_AVAILABLE=0"
+
 docker version >nul 2>&1
 if errorlevel 1 (
-    set "DOCKER_AVAILABLE=0"
-) else (
+    echo [ADVERTENCIA] El comando 'docker' no esta disponible en el PATH de Windows.
+    exit /b 0
+)
+
+:: 1. Verificar si el demonio de Docker ya esta activo y respondiendo
+docker info >nul 2>&1
+if not errorlevel 1 (
+    echo [OK] El motor de Docker ya se encuentra activo y listo.
+    set "DOCKER_AVAILABLE=1"
+    exit /b 0
+)
+
+:: 2. Si no esta respondiendo, buscar el ejecutable de Docker Desktop
+set "DOCKER_EXE="
+if exist "%ProgramFiles%\Docker\Docker\Docker Desktop.exe" (
+    set "DOCKER_EXE=%ProgramFiles%\Docker\Docker\Docker Desktop.exe"
+)
+if not defined DOCKER_EXE if exist "%ProgramFiles(x86)%\Docker\Docker\Docker Desktop.exe" (
+    set "DOCKER_EXE=%ProgramFiles(x86)%\Docker\Docker\Docker Desktop.exe"
+)
+if not defined DOCKER_EXE if exist "%LOCALAPPDATA%\Programs\Docker\Docker Desktop.exe" (
+    set "DOCKER_EXE=%LOCALAPPDATA%\Programs\Docker\Docker Desktop.exe"
+)
+
+:: 3. Iniciar Docker Desktop si fue encontrado
+if defined DOCKER_EXE (
+    echo [INFO] Docker Desktop no esta activo. Iniciando Docker Desktop automaticamente...
+    start "" "!DOCKER_EXE!"
+    echo [INFO] Esperando a que el motor de Docker (daemon) termine de inicializar...
+    set /a DOCKER_WAIT_COUNT=0
+    
+    :wait_docker_loop
+    timeout /t 3 /nobreak >nul
     docker info >nul 2>&1
-    if errorlevel 1 (
-        set "DOCKER_AVAILABLE=0"
-    ) else (
+    if not errorlevel 1 (
+        echo.
+        echo [OK] Motor de Docker inicializado y listo para recibir comandos.
         set "DOCKER_AVAILABLE=1"
+        exit /b 0
     )
+    set /a DOCKER_WAIT_COUNT+=1
+    <nul set /p =.
+    if !DOCKER_WAIT_COUNT! geq 30 (
+        echo.
+        echo [ADVERTENCIA] Tiempo de espera agotado esperando a Docker Desktop [90s].
+        echo               El stack continuara en modo local [DuckDB + Parquet].
+        set "DOCKER_AVAILABLE=0"
+        exit /b 0
+    )
+    goto :wait_docker_loop
+) else (
+    echo [ADVERTENCIA] No se encontro 'Docker Desktop.exe' en las rutas estandar.
+    echo               Abra Docker Desktop manualmente si desea usar contenedores.
+    set "DOCKER_AVAILABLE=0"
 )
 exit /b 0
 
@@ -119,15 +167,20 @@ echo                INICIANDO PLATAFORMA MEDALLION COMPLETA
 echo ===============================================================================
 echo.
 call :check_venv
-call :check_docker
+call :ensure_docker
 
 if "!DOCKER_AVAILABLE!"=="1" (
-    echo [1/3] Docker detectado. Levantando stack de infraestructura MinIO, Airflow, Spark...
+    echo.
+    echo [1/3] Levantando stack de infraestructura MinIO, PostgreSQL, Airflow y Spark...
     docker compose -p medallion-platform up -d
-    echo [OK] Contenedores en ejecucion.
+    if errorlevel 1 (
+        echo [ADVERTENCIA] Hubo un problema al levantar algunos contenedores Docker.
+    ) else (
+        echo [OK] Contenedores Docker en ejecucion.
+    )
 ) else (
-    echo [AVISO] Docker Desktop no esta activo o no esta instalado.
-    echo         Continuando en modo Local con datasets Parquet y DuckDB...
+    echo.
+    echo [AVISO] Continuando en modo Local con datasets Parquet y DuckDB...
 )
 
 echo.
@@ -163,9 +216,9 @@ echo                     LEVANTANDO STACK DOCKER
 echo ===============================================================================
 echo.
 call :check_env
-call :check_docker
+call :ensure_docker
 if "!DOCKER_AVAILABLE!"=="0" (
-    echo [ERROR] Docker no esta en ejecucion. Abra Docker Desktop e intente nuevamente.
+    echo [ERROR] No se pudo inicializar Docker. Abra Docker Desktop manualmente.
     if "%ACTION%"=="" pause && goto :show_menu
     exit /b 1
 )
@@ -180,8 +233,8 @@ echo ===========================================================================
 echo                     DETENIENDO SERVICIOS
 echo ===============================================================================
 echo.
-call :check_docker
-if "!DOCKER_AVAILABLE!"=="1" (
+docker info >nul 2>&1
+if not errorlevel 1 (
     echo [INFO] Deteniendo contenedores Docker...
     docker compose -p medallion-platform stop
     echo [OK] Contenedores Docker detenidos.
@@ -251,9 +304,9 @@ echo             MEDALLION PLATFORM - AYUDA DE LINEA DE COMANDOS
 echo ===============================================================================
 echo.
 echo   start.bat           Abre el menu interactivo de opciones
-echo   start.bat all       Inicia FastAPI + Streamlit + Docker [si esta activo]
+echo   start.bat all       Inicia Docker Desktop + Contenedores + FastAPI + Streamlit
 echo   start.bat app       Inicia unicamente FastAPI :8000 y Streamlit :8501
-echo   start.bat docker    Inicia el stack Docker [MinIO, Postgres, Airflow, Spark]
+echo   start.bat docker    Inicia Docker Desktop y levanta el stack Docker
 echo   start.bat stop      Detiene todos los contenedores y servidores locales
 echo   start.bat test      Ejecuta la suite de pruebas unitarias con Pytest
 echo   start.bat mock      Genera el dataset sintetico de Retail en data/mock/
