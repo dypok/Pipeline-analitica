@@ -72,12 +72,14 @@ def run_pipeline():
     if silver_res.get("quarantine_uri"):
         print(f"    URI Quarantine: {silver_res['quarantine_uri']}")
 
-    # 5. Agregación Gold & Publicación Analítica
-    print("\n--- PASO 5: Agregación Analítica Gold (KPIs) y Data Mart ---")
+    # 5. Agregación Gold & Publicación Analítica (Modelos Esteban Padilla)
+    print("\n--- PASO 5: Agregación Analítica Gold (KPIs y Modelos Multidimensionales) ---")
     aggregator = GoldAggregator(s3_client=s3, db_client=db)
     gold_res = aggregator.process_silver_to_gold(silver_res["silver_key"])
     print(f"[+] Capa Gold finalizada:")
-    print(f"    URI Parquet Gold: {gold_res['gold_uri']}")
+    print(f"    URI daily_sales: {gold_res['gold_uri']} ({gold_res.get('daily_sales_count')} registros)")
+    print(f"    URI customer_360: {gold_res.get('customer_360_uri')} ({gold_res.get('customer_360_count')} clientes)")
+    print(f"    URI product_performance: {gold_res.get('product_performance_uri')} ({gold_res.get('product_performance_count')} productos)")
     print(f"    KPIs diarios calculados: {gold_res['kpis_count']}")
     print(f"    Registros sincronizados en PostgreSQL: {gold_res['db_published_count']}")
     if gold_res.get("sample_kpi"):
