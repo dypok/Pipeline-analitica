@@ -67,7 +67,7 @@ def get_top_products(
             gross_revenue,
             returns_count,
             ROUND(return_rate * 100, 2) AS return_rate_pct,
-            ROUND(profit_margin * 100, 2) AS profit_margin_pct
+            ROUND(CASE WHEN gross_revenue > 0 THEN (margin / gross_revenue) * 100 ELSE 0 END, 2) AS profit_margin_pct
         FROM v_product_performance
         {where_clause}
         ORDER BY units_sold DESC

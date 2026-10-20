@@ -1,0 +1,133 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+PROJECT="medallion-platform"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$ROOT_DIR"
+COMPOSE=(docker compose -p "$PROJECT" -f docker-compose.yml)
+
+usage() {
+    echo "MEDALLION PLATFORM — control del stack Docker"
+    echo
+    echo "Uso: ./start [comando]"
+    echo
+    echo "  (sin comando) | up   Levanta el stack completo"
+    echo "  stop                 Detiene los contenedores (los conserva)"
+    echo "  down                 Detiene y elimina contenedores y red"
+    echo "  restart              Reinicia el stack"
+    echo "  status | ps          Muestra el estado de los servicios"
+    echo "  logs [servicio]      Sigue los logs (opcional: un servicio)"
+    echo "  trigger              Dispara el DAG maestro manualmente"
+    echo "  help                 Muestra esta ayuda"
+}
+
+require_docker() {
+    if ! command -v docker >/dev/null 2>&1; then
+        echo "[ERROR] Docker no esta instalado o no esta en el PATH."
+        exit 1
+    fi
+    if ! docker compose version >/dev/null 2>&1; then
+        echo "[ERROR] Docker Compose v2 no esta disponible."
+        exit 1
+    fi
+}
+
+ensure_env() {
+    if [ ! -f .env ]; then
+        echo "[INFO] Creando .env a partir de .env.example..."
+        cp .env.example .env
+    fi
+}
+
+env_value() {
+    local key="$1" default="$2"
+    local value
+    value="$(grep -E "^${key}=" .env 2>/dev/null | tail -1 | cut -d= -f2- | tr -d '"' )"
+    echo "${value:-$default}"
+}
+
+print_endpoints() {
+    local airflow minio spark
+    airflow="$(env_value AIRFLOW_PORT 8080)"
+    minio="$(env_value MINIO_CONSOLE_PORT 9001)"
+    spark="$(env_value SPARK_MASTER_WEBUI_PORT 8081)"
+    echo
+    echo "=========================================================="
+    echo " [OK] Stack '$PROJECT' en ejecucion"
+    echo "=========================================================="
+    echo " Airflow UI     : http://localhost:${airflow}  (admin/admin)"
+    echo " MinIO Console  : http://localhost:${minio}   (minioadmin/miniopassword123)"
+    echo " Spark Master   : http://localhost:${spark}"
+    echo
+    echo " Estado         : ./start status"
+    echo " Logs           : ./start logs"
+    echo " Disparar DAG   : ./start trigger"
+    echo " Detener        : ./start stop"
+    echo "=========================================================="
+}
+
+cmd_up() {
+    require_docker
+    ensure_env
+    echo "[INFO] Levantando el stack '$PROJECT'..."
+    "${COMPOSE[@]}" up -d
+    print_endpoints
+}
+
+cmd_stop() {
+    require_docker
+    echo "[INFO] Deteniendo los contenedores de '$PROJECT'..."
+    "${COMPOSE[@]}" stop
+    echo "[OK] Contenedores detenidos (se conservan; usa './start up' para reanudar)."
+}
+
+cmd_down() {
+    require_docker
+    echo "[INFO] Deteniendo y eliminando contenedores de '$PROJECT'..."
+    "${COMPOSE[@]}" down
+    echo "[OK] Stack eliminado. Los volumenes de datos se conservan."
+}
+
+cmd_restart() {
+    require_docker
+    echo "[INFO] Reiniciando el stack '$PROJECT'..."
+    "${COMPOSE[@]}" restart
+    print_endpoints
+}
+
+cmd_status() {
+    require_docker
+    "${COMPOSE[@]}" ps
+}
+
+cmd_logs() {
+    require_docker
+    if [ "${1:-}" != "" ]; then
+        "${COMPOSE[@]}" logs -f --tail=100 "$1"
+    else
+        "${COMPOSE[@]}" logs -f --tail=100
+    fi
+}
+
+cmd_trigger() {
+    require_docker
+    echo "[INFO] Disparando el DAG maestro 'dag_medallion_pipeline'..."
+    docker exec medallion-airflow-scheduler airflow dags trigger dag_medallion_pipeline
+}
+
+case "${1:-up}" in
+    ""|up|start) cmd_up ;;
+    stop) cmd_stop ;;
+    down) cmd_down ;;
+    restart) cmd_restart ;;
+    status|ps) cmd_status ;;
+    logs) shift; cmd_logs "${1:-}" ;;
+    trigger) cmd_trigger ;;
+    help|-h|--help) usage ;;
+    *)
+        echo "[ERROR] Comando desconocido: $1"
+        echo
+        usage
+        exit 1
+        ;;
+esac

@@ -37,6 +37,7 @@ class ChatbotAskResponse(BaseModel):
     sql: str | None = None
     columns: list[str] = []
     data: list[dict[str, Any]] = []
+    rows: list[dict[str, Any]] = []
     row_count: int = 0
     execution_time_ms: float = 0.0
     chart_suggestion: str | None = None
