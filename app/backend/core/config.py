@@ -1,0 +1,41 @@
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from pathlib import Path
+
+
+class Settings(BaseSettings):
+    """Configuración general del backend y servicios analíticos."""
+    ENVIRONMENT: str = "development"
+    HOST: str = "0.0.0.0"
+    PORT: int = 8000
+    PROJECT_NAME: str = "Medallion Data Platform API"
+    VERSION: str = "2.0.0"
+
+    # Rutas de datos
+    BASE_DIR: Path = Path(__file__).resolve().parent.parent.parent.parent
+    GOLD_DATA_PATH: str = "data/mock/gold"
+
+    # Configuración de consultas
+    MAX_QUERY_ROWS: int = 500
+    QUERY_TIMEOUT_SECONDS: int = 5
+
+    # Proveedor LLM para el Chatbot
+    LLM_PROVIDER: str = "mock"  # "mock", "gemini", "openai"
+    GEMINI_API_KEY: str | None = None
+    OPENAI_API_KEY: str | None = None
+    LLM_MODEL: str = "gemini-1.5-flash"
+
+    # MinIO (opcional para integración directa en producción)
+    MINIO_ENDPOINT: str = "localhost:9000"
+    MINIO_ACCESS_KEY: str = "minioadmin"
+    MINIO_SECRET_KEY: str = "minioadmin123"
+    MINIO_SECURE: bool = False
+    MINIO_BUCKET_GOLD: str = "gold"
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore"
+    )
+
+
+settings = Settings()

@@ -2,17 +2,18 @@
 .env
 *.env.local
 *.env.*.local
+!.env.example
 
 # Python & Virtual Environments
+.venv/
+env/
+venv/
+ENV/
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
-env/
-venv/
-.venv/
-ENV/
 build/
 develop-eggs/
 dist/
@@ -51,6 +52,11 @@ logs/
 metastore_db/
 derby.log
 *.spark-staging/
+
+# DuckDB / Local database files
+*.duckdb
+*.db
+*.sqlite3
 
 # Local Data / Object Storage mounts
 data/minio/
