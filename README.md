@@ -18,7 +18,7 @@ La arquitectura implementa el flujo de refinamiento continuo de datos de Medalli
 
 ```mermaid
 flowchart LR
-    subgraph Ingesta["1. Ingesta (Jeffry)"]
+    subgraph Ingesta["1. Ingesta (Jefri Calderin)"]
         CSV["CSV / JSON / REST APIs"]
     end
 
@@ -72,7 +72,7 @@ flowchart LR
 | Integrante | Rol Principal | Rama Git Asignada | Módulo Técnico |
 | :--- | :--- | :--- | :--- |
 | **Luis Gómez** | Sublíder & Arquitecto Técnico | `feature/arquitectura-base` | Infraestructura Docker, base de datos, contratos, pipeline E2E y utilidades comunes. |
-| **Jeffry** | Ingeniero de Ingesta | `feature/ingesta-minio` | Conectores CSV/JSON, APIs REST y depósito en Landing/Bronze (`src/ingestion`). |
+| **Jefri Calderin** | Ingeniero de Ingesta | `feature/ingesta-minio` | Conectores CSV/JSON, APIs REST y depósito en Landing/Bronze (`src/ingestion`). |
 | **Esteban Padilla** | Ingeniero Spark / Data | `feature/spark-medallion` | Procesamiento PySpark Bronze -> Silver -> Gold, particionado y optimización (`src/silver`, `src/gold`). |
 | **Héctor** | Ingeniero de Orquestación | `feature/airflow-orquestacion` | DAGs de producción en Airflow, SLAs, alertas y gestión de dependencias (`dags/`). |
 | **Sebastián Ortiz** | Ingeniero de Datos (Calidad & Gobernanza) | `feature/calidad-gobierno` | Reglas de validación, Quarantine, linaje de datos y catálogo OpenMetadata (`src/quality`). |
@@ -268,7 +268,7 @@ Seguimos el flujo **Git Flow**:
 git checkout develop
 git pull origin develop
 
-# 2. Crea tu rama feature (ejemplo para Jeffry)
+# 2. Crea tu rama feature (ejemplo para Jefri Calderin)
 git checkout -b feature/ingesta-minio develop
 
 # 3. Desarrolla y ejecuta pruebas antes de confirmar
@@ -292,6 +292,6 @@ Documentación detallada en [`docs/arquitectura.md`](file:///home/Coder/Escritor
 
 ## 11. Limitaciones Conocidas y Siguientes Pasos
 
-1. **Datos:** El generador actual simula datos de Retail/E-commerce con casos de anomalía controlada. El siguiente paso es que **Jeffry** conecte fuentes reales (API REST y CSVs de producción).
+1. **Datos:** El generador actual simula datos de Retail/E-commerce con casos de anomalía controlada. El siguiente paso es que **Jefri Calderin** conecte fuentes reales (API REST y CSVs de producción).
 2. **Spark:** Actualmente el job de transformación corre optimizado con PyArrow/Pandas y un script SparkSubmit listo en `src/silver/spark_medallion_job.py`. **Esteban Padilla** ampliará los modelos analíticos `customer_360` y `product_performance`.
 3. **Catálogo:** Se incorporará el conector de linaje de OpenMetadata a las tareas de Airflow una vez desplegado en el servidor de pruebas.
