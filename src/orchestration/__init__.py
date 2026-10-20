@@ -2,11 +2,13 @@
 
 from src.orchestration.partition_manager import PartitionManager
 from src.orchestration.quality_gate import GoldQualityGate, QualityGateResult
+from src.orchestration.sla_monitor import SLAMonitor
 from src.orchestration.task_metrics import TaskMetricsRecorder
 
 __all__ = [
     "PartitionManager",
     "GoldQualityGate",
     "QualityGateResult",
+    "SLAMonitor",
     "TaskMetricsRecorder",
 ]
