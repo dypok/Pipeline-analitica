@@ -11,6 +11,9 @@ import io
 import os
 import sys
 import time
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 import pandas as pd
 from airflow import DAG
@@ -29,10 +32,13 @@ from src.common.s3_client import S3Client
 from src.gold.gold_aggregator import GoldAggregator
 from src.ingestion.file_ingestor import LandingIngestor
 from src.ingestion.sample_generator import MockDataGenerator
+from ingestion.rest_api_connector import RestApiConnector
+from ingestion.base_connector import ConnectorConfig
 from src.orchestration.partition_manager import PartitionManager
 from src.orchestration.quality_gate import GoldQualityGate
 from src.orchestration.sla_monitor import SLAMonitor
 from src.orchestration.task_metrics import TaskMetricsRecorder
+from src.orchestration.lineage_emitter import LineageEmitter
 from src.silver.silver_transformer import SilverTransformer
 
 logger = get_logger("DAGMedallionPipeline")
@@ -43,10 +49,29 @@ SLA_MONITOR = SLAMonitor()
 # Parámetros del DAG (US-10 / US-11)
 # ---------------------------------------------------------------------------
 PIPELINE_NAME = "dag_medallion_pipeline"
-DATASET_NAME = "orders"
+DATASET_NAME = os.getenv("INGEST_DATASET_NAME", "orders")
 ALERT_EMAIL = os.getenv("AIRFLOW_ALERT_EMAIL", "").strip()
 MOCK_ORDER_COUNT = int(os.getenv("MOCK_ORDER_COUNT", "200"))
 MOCK_CUSTOMER_COUNT = int(os.getenv("MOCK_CUSTOMER_COUNT", "40"))
+
+# Configuración SMTP para alertas (US-11)
+SMTP_HOST = os.getenv("SMTP_HOST", "").strip()
+SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
+SMTP_USER = os.getenv("SMTP_USER", "").strip()
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "").strip()
+SMTP_USE_TLS = os.getenv("SMTP_USE_TLS", "true").lower() in ("1", "true", "yes")
+SMTP_USE_SSL = os.getenv("SMTP_USE_SSL", "false").lower() in ("1", "true", "yes")
+SMTP_FROM = os.getenv("SMTP_FROM", "airflow@medallion.local").strip()
+
+# Configuración para ingesta REST (US-05)
+USE_REST_API_INGEST = os.getenv("USE_REST_API_INGEST", "false").lower() in ("1", "true", "yes")
+REST_API_BASE_URL = os.getenv("REST_API_BASE_URL", "").strip()
+REST_API_ENDPOINT = os.getenv("REST_API_ENDPOINT", "").strip()
+REST_API_SOURCE_ID = os.getenv("REST_API_SOURCE_ID", "rest_api_sales")
+REST_API_DATASET_NAME = os.getenv("REST_API_DATASET_NAME", DATASET_NAME)
+REST_API_PAGINATION_TYPE = os.getenv("REST_API_PAGINATION_TYPE", "page_number")
+REST_API_PAGE_SIZE = int(os.getenv("REST_API_PAGE_SIZE", "100"))
+REST_API_MAX_PAGES = int(os.getenv("REST_API_MAX_PAGES", "50"))
 
 
 def _record_task_metric(context, task_id, layer, started_at, status="SUCCESS", records=0, quarantined=0):
@@ -67,16 +92,42 @@ def _record_task_metric(context, task_id, layer, started_at, status="SUCCESS", r
         logger.warning(f"No se pudo registrar la métrica de '{task_id}': {e}")
 
 
+
 def _send_alert_email(subject, body):
-    """Envía una alerta por correo si AIRFLOW_ALERT_EMAIL está configurado (best-effort)."""
+    """Envía una alerta por correo (SMTP configurable vía .env; fallback a Airflow)."""
     if not ALERT_EMAIL:
         return
+    try:
+        if SMTP_HOST:
+            msg = MIMEMultipart()
+            msg["From"] = SMTP_FROM or SMTP_USER or "airflow@medallion.local"
+            msg["To"] = ALERT_EMAIL
+            msg["Subject"] = subject
+            msg.attach(MIMEText(body, "plain", "utf-8"))
+            if SMTP_USE_SSL:
+                with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, timeout=10) as server:
+                    if SMTP_USER and SMTP_PASSWORD:
+                        server.login(SMTP_USER, SMTP_PASSWORD)
+                    server.send_message(msg)
+            else:
+                with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10) as server:
+                    if SMTP_USE_TLS:
+                        server.starttls()
+                    if SMTP_USER and SMTP_PASSWORD:
+                        server.login(SMTP_USER, SMTP_PASSWORD)
+                    server.send_message(msg)
+            logger.info(f"Alerta enviada vía SMTP a {ALERT_EMAIL}: {subject}")
+            return
+    except Exception as e:
+        logger.warning(f"Falló el envío de alerta vía SMTP: {e}")
+
     try:
         from airflow.utils.email import send_email
 
         send_email(to=[ALERT_EMAIL], subject=subject, html_content=body)
-    except Exception as e:  # el correo nunca debe enmascarar el fallo original
+    except Exception as e:
         logger.warning(f"No se pudo enviar la alerta por correo: {e}")
+
 
 
 def notify_failure(context):
@@ -135,39 +186,68 @@ def task_validate_environment(**context):
 
 
 def task_extract_and_land(**context):
-    """Ejecuta la extracción y depósito de datos crudos en la capa Landing."""
+    """Ejecuta la extracción y depósito de datos crudos en la capa Landing (Mock o REST API - US-05)."""
     started = time.perf_counter()
     run_id = context.get("run_id", "manual")
     execution_date = str(context.get("logical_date") or context.get("execution_date") or run_id)
+    settings = get_settings()
 
-    generator = MockDataGenerator(seed=42)
-    orders = generator.generate_orders(count=MOCK_ORDER_COUNT, customer_count=MOCK_CUSTOMER_COUNT)
+    if USE_REST_API_INGEST and REST_API_BASE_URL:
+        logger.info(
+            f"Ingesta vía REST API habilitada: {REST_API_BASE_URL}/{REST_API_ENDPOINT} (paginación={REST_API_PAGINATION_TYPE})"
+        )
+        config = ConnectorConfig(
+            source_id=REST_API_SOURCE_ID,
+            dataset_name=REST_API_DATASET_NAME,
+            base_url=REST_API_BASE_URL,
+            endpoint=REST_API_ENDPOINT,
+            pagination_type=REST_API_PAGINATION_TYPE,
+            page_size=REST_API_PAGE_SIZE,
+            max_pages=REST_API_MAX_PAGES,
+        )
+        connector = RestApiConnector(config=config)
+        ingestion_result = connector.execute()
+        if ingestion_result.status != "SUCCESS":
+            raise AirflowException(f"Fallo en la ingesta REST API hacia Landing: {ingestion_result.error_message}")
 
-    ingestor = LandingIngestor()
-    result = ingestor.ingest_records(orders, dataset_name=DATASET_NAME, file_format="json")
-    if result.status != "SUCCESS":
-        raise AirflowException(f"Fallo en la ingesta hacia Landing: {result.error_message}")
+        landing_key = ingestion_result.metadata.get("landing_key") or ingestion_result.metadata.get("object_key")
+        if not landing_key and ingestion_result.metadata.get("landing_object_key"):
+            landing_key = ingestion_result.metadata["landing_object_key"]
+        if not landing_key:
+            raise AirflowException("El conector REST API no devolvió la clave de Landing")
 
-    landing_key = result.metadata["object_key"]
+        extracted_count = ingestion_result.records_count or ingestion_result.metadata.get("total_records_extracted") or 0
+    else:
+        logger.info("Ingesta vía MockDataGenerator (USE_REST_API_INGEST=false)")
+        generator = MockDataGenerator(seed=42)
+        orders = generator.generate_orders(count=MOCK_ORDER_COUNT, customer_count=MOCK_CUSTOMER_COUNT)
+
+        ingestor = LandingIngestor()
+        result = ingestor.ingest_records(orders, dataset_name=DATASET_NAME, file_format="json")
+        if result.status != "SUCCESS":
+            raise AirflowException(f"Fallo en la ingesta hacia Landing: {result.error_message}")
+
+        landing_key = result.metadata["object_key"]
+        extracted_count = result.records_count
 
     # US-11: manifiesto de ejecución etiquetado con run_id / execution_date
-    settings = get_settings()
     manifest = {
         "run_id": run_id,
         "execution_date": execution_date,
         "ingested_at": datetime.utcnow().isoformat(),
-        "dataset": DATASET_NAME,
+        "dataset": REST_API_DATASET_NAME if (USE_REST_API_INGEST and REST_API_BASE_URL) else DATASET_NAME,
         "object_key": landing_key,
-        "records_count": result.records_count,
+        "records_count": extracted_count,
+        "source": "rest_api" if (USE_REST_API_INGEST and REST_API_BASE_URL) else "mock",
     }
     S3Client().upload_json(
-        manifest, settings.get_bucket("landing"), f"{DATASET_NAME}/_manifests/run_id={run_id}.json"
+        manifest, settings.get_bucket("landing"), f"{manifest['dataset']}/_manifests/run_id={run_id}.json"
     )
 
     context["ti"].xcom_push(key="landing_key", value=landing_key)
-    context["ti"].xcom_push(key="extracted_count", value=result.records_count)
-    _record_task_metric(context, "extract_and_land", "LANDING", started, records=result.records_count)
-    logger.info(f"[{run_id}] {result.records_count} registros depositados en Landing: {landing_key}")
+    context["ti"].xcom_push(key="extracted_count", value=extracted_count)
+    _record_task_metric(context, "extract_and_land", "LANDING", started, records=extracted_count)
+    logger.info(f"[{run_id}] {extracted_count} registros depositados en Landing ({manifest['source']}): {landing_key}")
     return landing_key
 
 
@@ -284,6 +364,25 @@ def task_publish_metrics(**context):
     return {"run_id": run_id, "records_processed": extracted, "records_quarantined": quarantined, "kpis": kpis}
 
 
+
+
+def task_emit_lineage(**context):
+    """Emite el linaje Medallion hacia OpenMetadata tras publicar métricas (US-09)."""
+    started = time.perf_counter()
+    run_id = context.get("run_id", "manual")
+    execution_date = str(context.get("logical_date") or context.get("execution_date") or run_id)
+
+    try:
+        success = LineageEmitter().emit(run_id=run_id, execution_date=execution_date, pipeline_name=PIPELINE_NAME)
+        status = "SUCCESS" if success else "SKIPPED"
+        _record_task_metric(context, "emit_lineage", "ALL", started, status=status)
+        logger.info(f"Linaje emitido (status={status}) para run_id='{run_id}'")
+        return {"run_id": run_id, "lineage_emitted": success}
+    except Exception as e:
+        logger.warning(f"No se pudo emitir linaje (best-effort): {e}")
+        _record_task_metric(context, "emit_lineage", "ALL", started, status="SKIPPED")
+        return {"run_id": run_id, "lineage_emitted": False}
+
 # ---------------------------------------------------------------------------
 # Definición del DAG
 # ---------------------------------------------------------------------------
@@ -354,7 +453,13 @@ with DAG(
         sla=SLA_MONITOR.sla_for("publish_metrics"),
     )
 
-    # Dependencias estrictas y secuenciales (t1 >> t2 >> ... >> t7)
+    emit_lineage = PythonOperator(
+        task_id="emit_lineage",
+        python_callable=task_emit_lineage,
+        sla=SLA_MONITOR.sla_for("publish_metrics"),  # reutiliza SLA de publicación
+    )
+
+    # Dependencias estrictas y secuenciales (t1 >> t2 >> ... >> t7 >> t8)
     (
         validate_environment
         >> extract_and_land
@@ -363,4 +468,5 @@ with DAG(
         >> process_gold
         >> quality_gate
         >> publish_metrics
+        >> emit_lineage
     )
