@@ -144,59 +144,87 @@ def generate_daily_sales(num_days: int = 180) -> pd.DataFrame:
 # ---------------------------------------------------------------------------
 # daily_sales_kpis (Data Mart §4.1 — consumido por los dashboards de Sergio)
 # ---------------------------------------------------------------------------
-def generate_daily_sales_kpis(num_days: int = 180) -> pd.DataFrame:
-    """Genera el data mart ``analytics.daily_sales_kpis`` (§4.1).
+def generate_daily_sales_kpis(daily_sales: pd.DataFrame) -> pd.DataFrame:
+    """Deriva el data mart ``analytics.daily_sales_kpis`` (§4.1) desde el Gold US-07.
 
     Grano: 1 fila por día. Es el modelo pre-agregado que consume el dashboard
     de Sergio (``dashboards/data_loader.load_daily_sales``).
+
+    IMPORTANTE: en lugar de generar números aleatorios independientes, se
+    **agrega el grano US-07** (fecha×país×categoría) a nivel día. Así las
+    métricas compartidas (``total_revenue``, ``total_orders``) cuadran
+    EXACTAMENTE entre el Gold que consulta el chatbot y el data mart que
+    consulta el dashboard, cumpliendo el criterio de aceptación P06
+    ("``SUM(total_revenue)`` en Gold cuadra con los registros auditados").
+
+    Métricas derivadas del data mart (no existen en el Gold US-07):
+        - ``completed_orders``: ~72-80% de ``total_orders``.
+        - ``cancelled_orders``: ~10-16% de ``total_orders``.
+        - ``distinct_customers``: ~65-85% de ``completed_orders``.
+    ``average_ticket`` se calcula según el contrato §4.2:
+    ``total_revenue / completed_orders``.
 
     Esquema (``docs/contratos_integracion.md`` §4.1):
         kpi_date, total_orders, completed_orders, cancelled_orders,
         total_revenue, average_ticket, distinct_customers, top_category, updated_at
     """
-    today = datetime.now().date()
-    start_date = today - timedelta(days=num_days - 1)
+    if daily_sales.empty:
+        return pd.DataFrame(columns=[
+            "kpi_date", "total_orders", "completed_orders", "cancelled_orders",
+            "total_revenue", "average_ticket", "distinct_customers",
+            "top_category", "updated_at",
+        ])
+
+    work = daily_sales.copy()
+    work["order_date"] = pd.to_datetime(work["order_date"])
+
+    # Agregado diario de las métricas compartidas (cuadran con el Gold US-07).
+    daily = (
+        work.groupby("order_date", as_index=False)
+        .agg(
+            total_orders=("orders_count", "sum"),
+            total_revenue=("total_revenue", "sum"),
+        )
+        .sort_values("order_date")
+    )
+
+    # Categoría líder del día: la de mayor número de órdenes en esa fecha.
+    top_cat = (
+        work.groupby(["order_date", "category"], as_index=False)["orders_count"]
+        .sum()
+        .sort_values("orders_count", ascending=False)
+        .drop_duplicates("order_date")
+        .set_index("order_date")["category"]
+    )
+    daily["top_category"] = daily["order_date"].map(top_cat)
 
     rows = []
-    for day_offset in range(num_days):
-        kpi_date = start_date + timedelta(days=day_offset)
-        weekday = kpi_date.weekday()
+    total_days = len(daily)
+    for idx, row in enumerate(daily.itertuples(index=False)):
+        total_orders = int(row.total_orders)
+        total_revenue = round(float(row.total_revenue), 2)
 
-        # Efecto fin de semana: -30% sábados y domingos.
-        weekend_factor = 0.70 if weekday >= 5 else 1.0
-        # Tendencia ascendente leve: +20% desde el inicio hasta el final.
-        trend_factor = 1.0 + 0.20 * (day_offset / num_days)
+        # Derivados del data mart (estables por día).
+        completed_orders = int(round(total_orders * random.uniform(0.72, 0.80)))
+        cancelled_orders = int(round(total_orders * random.uniform(0.10, 0.16)))
+        # Garantiza completed + cancelled <= total (el resto son "otras").
+        completed_orders = min(completed_orders, max(total_orders - cancelled_orders, 0))
 
-        base_orders = 180
-        total_orders = int(
-            base_orders * weekend_factor * trend_factor * random.uniform(0.85, 1.15)
-        )
-        total_orders = max(total_orders, 20)
+        distinct_customers = int(round(completed_orders * random.uniform(0.65, 0.85)))
+        distinct_customers = max(min(distinct_customers, total_orders), 1)
 
-        # Mix de estados: 75% completadas, 15% canceladas, 10% otras.
-        completed_orders = int(total_orders * random.uniform(0.70, 0.80))
-        cancelled_orders = int(total_orders * random.uniform(0.10, 0.18))
-        # El resto se consideran otras (no contabilizan en revenue ni canceladas).
-
-        average_ticket = round(random.uniform(80.0, 220.0), 2)
-        total_revenue = round(completed_orders * average_ticket, 2)
-
-        # Distinct customers: entre 65% y 85% de completed (clientes recurrentes).
-        distinct_customers = int(completed_orders * random.uniform(0.65, 0.85))
-        distinct_customers = max(distinct_customers, 1)
-
-        # Categoría líder del día (ponderada).
-        top_category = random.choices(CATEGORIES, weights=CATEGORY_WEIGHTS, k=1)[0]
+        # Contrato §4.2: average_ticket = total_revenue / completed_orders.
+        average_ticket = round(total_revenue / completed_orders, 2) if completed_orders > 0 else 0.0
 
         rows.append({
-            "kpi_date": kpi_date,
+            "kpi_date": row.order_date.date(),
             "total_orders": total_orders,
             "completed_orders": completed_orders,
             "cancelled_orders": cancelled_orders,
             "total_revenue": total_revenue,
             "average_ticket": average_ticket,
             "distinct_customers": distinct_customers,
-            "top_category": top_category,
+            "top_category": row.top_category,
             "updated_at": datetime.now(),
         })
 
@@ -349,7 +377,7 @@ def main() -> None:
     print(f"[*] Generando Mock Gold (esquema canonico) en {gold_dir}/ ...")
 
     daily_sales_df = generate_daily_sales(args.days)
-    daily_sales_kpis_df = generate_daily_sales_kpis(args.days)
+    daily_sales_kpis_df = generate_daily_sales_kpis(daily_sales_df)
     customer_360_df = generate_customer_360(args.customers)
     product_perf_df = generate_product_performance(args.products)
 

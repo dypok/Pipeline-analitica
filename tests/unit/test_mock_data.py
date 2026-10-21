@@ -190,3 +190,49 @@ def test_gold_parquet_schemas():
     }
     assert expected_prod_cols.issubset(set(df_prod.columns))
     assert len(df_prod) > 0
+
+
+def test_p06_layers_reconcile():
+    """
+    Prueba de aceptación P06: las métricas compartidas entre el Gold US-07
+    (``daily_sales.parquet``, consumido por el chatbot de Dylan vía DuckDB) y
+    el data mart §4.1 (``daily_sales_kpis.parquet``, consumido por el dashboard
+    de Sergio) deben cuadrar EXACTAMENTE.
+
+    Esto garantiza que el chatbot y el dashboard reporten las mismas cifras
+    para el mismo periodo, cumpliendo "``SUM(total_revenue)`` en Gold cuadra
+    con los registros auditados".
+    """
+    gold_dir = Path("data/mock/gold")
+    us07_path = gold_dir / "daily_sales.parquet"
+    mart_path = gold_dir / "daily_sales_kpis.parquet"
+    if not (us07_path.exists() and mart_path.exists()):
+        pytest.skip("Parquet Gold no encontrados")
+
+    df_us07 = pd.read_parquet(us07_path)
+    df_mart = pd.read_parquet(mart_path)
+
+    # Ingresos compartidos: cuadran al centavo.
+    rev_us07 = round(float(df_us07["total_revenue"].sum()), 2)
+    rev_mart = round(float(df_mart["total_revenue"].sum()), 2)
+    assert abs(rev_us07 - rev_mart) < 0.01, (
+        f"P06 FALLA: total_revenue no cuadra entre capas "
+        f"(US-07={rev_us07} vs data mart={rev_mart})"
+    )
+
+    # Órdenes compartidas: cuadran exactamente.
+    orders_us07 = int(df_us07["orders_count"].sum())
+    orders_mart = int(df_mart["total_orders"].sum())
+    assert orders_us07 == orders_mart, (
+        f"P06 FALLA: total_orders no cuadra entre capas "
+        f"(US-07={orders_us07} vs data mart={orders_mart})"
+    )
+
+    # Consistencia interna del data mart (contrato §4.2):
+    # average_ticket == total_revenue / completed_orders.
+    sub = df_mart[df_mart["completed_orders"] > 0]
+    assert len(sub) > 0
+    expected_ticket = (sub["total_revenue"] / sub["completed_orders"]).round(2)
+    assert ((sub["average_ticket"] - expected_ticket).abs() < 0.01).all(), (
+        "P06 FALLA: average_ticket no cumple el contrato §4.2"
+    )
