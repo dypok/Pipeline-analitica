@@ -1,25 +1,47 @@
-"""Barra lateral con filtros dinámicos (US-14).
+"""Barra lateral con filtros dinámicos premium (US-14).
 
 Filtros:
-    - Rango de fechas (selector de calendario) -> afecta 'Visión General de Ventas'.
-    - Multiselect de países -> afecta 'Análisis de Clientes' (origen: ``customer_360.country``).
-    - Multiselect de categorías -> afecta 'Visión General de Ventas' (vía
-      ``daily_sales.top_category``) y 'Rendimiento de Productos' (vía
-      ``product_performance.category``).
+    - Rango de fechas con **presets rápidos** (7d, 30d, 90d, Año) -> 'Ventas'.
+    - Multiselect de países -> 'Análisis de Clientes' (``customer_360.country``).
+    - Multiselect de categorías -> 'Ventas' + 'Productos' (unión de fuentes).
 
-Los filtros son tolerantes: si las columnas no existen en el modelo Gold,
-se omiten con un aviso en la UI sin romper el dashboard. Esto permite que el
-dashboard funcione con cualquier esquema Gold (solo ``daily_sales_kpis`` o
-también ``customer_360``/``product_performance`` publicados por Esteban).
+Los filtros son tolerantes al esquema (aceptan ``kpi_date``/``order_date``,
+``top_category``/``category``) y se omiten con aviso si la columna no existe.
+El dict retornado conserva las claves históricas (``date_range``,
+``countries``, ``categories``) y añade ``preset`` para diagnóstico en la UI.
 """
 
 from __future__ import annotations
 
-from datetime import timedelta
+from datetime import date, timedelta
 from typing import Optional
 
 import pandas as pd
 import streamlit as st
+
+# Selector de periodo rápido (especificación de diseño D):
+#   etiqueta -> días (None = año en curso).
+# El mock actual es de granularidad DIARIA, por lo que "1h" y "24h" se
+# resuelven al último día disponible. Con datos reales horarios en Gold,
+# estos periodos cortos mostrarían el tramo correspondiente.
+_PERIODS = [
+    ("1 h", 1),
+    ("24 h", 1),
+    ("7 días", 7),
+    ("30 días", 30),
+    ("Año", None),
+]
+# Compatibilidad con el resto del código que usa el nombre histórico.
+_PRESETS = _PERIODS
+
+
+def _resolve_preset(preset_label: str, max_date: date) -> tuple[date, date]:
+    """Convierte un periodo en un rango (inicio, fin) concreto."""
+    days = dict((lbl, d) for lbl, d in _PERIODS)[preset_label]
+    if days is None:  # Año en curso
+        start = date(max_date.year, 1, 1)
+        return start, max_date
+    return max_date - timedelta(days=days - 1), max_date
 
 
 def _collect_categories(
@@ -54,16 +76,14 @@ def render_sidebar_filters(
     """Renderiza los filtros en el sidebar y retorna las selecciones.
 
     Returns:
-        Diccionario con ``date_range``, ``countries`` y ``categories``.
-        Cada entrada puede ser ``None`` si la dimensión no está disponible.
+        Diccionario con ``date_range``, ``countries``, ``categories`` y
+        ``preset``. Cada dimensión puede ser ``None`` si no está disponible.
     """
-    st.sidebar.title("🔎 Filtros del Dashboard")
-    st.sidebar.markdown("Ajusta los criterios para recalcular todos los KPIs.")
+    st.sidebar.markdown("### Filtros")
 
-    selection: dict = {}
+    selection: dict = {"preset": None}
 
-    # --- Rango de fechas (afecta: Visión General de Ventas) ----------------
-    # Tolerante: ``kpi_date`` (data mart §4.1) u ``order_date`` (Gold US-07).
+    # --- Rango de fechas con presets rápidos (afecta: Ventas) --------------
     date_col = (
         "kpi_date" if "kpi_date" in daily_sales.columns
         else ("order_date" if "order_date" in daily_sales.columns else None)
@@ -72,35 +92,50 @@ def render_sidebar_filters(
         dates = pd.to_datetime(daily_sales[date_col])
         min_date = dates.min().date()
         max_date = dates.max().date()
-        default_start = max_date - timedelta(days=30)
+        default_start = max(min_date, max_date - timedelta(days=30))
+
+        # Presets rápidos como botones en una fila.
+        st.sidebar.caption("Periodo rápido")
+        preset_cols = st.sidebar.columns(len(_PERIODS))
+        chosen_preset = st.session_state.get("date_preset", "30 días")
+        for c, (label, _days) in zip(preset_cols, _PERIODS):
+            if c.button(label, key=f"preset_{label}", use_container_width=True):
+                chosen_preset = label
+                st.session_state["date_preset"] = label
+        selection["preset"] = chosen_preset
+
+        # Resuelve el rango por defecto desde el preset activo.
+        preset_start, preset_end = _resolve_preset(chosen_preset, max_date)
+        start_default = max(min_date, preset_start)
+
         selection["date_range"] = st.sidebar.date_input(
-            "Rango de fechas  *(Visión General)*",
-            value=(max(min_date, default_start), max_date),
+            "Rango de fechas  *(Ventas)*",
+            value=(start_default, min(max_date, preset_end)),
             min_value=min_date,
             max_value=max_date,
+            label_visibility="collapsed",
         )
     else:
-        st.sidebar.info("Sin datos de fechas disponibles para filtrar.")
+        st.sidebar.info("Sin datos de fechas disponibles.")
         selection["date_range"] = None
 
+    st.sidebar.markdown("---")
+
     # --- Filtro por países (afecta: Análisis de Clientes) ------------------
-    # Las países provienen de ``customer_360.country`` (no de ``daily_sales``,
-    # que no expone la dimensión geográfica en el contrato vinculante).
     countries_options: list[str] = []
     if customer_360 is not None and not customer_360.empty and "country" in customer_360.columns:
         countries_options = sorted(customer_360["country"].dropna().unique().tolist())
 
     if countries_options:
         selection["countries"] = st.sidebar.multiselect(
-            "Países  *(Análisis de Clientes)*",
+            "Países  *(Clientes)*",
             options=countries_options,
             default=countries_options,
         )
     else:
         selection["countries"] = None
         st.sidebar.caption(
-            "_Filtro de países deshabilitado: ``customer_360`` no disponible "
-            "o sin columna ``country`` (pendiente US-07, Esteban Padilla)._"
+            "_Países: ``customer_360`` no disponible o sin ``country`` (US-07)._"
         )
 
     # --- Filtro por categorías (afecta: Ventas + Productos) -----------------
@@ -114,14 +149,7 @@ def render_sidebar_filters(
     else:
         selection["categories"] = None
         st.sidebar.caption(
-            "_Filtro de categorías deshabilitado: ni ``daily_sales.top_category`` "
-            "ni ``product_performance.category`` están disponibles._"
+            "_Categorías: ni ``daily_sales`` ni ``product_performance`` las exponen._"
         )
 
-    st.sidebar.markdown("---")
-    st.sidebar.caption(
-        "Los filtros se aplican por pestaña según las dimensiones que cada "
-        "modelo Gold expone. ``daily_sales`` no incluye país por contrato "
-        "(``docs/contratos_integracion.md`` §4.1)."
-    )
     return selection
