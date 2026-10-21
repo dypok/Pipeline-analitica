@@ -2,25 +2,31 @@
 minio>=7.2.0
 boto3>=1.34.0
 pandas>=2.2.0
-pyarrow>=15.0.0
-duckdb>=0.10.0
+pyarrow>=17.0.0
+duckdb>=1.1.0
 
 # Database & SQL
 psycopg2-binary>=2.9.9
 sqlalchemy>=2.0.25
 
 # Validation & Configuration
-pydantic>=2.6.0
+pydantic>=2.9.0
+pydantic-settings>=2.5.0
 pyyaml>=6.0.1
 python-dotenv>=1.0.1
 requests>=2.31.0
 
-# Dashboards & Visualization (Sergio)
+# Backend & Chatbot API (Dylan Gamero - US-12, US-13)
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+
+# Dashboards & Visualization (Sergio - US-14, US-15)
 streamlit>=1.39.0
 plotly>=5.24.0
 httpx>=0.27.0
 
 # Testing & Quality
-pytest>=8.0.0
+pytest>=8.3.0
+pytest-asyncio>=0.24.0
 pytest-cov>=4.1.0
 ruff>=0.3.0
