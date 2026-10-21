@@ -26,10 +26,18 @@ def _collect_categories(
     daily_sales: pd.DataFrame,
     product_performance: Optional[pd.DataFrame],
 ) -> list[str]:
-    """Une las categorías de ``daily_sales.top_category`` y ``product_performance.category``."""
+    """Une las categorías de ``daily_sales`` y ``product_performance``.
+
+    Tolerante al esquema: acepta ``top_category`` (data mart §4.1) o
+    ``category`` (Gold US-07) en ``daily_sales``.
+    """
     cat_sets: list[set] = []
-    if not daily_sales.empty and "top_category" in daily_sales.columns:
-        cat_sets.append(set(daily_sales["top_category"].dropna().unique().tolist()))
+    if not daily_sales.empty:
+        col = "top_category" if "top_category" in daily_sales.columns else (
+            "category" if "category" in daily_sales.columns else None
+        )
+        if col:
+            cat_sets.append(set(daily_sales[col].dropna().unique().tolist()))
     if product_performance is not None and not product_performance.empty and "category" in product_performance.columns:
         cat_sets.append(set(product_performance["category"].dropna().unique().tolist()))
     if not cat_sets:
@@ -55,9 +63,15 @@ def render_sidebar_filters(
     selection: dict = {}
 
     # --- Rango de fechas (afecta: Visión General de Ventas) ----------------
-    if not daily_sales.empty and "kpi_date" in daily_sales.columns:
-        min_date = daily_sales["kpi_date"].min().date()
-        max_date = daily_sales["kpi_date"].max().date()
+    # Tolerante: ``kpi_date`` (data mart §4.1) u ``order_date`` (Gold US-07).
+    date_col = (
+        "kpi_date" if "kpi_date" in daily_sales.columns
+        else ("order_date" if "order_date" in daily_sales.columns else None)
+    )
+    if not daily_sales.empty and date_col:
+        dates = pd.to_datetime(daily_sales[date_col])
+        min_date = dates.min().date()
+        max_date = dates.max().date()
         default_start = max_date - timedelta(days=30)
         selection["date_range"] = st.sidebar.date_input(
             "Rango de fechas  *(Visión General)*",

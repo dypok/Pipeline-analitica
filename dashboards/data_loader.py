@@ -18,6 +18,8 @@ inicio usando los datos mock de Luis, y cambiar a producción sin tocar la UI.
 from __future__ import annotations
 
 import os
+import socket
+from urllib.parse import urlparse
 from dataclasses import dataclass
 from functools import lru_cache
 from typing import Optional
@@ -26,6 +28,77 @@ import pandas as pd
 from dotenv import load_dotenv
 
 load_dotenv()
+
+
+def _is_service_reachable(host: str, port: int, timeout: float = 0.3) -> bool:
+    """Verifica rápidamente si un servicio de red está escuchando en el puerto dado.
+
+    Evita esperas largas de SQLAlchemy/DuckDB cuando el servicio está caído
+    (degradación graceful inmediata en modo local).
+    """
+    try:
+        with socket.create_connection((host, port), timeout=timeout):
+            return True
+    except (socket.timeout, ConnectionRefusedError, OSError):
+        return False
+
+
+def _normalize_daily_sales(df: pd.DataFrame) -> pd.DataFrame:
+    """Normaliza un DataFrame al esquema del data mart §4.1 tolerando el Gold US-07.
+
+    Acepta indistintamente el modelo ``analytics.daily_sales_kpis`` (kpi_date,
+    total_orders, ...) o el Gold US-07 (order_date, orders_count, ...). Crea
+    las columnas faltantes a partir de las disponibles para que las vistas del
+    dashboard funcionen sin importar el esquema de origen. Idempotente.
+    """
+    if df.empty:
+        return df
+    out = df.copy()
+
+    # Fechas: kpi_date <-> order_date
+    if "order_date" in out.columns and "kpi_date" not in out.columns:
+        out["kpi_date"] = pd.to_datetime(out["order_date"])
+    elif "kpi_date" in out.columns:
+        out["kpi_date"] = pd.to_datetime(out["kpi_date"])
+        if "order_date" not in out.columns:
+            out["order_date"] = out["kpi_date"]
+
+    # Órdenes: total_orders <-> orders_count
+    if "orders_count" in out.columns and "total_orders" not in out.columns:
+        out["total_orders"] = out["orders_count"]
+    elif "total_orders" in out.columns and "orders_count" not in out.columns:
+        out["orders_count"] = out["total_orders"]
+
+    # completed/cancelled solo existen en el data mart; en el Gold US-07 se
+    # aproximan (completed = todas; cancelled = returns_count).
+    if "completed_orders" not in out.columns:
+        out["completed_orders"] = out.get("total_orders", out.get("orders_count", 0))
+    if "cancelled_orders" not in out.columns:
+        out["cancelled_orders"] = out.get("returns_count", 0)
+    if "returns_count" not in out.columns:
+        out["returns_count"] = out.get("cancelled_orders", 0)
+    if "distinct_customers" not in out.columns:
+        out["distinct_customers"] = out.get("total_orders", out.get("orders_count", 0))
+
+    # Ticket promedio: average_ticket <-> avg_ticket
+    if "avg_ticket" in out.columns and "average_ticket" not in out.columns:
+        out["average_ticket"] = out["avg_ticket"]
+    elif "average_ticket" in out.columns and "avg_ticket" not in out.columns:
+        out["avg_ticket"] = out["average_ticket"]
+
+    # Categoría: top_category <-> category
+    if "category" in out.columns and "top_category" not in out.columns:
+        out["top_category"] = out["category"]
+    elif "top_category" in out.columns and "category" not in out.columns:
+        out["category"] = out["top_category"]
+
+    # País: country <-> shipping_country
+    if "shipping_country" in out.columns and "country" not in out.columns:
+        out["country"] = out["shipping_country"]
+    elif "country" in out.columns and "shipping_country" not in out.columns:
+        out["shipping_country"] = out["country"]
+
+    return out
 
 
 @dataclass(frozen=True)
@@ -84,9 +157,7 @@ class GoldDataLoader:
                 "total_revenue", "average_ticket", "distinct_customers", "top_category",
             ],
         )
-        if not df.empty and "kpi_date" in df.columns:
-            df["kpi_date"] = pd.to_datetime(df["kpi_date"])
-        return df
+        return _normalize_daily_sales(df)
 
     def load_customer_360(self) -> pd.DataFrame:
         """Carga el modelo ``customer_360`` (visión 360° del cliente).
@@ -105,6 +176,19 @@ class GoldDataLoader:
                 "total_orders", "lifetime_value", "avg_order_value", "favorite_category",
             ],
         )
+        if not df.empty:
+            # Tolerancia a aliases de esquema alternativos (data lake vs data mart).
+            df = df.copy()
+            aliases = {
+                "total_lifetime_orders": "total_orders",
+                "total_lifetime_spend": "lifetime_value",
+                "average_order_value": "avg_order_value",
+                "first_order_date": "first_purchase_date",
+                "last_order_date": "last_purchase_date",
+            }
+            for src, dst in aliases.items():
+                if src in df.columns and dst not in df.columns:
+                    df[dst] = df[src]
         for col in ("first_purchase_date", "last_purchase_date"):
             if col in df.columns:
                 df[col] = pd.to_datetime(df[col], errors="coerce")
@@ -185,21 +269,21 @@ class GoldDataLoader:
         """Intenta cargar el modelo desde PostgreSQL → MinIO → Local Parquet."""
         # 1. PostgreSQL (recomendado)
         df = self._try_postgres(sql_table, columns)
-        if df is not None:
+        if df is not None and not df.empty:
             self._source = LoaderSource("postgres", sql_table)
             return df
 
         # 2. MinIO vía DuckDB
         if s3_prefix is not None:
             df = self._try_minio_parquet(s3_prefix, columns)
-            if df is not None:
+            if df is not None and not df.empty:
                 self._source = LoaderSource("minio", f"s3://{self.gold_bucket}/{s3_prefix}/")
                 return df
 
         # 3. Parquet local (mock)
         if local_file is not None:
             df = self._try_local_parquet(local_file, columns)
-            if df is not None:
+            if df is not None and not df.empty:
                 self._source = LoaderSource("local_parquet", local_file)
                 return df
 
@@ -211,12 +295,28 @@ class GoldDataLoader:
         return pd.DataFrame(columns=columns)
 
     def _try_postgres(self, table: str, columns: list[str]) -> Optional[pd.DataFrame]:
+        # Verificación rápida de disponibilidad de socket antes de invocar
+        # SQLAlchemy (evita esperas largas cuando Postgres está caído).
+        try:
+            parsed = urlparse(self.pg_url.replace("postgresql+psycopg2://", "http://"))
+            host = parsed.hostname or "localhost"
+            port = parsed.port or 5433
+            if not _is_service_reachable(host, port, timeout=0.3):
+                return None
+        except Exception:
+            pass
+
         try:
             from sqlalchemy import create_engine, text
         except ImportError:
             return None
         try:
-            engine = create_engine(self.pg_url, pool_pre_ping=True, future=True)
+            engine = create_engine(
+                self.pg_url,
+                pool_pre_ping=True,
+                future=True,
+                connect_args={"connect_timeout": 2},
+            )
             with engine.connect() as conn:
                 # SELECT * para tolerar columnas extra que el esquema Gold pueda
                 # añadir (country, category, product_name, etc.). Las vistas
@@ -228,6 +328,16 @@ class GoldDataLoader:
             return None
 
     def _try_minio_parquet(self, s3_prefix: str, columns: list[str]) -> Optional[pd.DataFrame]:
+        # Verificación rápida de socket para MinIO (evita timeouts de DuckDB).
+        try:
+            parsed = urlparse(self.minio_endpoint)
+            host = parsed.hostname or "localhost"
+            port = parsed.port or 9000
+            if not _is_service_reachable(host, port, timeout=0.3):
+                return None
+        except Exception:
+            pass
+
         try:
             import duckdb
         except ImportError:
