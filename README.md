@@ -6,7 +6,7 @@
 ![Apache Spark](https://img.shields.io/badge/Apache%20Spark-3.5.1-E25A1C?logo=apachespark)
 ![Apache Airflow](https://img.shields.io/badge/Apache%20Airflow-2.8.1-017CEE?logo=apacheairflow)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16%20Alpine-4169E1?logo=postgresql)
-![Tests](https://img.shields.io/badge/Tests-Passing%20(11%2F11)-success)
+![Tests](https://img.shields.io/badge/Tests-Passing%20(76%2F76)-success)
 
 Infraestructura base, orquestación y contratos de integración técnica para la plataforma analítica Lakehouse basada en **Arquitectura Medallion**. Diseñada para procesar datos de retail/e-commerce y servir indicadores confiables tanto a **Dashboards interactivos** como a un **Chatbot de Analítica con Inteligencia Artificial**.
 
@@ -107,16 +107,28 @@ Pipeline-analitica/
 │       └── docker-compose.governance.yml # Módulo desacoplado para OpenMetadata
 ├── src/
 │   ├── common/                     # Configuración, S3 Client, DB Client y Logging
-│   ├── ingestion/                  # BaseConnector, LandingIngestor y MockDataGenerator
+│   ├── ingestion/                  # BaseConnector, conectores CSV/JSON/REST y MockDataGenerator
 │   ├── bronze/                     # BronzeLoader con inmutabilidad y metadatos SHA256
 │   ├── silver/                     # SilverTransformer (tipado, deduplicación, Parquet)
 │   ├── gold/                       # GoldAggregator (KPIs diarios y Data Mart Postgres)
 │   ├── quality/                    # DataQualityValidator (reglas y segregación Quarantine)
 │   └── orchestration/              # PartitionManager, GoldQualityGate y TaskMetricsRecorder (US-10/US-11)
+├── app/
+│   └── backend/                    # API FastAPI + DuckDB + Chatbot IA (US-12/US-13, Dylan)
+├── dashboards/                     # App Streamlit/Plotly (US-14/US-15, Sergio)
+│   ├── main.py                     # Punto de entrada (5 pestañas)
+│   ├── data_loader.py              # Carga Gold con degradación graceful
+│   ├── kpi_calculator.py           # Cálculo de KPIs (tolerante a ambos esquemas Gold)
+│   ├── chatbot_client.py           # Cliente HTTP del chatbot (FastAPI)
+│   ├── components/                 # Filtros del sidebar y tarjetas de KPIs
+│   └── views/                      # Ventas, Clientes, Productos, Chatbot, Salud
 ├── dags/
 │   └── dag_medallion_pipeline.py   # DAG maestro de producción para Apache Airflow
+├── data/
+│   └── mock/                       # Datos sintéticos: raw/, gold/, api/
 ├── tests/
 │   ├── conftest.py                 # Fixtures de Pytest
+│   ├── unit/                       # Tests unitarios (connectors, orchestration, dashboards, chatbot)
 │   ├── test_config.py              # Tests de configuración
 │   ├── test_ingestion.py           # Tests de generación sintética e ingesta
 │   ├── test_quality.py             # Tests de reglas de calidad y umbrales Quarantine
@@ -125,11 +137,18 @@ Pipeline-analitica/
 │   ├── init_env.sh                 # Script bash de inicialización del entorno
 │   ├── run_pipeline_local.sh       # Ejecutor E2E del pipeline Medallion local
 │   ├── run_pipeline_local.py       # Script Python del runner de integración
+│   ├── generate_mock_data.py       # Generador de datos sintéticos (US-03)
+│   ├── generate_mock_gold.py       # Generador de Parquet Gold/data mart mock
+│   ├── validate_p07_dashboard_vs_sql.py  # Validación P07 (dashboard vs SQL DuckDB)
 │   └── check_health.sh             # Diagnóstico de salud de contenedores y puertos
-└── docs/
-    ├── arquitectura.md             # Especificación técnica detallada de la arquitectura
-    ├── contratos_integracion.md    # Contratos de esquemas, rutas y APIs entre compañeros
-    └── guia_desarrollo.md          # Guía de onboarding, Git Flow y buenas prácticas
+├── docs/
+│   ├── arquitectura.md             # Especificación técnica detallada de la arquitectura
+│   ├── contratos_integracion.md    # Contratos de esquemas, rutas y APIs entre compañeros
+│   └── guia_desarrollo.md          # Guía de onboarding, Git Flow y buenas prácticas
+└── documentation/
+    ├── arquitectura-medallion.md   # Documento técnico Arquitectura Medallion v2.0
+    ├── historias-de-usuario.md     # Plan de trabajo, US-01 a US-15 y estrategia de datos
+    └── changelog/                  # Registro diario de cambios del equipo
 ```
 
 ---
@@ -216,11 +235,34 @@ docker compose down -v
 4. Monitorea la ejecución secuencial de sus 7 tareas:
    - `validate_environment` -> `extract_and_land` -> `process_bronze` -> `process_silver_and_quarantine` -> `process_gold` -> `quality_gate` -> `publish_metrics`.
 
+### Opción C: Capa de Explotación (Dashboards + Chatbot IA)
+
+Una vez generados los datos mock de la capa Gold, puedes levantar la capa de
+explotación sin Docker (lee `data/mock/gold/` directamente):
+
+```bash
+# 1. (Opcional) Regenerar los Parquet mock de Gold/data mart
+python scripts/generate_mock_gold.py
+
+# 2. Backend del chatbot (FastAPI + DuckDB) en el puerto 8000
+uvicorn app.backend.main:app --port 8000
+
+# 3. Dashboards (Streamlit) en el puerto 8501
+streamlit run dashboards/main.py
+```
+
+- **Dashboards (US-14/US-15):** 5 pestañas (Ventas, Clientes, Productos, Asistente IA, Salud del Pipeline) con filtros por pestaña.
+- **Chatbot IA (US-13):** integrado en la pestaña "Asistente IA"; traduce preguntas a SQL seguro sobre DuckDB (modo `LLM_PROVIDER=mock` por defecto).
+- Detalle de la capa de dashboards en [`dashboards/README.md`](dashboards/README.md).
+
+> [!NOTE]
+> **Separación de capas Gold:** el dashboard consume el data mart `analytics.daily_sales_kpis` (§4.1, grano 1 fila/día) y el chatbot consulta el Gold `daily_sales` (§7.2, grano fecha×país×categoría). Ambos modelos se generan de forma consistente (`SUM(total_revenue)` cuadra exactamente, criterio de aceptación P06).
+
 ---
 
 ## 7. Ejecución de Pruebas Automatizadas
 
-El proyecto cuenta con una suite completa de pruebas unitarias y de integración en `tests/`:
+El proyecto cuenta con una suite completa de pruebas unitarias y de integración en `tests/` (76 pruebas):
 
 ```bash
 pytest -v
@@ -292,6 +334,8 @@ Documentación detallada en [`docs/arquitectura.md`](file:///home/Coder/Escritor
 
 ## 11. Limitaciones Conocidas y Siguientes Pasos
 
-1. **Datos:** El generador actual simula datos de Retail/E-commerce con casos de anomalía controlada. El siguiente paso es que **Jefri Calderin** conecte fuentes reales (API REST y CSVs de producción).
-2. **Spark:** Actualmente el job de transformación corre optimizado con PyArrow/Pandas y un script SparkSubmit listo en `src/silver/spark_medallion_job.py`. **Esteban Padilla** ampliará los modelos analíticos `customer_360` y `product_performance`.
-3. **Catálogo:** Se incorporará el conector de linaje de OpenMetadata a las tareas de Airflow una vez desplegado en el servidor de pruebas.
+1. **Datos:** El generador actual simula datos de Retail/E-commerce con casos de anomalía controlada. El siguiente paso es conectar fuentes reales (API REST y CSVs de producción) mediante los conectores de `src/ingestion`.
+2. **Backend de Consulta y Chatbot (US-12/US-13):** La API FastAPI (`app/backend/`) con DuckDB y el chatbot de IA ya están implementados y probados (modo `LLM_PROVIDER=mock`). Falta integrar un LLM real (Gemini/OpenAI) vía variables de entorno.
+3. **Dashboards (US-14/US-15):** La app Streamlit (`dashboards/`) consume hoy los Parquet mock de `data/mock/gold/`. Pendiente apuntarla a PostgreSQL/MinIO reales cuando Esteban publique los modelos Gold definitivos.
+4. **Spark:** Actualmente el job de transformación corre optimizado con PyArrow/Pandas y un script SparkSubmit listo en `src/silver/spark_medallion_job.py`. Se ampliarán los modelos analíticos `customer_360` y `product_performance`.
+5. **Gobernanza:** El módulo OpenMetadata/Atlas (US-09) está desacoplado como despliegue opcional; su conector de linaje se incorporará a las tareas de Airflow una vez desplegado en el servidor de pruebas.

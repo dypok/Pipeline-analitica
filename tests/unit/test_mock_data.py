@@ -66,6 +66,13 @@ def test_t03_1_mock_data_generation_execution(tmp_path):
     assert (gold_dir / "customer_360.parquet").exists()
     assert (gold_dir / "product_performance.parquet").exists()
 
+    # Esquema US-07 (grano order_date, shipping_country, category) del Gold
+    # precocinado que genera generate_mock_data.py.
+    df_sales = pd.read_parquet(gold_dir / "daily_sales.parquet")
+    expected_us07_cols = {"order_date", "shipping_country", "category", "total_revenue", "orders_count", "units_sold"}
+    assert expected_us07_cols.issubset(set(df_sales.columns))
+    assert len(df_sales) > 0
+
 
 def test_t03_2_referential_integrity():
     """
@@ -135,25 +142,97 @@ def test_gold_parquet_schemas():
     """
     Verifica que los archivos Parquet en data/mock/gold/ sean legibles y contengan
     las columnas y granos analíticos correctos definidos en la especificación Medallion.
+
+    Separa explícitamente los dos modelos que coexisten en Gold:
+    - ``daily_sales.parquet``: Gold US-07 (grano fecha×país×categoría, §7.2),
+      consumido por el chatbot de Dylan (``v_daily_sales``).
+    - ``daily_sales_kpis.parquet``: data mart §4.1 (grano 1 fila/día),
+      consumido por el dashboard de Sergio (``analytics.daily_sales_kpis``).
     """
     gold_dir = Path("data/mock/gold")
     if not (gold_dir / "daily_sales.parquet").exists():
         pytest.skip("Archivos Parquet Gold no encontrados")
 
-    # 1. daily_sales
+    # 1. daily_sales (Gold US-07, §7.2): grano fecha × país × categoría.
+    #    Consumido por el backend de Dylan vía DuckDB (v_daily_sales).
     df_sales = pd.read_parquet(gold_dir / "daily_sales.parquet")
-    expected_sales_cols = {"order_date", "shipping_country", "category", "total_revenue", "orders_count", "units_sold"}
-    assert expected_sales_cols.issubset(set(df_sales.columns))
+    expected_sales_us07_cols = {
+        "order_date", "shipping_country", "category", "total_revenue",
+        "orders_count", "units_sold", "avg_ticket", "returns_count", "refunded_amount",
+    }
+    assert expected_sales_us07_cols.issubset(set(df_sales.columns))
     assert len(df_sales) > 0
 
-    # 2. customer_360
+    # 2. daily_sales_kpis (data mart §4.1): grano 1 fila/día, consumido por el
+    #    dashboard. Es el modelo ``analytics.daily_sales_kpis`` del contrato.
+    df_kpis = pd.read_parquet(gold_dir / "daily_sales_kpis.parquet")
+    expected_kpi_cols = {
+        "kpi_date", "total_orders", "completed_orders", "cancelled_orders",
+        "total_revenue", "average_ticket", "distinct_customers", "top_category",
+    }
+    assert expected_kpi_cols.issubset(set(df_kpis.columns))
+    assert len(df_kpis) > 0
+
+    # 3. customer_360 (US-07 + country para el choropleth)
     df_cust = pd.read_parquet(gold_dir / "customer_360.parquet")
-    expected_cust_cols = {"customer_id", "first_purchase_date", "last_purchase_date", "total_orders", "lifetime_value"}
+    expected_cust_cols = {
+        "customer_id", "first_purchase_date", "last_purchase_date", "total_orders",
+        "lifetime_value", "units_bought", "avg_order_value", "favorite_category", "country",
+    }
     assert expected_cust_cols.issubset(set(df_cust.columns))
     assert len(df_cust) > 0
 
-    # 3. product_performance
+    # 4. product_performance (US-07 + product_name/category para el dashboard)
     df_prod = pd.read_parquet(gold_dir / "product_performance.parquet")
-    expected_prod_cols = {"product_id", "product_name", "category", "units_sold", "gross_revenue", "margin"}
+    expected_prod_cols = {
+        "product_id", "product_name", "category", "units_sold", "gross_revenue",
+        "returns_count", "return_rate", "margin",
+    }
     assert expected_prod_cols.issubset(set(df_prod.columns))
     assert len(df_prod) > 0
+
+
+def test_p06_layers_reconcile():
+    """
+    Prueba de aceptación P06: las métricas compartidas entre el Gold US-07
+    (``daily_sales.parquet``, consumido por el chatbot de Dylan vía DuckDB) y
+    el data mart §4.1 (``daily_sales_kpis.parquet``, consumido por el dashboard
+    de Sergio) deben cuadrar EXACTAMENTE.
+
+    Esto garantiza que el chatbot y el dashboard reporten las mismas cifras
+    para el mismo periodo, cumpliendo "``SUM(total_revenue)`` en Gold cuadra
+    con los registros auditados".
+    """
+    gold_dir = Path("data/mock/gold")
+    us07_path = gold_dir / "daily_sales.parquet"
+    mart_path = gold_dir / "daily_sales_kpis.parquet"
+    if not (us07_path.exists() and mart_path.exists()):
+        pytest.skip("Parquet Gold no encontrados")
+
+    df_us07 = pd.read_parquet(us07_path)
+    df_mart = pd.read_parquet(mart_path)
+
+    # Ingresos compartidos: cuadran al centavo.
+    rev_us07 = round(float(df_us07["total_revenue"].sum()), 2)
+    rev_mart = round(float(df_mart["total_revenue"].sum()), 2)
+    assert abs(rev_us07 - rev_mart) < 0.01, (
+        f"P06 FALLA: total_revenue no cuadra entre capas "
+        f"(US-07={rev_us07} vs data mart={rev_mart})"
+    )
+
+    # Órdenes compartidas: cuadran exactamente.
+    orders_us07 = int(df_us07["orders_count"].sum())
+    orders_mart = int(df_mart["total_orders"].sum())
+    assert orders_us07 == orders_mart, (
+        f"P06 FALLA: total_orders no cuadra entre capas "
+        f"(US-07={orders_us07} vs data mart={orders_mart})"
+    )
+
+    # Consistencia interna del data mart (contrato §4.2):
+    # average_ticket == total_revenue / completed_orders.
+    sub = df_mart[df_mart["completed_orders"] > 0]
+    assert len(sub) > 0
+    expected_ticket = (sub["total_revenue"] / sub["completed_orders"]).round(2)
+    assert ((sub["average_ticket"] - expected_ticket).abs() < 0.01).all(), (
+        "P06 FALLA: average_ticket no cumple el contrato §4.2"
+    )

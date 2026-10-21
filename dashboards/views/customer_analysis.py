@@ -4,6 +4,8 @@ Muestra:
     - Distribución de clientes por país (cuando el modelo Gold exponga la dimensión).
     - Frecuencia de compra (orders por cliente).
     - Segmentación por LTV (cuartiles: Bronce, Plata, Oro, Premium).
+
+Filtra por ``filters["countries"]`` (origen: ``customer_360.country``).
 """
 
 from __future__ import annotations
@@ -12,7 +14,16 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-from dashboards.kpi_calculator import compute_customer_segments
+from dashboards.kpi_calculator import compute_customer_segments, filter_by_selections
+
+# Mapping ISO-2 -> ISO-3 para el choropleth de Plotly (``locationmode='ISO-3'``).
+# Los códigos ISO-2 (CO, MX, AR...) no son reconocidos directamente por Plotly.
+_ISO2_TO_ISO3 = {
+    "CO": "COL", "MX": "MEX", "AR": "ARG", "CL": "CHL",
+    "PE": "PER", "US": "USA", "ES": "ESP", "BR": "BRA",
+    "EC": "ECU", "UY": "URY", "BO": "BOL", "PY": "PRY",
+    "VE": "VEN", "CR": "CRI", "PA": "PAN", "DO": "DOM",
+}
 
 
 def render_customer_analysis(
@@ -34,14 +45,32 @@ def render_customer_analysis(
         st.info(
             "**Contrato esperado** (ver ``docs/contratos_integracion.md``):\\n"
             "customer_id, first_purchase_date, last_purchase_date, total_orders, "
-            "lifetime_value, avg_order_value, favorite_category"
+            "lifetime_value, avg_order_value, favorite_category, country"
         )
         return
 
-    # --- Métricas resumidas -----------------------------------------------
-    total_customers = int(customer_360["customer_id"].nunique()) if "customer_id" in customer_360.columns else 0
-    avg_ltv = float(customer_360["lifetime_value"].mean()) if "lifetime_value" in customer_360.columns else 0.0
-    avg_orders = float(customer_360["total_orders"].mean()) if "total_orders" in customer_360.columns else 0.0
+    # --- Filtro de país (afecta a toda la pestaña) -------------------------
+    selected_countries = filters.get("countries")
+    filtered = filter_by_selections(customer_360, countries=selected_countries)
+
+    if selected_countries:  # lista vacía => sin filtro (ver filter_by_selections)
+        st.caption(
+            f"Filtro activo: {len(selected_countries)} país(es) seleccionado(s) "
+            f"de {customer_360['country'].nunique() if 'country' in customer_360.columns else '?'} "
+            f"disponibles."
+        )
+
+    if filtered.empty:
+        st.info(
+            "No hay clientes en los países seleccionados. Ajusta el filtro "
+            "'Países' en el sidebar para ampliar la selección."
+        )
+        return
+
+    # --- Métricas resumidas (sobre el dataset filtrado) --------------------
+    total_customers = int(filtered["customer_id"].nunique()) if "customer_id" in filtered.columns else 0
+    avg_ltv = float(filtered["lifetime_value"].mean()) if "lifetime_value" in filtered.columns else 0.0
+    avg_orders = float(filtered["total_orders"].mean()) if "total_orders" in filtered.columns else 0.0
 
     c1, c2, c3 = st.columns(3)
     c1.metric("Clientes Totales", f"{total_customers:,}")
@@ -51,7 +80,7 @@ def render_customer_analysis(
     st.markdown("---")
 
     # --- Segmentación por LTV ---------------------------------------------
-    segments = compute_customer_segments(customer_360)
+    segments = compute_customer_segments(filtered)
     if not segments.empty:
         st.subheader("Segmentación por Lifetime Value (LTV)")
         seg_counts = segments["segment"].value_counts().reset_index()
@@ -66,17 +95,25 @@ def render_customer_analysis(
         )
         st.plotly_chart(fig_seg, width="stretch")
 
-    # --- Distribución por país (pendiente) --------------------------------
-    if "country" in customer_360.columns:
-        country_df = customer_360["country"].value_counts().reset_index()
+    # --- Distribución por país --------------------------------------------
+    if "country" in filtered.columns:
+        country_df = filtered["country"].value_counts().reset_index()
         country_df.columns = ["País", "Clientes"]
+        # Plotly choropleth requiere ISO-3; mapear desde ISO-2 si aplica.
+        country_df["iso3"] = country_df["País"].map(_ISO2_TO_ISO3).fillna(country_df["País"])
+        title = "Distribución de Clientes por País"
+        if selected_countries:
+            title += f" ({len(selected_countries)} país(es) seleccionado(s))"
         fig_country = px.choropleth(
             country_df,
-            locations="País",
-            locationmode="country names",
+            locations="iso3",
+            locationmode="ISO-3",
             color="Clientes",
-            title="Distribución de Clientes por País",
+            hover_name="País",
+            hover_data={"iso3": False, "Clientes": True},
+            title=title,
             template="plotly_white",
+            color_continuous_scale="Blues",
         )
         st.plotly_chart(fig_country, width="stretch")
     else:
@@ -87,4 +124,4 @@ def render_customer_analysis(
 
     # --- Tabla interactiva -------------------------------------------------
     st.subheader("Detalle de Clientes")
-    st.dataframe(customer_360, width="stretch", hide_index=True)
+    st.dataframe(filtered, width="stretch", hide_index=True)
