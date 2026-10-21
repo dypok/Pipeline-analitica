@@ -1,54 +1,83 @@
-"""Tarjetas de KPIs reutilizables (US-14).
+"""Tarjetas de KPIs — tema Data Observability (cian neón).
 
-Renderiza una fila de métricas con formato y color según el signo/tendencia.
+Mantiene la firma pública ``render_kpi_cards(kpis, columns, deltas)`` para no
+romper las vistas. Soporta descripción bajo el valor y direcciones semánticas
+("ok", "down", "warn", "run", "flat").
 """
 
 from __future__ import annotations
 
-from typing import Iterable
+from typing import Iterable, Optional
 
-import streamlit as st
+from dashboards.styles import kpi_card_html
+
+# clave -> (etiqueta, formato, descripción)
+_META = {
+    "total_revenue":      ("Ingresos totales",   "currency", "Órdenes completadas"),
+    "total_orders":       ("Órdenes totales",    "int",      "Pedidos registrados"),
+    "average_ticket":     ("Ticket promedio",    "currency", "Ingresos / completadas"),
+    "return_rate":        ("Tasa de devolución", "percent",  "Canceladas / totales"),
+    "distinct_customers": ("Clientes activos",   "int",      "IDs únicos con compra"),
+    "total_products":     ("Productos",          "int",      "SKUs analizados"),
+    "total_units":        ("Unidades vendidas",  "int",      "Suma de unidades"),
+    "total_gross":        ("Ingresos brutos",    "currency", "Antes de devoluciones"),
+    "total_customers":    ("Clientes totales",   "int",      "Registros de clientes"),
+    "avg_ltv":            ("LTV promedio",       "currency", "Valor de vida promedio"),
+    "avg_orders":         ("Órdenes/cliente",    "float",    "Frecuencia de compra"),
+    "quarantine_total":   ("En Quarantine",      "int",      "Registros rechazados"),
+}
 
 
-def _format_currency(value: float) -> str:
-    return f"${value:,.2f}"
+def _fmt(value, kind: str) -> str:
+    if value is None:
+        return "—"
+    if kind == "currency":
+        return f"${value:,.0f}" if abs(value) >= 1000 else f"${value:,.2f}"
+    if kind == "int":
+        return f"{int(value):,}"
+    if kind == "float":
+        return f"{value:,.2f}"
+    if kind == "percent":
+        return f"{value * 100:.1f}%"
+    return str(value)
 
 
-def _format_int(value: int) -> str:
-    return f"{value:,}"
-
-
-def _format_percent(value: float) -> str:
-    return f"{value * 100:.2f}%"
-
-
-def render_kpi_cards(kpis: dict, columns: Iterable[str] | None = None) -> None:
-    """Dibuja una fila de tarjetas con los KPIs principales.
+def render_kpi_cards(
+    kpis: dict,
+    columns: Iterable[str] | None = None,
+    deltas: Optional[dict] = None,
+    descriptions: Optional[dict] = None,
+) -> None:
+    """Dibuja una fila de tarjetas KPI.
 
     Args:
-        kpis: Diccionario con las métricas calculadas por ``kpi_calculator``.
-        columns: Orden opcional de las métricas a mostrar.
+        kpis: Diccionario de métricas (de ``kpi_calculator``).
+        columns: Orden opcional de las claves a mostrar.
+        deltas: Mapa ``{clave: (texto_delta, direccion)}``.
+        descriptions: Mapa opcional ``{clave: texto}`` de descripción.
     """
-    formatters = {
-        "total_revenue": _format_currency,
-        "total_orders": _format_int,
-        "average_ticket": _format_currency,
-        "return_rate": _format_percent,
-        "distinct_customers": _format_int,
-    }
-    labels = {
-        "total_revenue": "💰 Ingresos Totales",
-        "total_orders": "🛒 Órdenes Totales",
-        "average_ticket": "🎫 Ticket Promedio",
-        "return_rate": "↩️ Tasa de Devolución",
-        "distinct_customers": "👥 Clientes Activos",
-    }
+    import streamlit as st
 
-    keys = list(columns) if columns else ["total_revenue", "total_orders", "average_ticket", "return_rate", "distinct_customers"]
+    keys = list(columns) if columns else [
+        "total_revenue", "total_orders", "average_ticket", "return_rate", "distinct_customers",
+    ]
+    deltas = deltas or {}
+    descriptions = descriptions or {}
     cols = st.columns(len(keys))
+
     for col, key in zip(cols, keys):
+        label, kind, default_desc = _META.get(
+            key, (key.replace("_", " ").title(), "raw", "")
+        )
         value = kpis.get(key, 0)
-        formatter = formatters.get(key, lambda v: str(v))
-        label = labels.get(key, key.replace("_", " ").title())
+        delta = deltas.get(key)
+        delta_text, direction = (delta if delta else (None, "flat"))
+        html = kpi_card_html(
+            label=label,
+            value=_fmt(value, kind),
+            delta=delta_text,
+            direction=direction,
+            description=descriptions.get(key, default_desc),
+        )
         with col:
-            st.metric(label=label, value=formatter(value))
+            st.markdown(html, unsafe_allow_html=True)
