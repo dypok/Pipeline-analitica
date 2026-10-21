@@ -1,0 +1,358 @@
+{
+  "entity": "medallion_lakehouse",
+  "nodesCount": 23,
+  "edgesCount": 27,
+  "lineageEdges": [
+    {
+      "fromEntity": {
+        "id": "src.csv_orders",
+        "type": "table",
+        "fullyQualifiedName": "medallion.src.csv_orders"
+      },
+      "toEntity": {
+        "id": "landing.orders",
+        "type": "table",
+        "fullyQualifiedName": "medallion.landing.orders"
+      },
+      "description": "file_ingestor.py carga directa"
+    },
+    {
+      "fromEntity": {
+        "id": "src.api_sales",
+        "type": "table",
+        "fullyQualifiedName": "medallion.src.api_sales"
+      },
+      "toEntity": {
+        "id": "landing.orders",
+        "type": "table",
+        "fullyQualifiedName": "medallion.landing.orders"
+      },
+      "description": "REST connector de ventas"
+    },
+    {
+      "fromEntity": {
+        "id": "src.csv_customers",
+        "type": "table",
+        "fullyQualifiedName": "medallion.src.csv_customers"
+      },
+      "toEntity": {
+        "id": "landing.customers",
+        "type": "table",
+        "fullyQualifiedName": "medallion.landing.customers"
+      },
+      "description": "Ingesta de clientes"
+    },
+    {
+      "fromEntity": {
+        "id": "src.csv_products",
+        "type": "table",
+        "fullyQualifiedName": "medallion.src.csv_products"
+      },
+      "toEntity": {
+        "id": "landing.products",
+        "type": "table",
+        "fullyQualifiedName": "medallion.landing.products"
+      },
+      "description": "Ingesta de catálogo"
+    },
+    {
+      "fromEntity": {
+        "id": "src.csv_returns",
+        "type": "table",
+        "fullyQualifiedName": "medallion.src.csv_returns"
+      },
+      "toEntity": {
+        "id": "landing.returns",
+        "type": "table",
+        "fullyQualifiedName": "medallion.landing.returns"
+      },
+      "description": "Ingesta de devoluciones"
+    },
+    {
+      "fromEntity": {
+        "id": "landing.orders",
+        "type": "table",
+        "fullyQualifiedName": "medallion.landing.orders"
+      },
+      "toEntity": {
+        "id": "bronze.orders",
+        "type": "table",
+        "fullyQualifiedName": "medallion.bronze.orders"
+      },
+      "description": "BronzeLoader añade hash SHA256"
+    },
+    {
+      "fromEntity": {
+        "id": "landing.customers",
+        "type": "table",
+        "fullyQualifiedName": "medallion.landing.customers"
+      },
+      "toEntity": {
+        "id": "bronze.customers",
+        "type": "table",
+        "fullyQualifiedName": "medallion.bronze.customers"
+      },
+      "description": "BronzeLoader añade UUID de ingesta"
+    },
+    {
+      "fromEntity": {
+        "id": "landing.products",
+        "type": "table",
+        "fullyQualifiedName": "medallion.landing.products"
+      },
+      "toEntity": {
+        "id": "bronze.products",
+        "type": "table",
+        "fullyQualifiedName": "medallion.bronze.products"
+      },
+      "description": "BronzeLoader añade metadatos"
+    },
+    {
+      "fromEntity": {
+        "id": "landing.returns",
+        "type": "table",
+        "fullyQualifiedName": "medallion.landing.returns"
+      },
+      "toEntity": {
+        "id": "bronze.returns",
+        "type": "table",
+        "fullyQualifiedName": "medallion.bronze.returns"
+      },
+      "description": "BronzeLoader añade metadatos"
+    },
+    {
+      "fromEntity": {
+        "id": "bronze.orders",
+        "type": "table",
+        "fullyQualifiedName": "medallion.bronze.orders"
+      },
+      "toEntity": {
+        "id": "silver.orders",
+        "type": "table",
+        "fullyQualifiedName": "medallion.silver.orders"
+      },
+      "description": "SilverTransformer tipado y deduplicación"
+    },
+    {
+      "fromEntity": {
+        "id": "bronze.orders",
+        "type": "table",
+        "fullyQualifiedName": "medallion.bronze.orders"
+      },
+      "toEntity": {
+        "id": "quarantine.anomalies",
+        "type": "table",
+        "fullyQualifiedName": "medallion.quarantine.anomalies"
+      },
+      "description": "Filas que fallan validación van a Quarantine"
+    },
+    {
+      "fromEntity": {
+        "id": "bronze.customers",
+        "type": "table",
+        "fullyQualifiedName": "medallion.bronze.customers"
+      },
+      "toEntity": {
+        "id": "silver.customers",
+        "type": "table",
+        "fullyQualifiedName": "medallion.silver.customers"
+      },
+      "description": "Normalización de emails y teléfonos"
+    },
+    {
+      "fromEntity": {
+        "id": "bronze.customers",
+        "type": "table",
+        "fullyQualifiedName": "medallion.bronze.customers"
+      },
+      "toEntity": {
+        "id": "quarantine.anomalies",
+        "type": "table",
+        "fullyQualifiedName": "medallion.quarantine.anomalies"
+      },
+      "description": "Emails malformados segregados"
+    },
+    {
+      "fromEntity": {
+        "id": "bronze.products",
+        "type": "table",
+        "fullyQualifiedName": "medallion.bronze.products"
+      },
+      "toEntity": {
+        "id": "silver.products",
+        "type": "table",
+        "fullyQualifiedName": "medallion.silver.products"
+      },
+      "description": "Tipado de unit_price y cost_price"
+    },
+    {
+      "fromEntity": {
+        "id": "bronze.products",
+        "type": "table",
+        "fullyQualifiedName": "medallion.bronze.products"
+      },
+      "toEntity": {
+        "id": "quarantine.anomalies",
+        "type": "table",
+        "fullyQualifiedName": "medallion.quarantine.anomalies"
+      },
+      "description": "Precios negativos aislados"
+    },
+    {
+      "fromEntity": {
+        "id": "bronze.returns",
+        "type": "table",
+        "fullyQualifiedName": "medallion.bronze.returns"
+      },
+      "toEntity": {
+        "id": "silver.returns",
+        "type": "table",
+        "fullyQualifiedName": "medallion.silver.returns"
+      },
+      "description": "Normalización de reembolsos"
+    },
+    {
+      "fromEntity": {
+        "id": "silver.orders",
+        "type": "table",
+        "fullyQualifiedName": "medallion.silver.orders"
+      },
+      "toEntity": {
+        "id": "gold.daily_sales",
+        "type": "table",
+        "fullyQualifiedName": "medallion.gold.daily_sales"
+      },
+      "description": "GoldAggregator agrupa por fecha, país, categoría"
+    },
+    {
+      "fromEntity": {
+        "id": "silver.returns",
+        "type": "table",
+        "fullyQualifiedName": "medallion.silver.returns"
+      },
+      "toEntity": {
+        "id": "gold.daily_sales",
+        "type": "table",
+        "fullyQualifiedName": "medallion.gold.daily_sales"
+      },
+      "description": "Cruza devoluciones para calcular reembolsos"
+    },
+    {
+      "fromEntity": {
+        "id": "silver.orders",
+        "type": "table",
+        "fullyQualifiedName": "medallion.silver.orders"
+      },
+      "toEntity": {
+        "id": "gold.customer_360",
+        "type": "table",
+        "fullyQualifiedName": "medallion.gold.customer_360"
+      },
+      "description": "Cálculo de LTV, ticket promedio y frecuencia"
+    },
+    {
+      "fromEntity": {
+        "id": "silver.customers",
+        "type": "table",
+        "fullyQualifiedName": "medallion.silver.customers"
+      },
+      "toEntity": {
+        "id": "gold.customer_360",
+        "type": "table",
+        "fullyQualifiedName": "medallion.gold.customer_360"
+      },
+      "description": "Dimensión de cliente y fecha de registro"
+    },
+    {
+      "fromEntity": {
+        "id": "silver.orders",
+        "type": "table",
+        "fullyQualifiedName": "medallion.silver.orders"
+      },
+      "toEntity": {
+        "id": "gold.product_performance",
+        "type": "table",
+        "fullyQualifiedName": "medallion.gold.product_performance"
+      },
+      "description": "Conteo de unidades vendidas e ingresos"
+    },
+    {
+      "fromEntity": {
+        "id": "silver.products",
+        "type": "table",
+        "fullyQualifiedName": "medallion.silver.products"
+      },
+      "toEntity": {
+        "id": "gold.product_performance",
+        "type": "table",
+        "fullyQualifiedName": "medallion.gold.product_performance"
+      },
+      "description": "Cálculo de margen comercial"
+    },
+    {
+      "fromEntity": {
+        "id": "silver.returns",
+        "type": "table",
+        "fullyQualifiedName": "medallion.silver.returns"
+      },
+      "toEntity": {
+        "id": "gold.product_performance",
+        "type": "table",
+        "fullyQualifiedName": "medallion.gold.product_performance"
+      },
+      "description": "Cálculo de return_rate por producto"
+    },
+    {
+      "fromEntity": {
+        "id": "gold.daily_sales",
+        "type": "table",
+        "fullyQualifiedName": "medallion.gold.daily_sales"
+      },
+      "toEntity": {
+        "id": "consumption.dashboard_sales",
+        "type": "table",
+        "fullyQualifiedName": "medallion.consumption.dashboard_sales"
+      },
+      "description": "Streamlit lee tabla daily_sales_kpis"
+    },
+    {
+      "fromEntity": {
+        "id": "gold.daily_sales",
+        "type": "table",
+        "fullyQualifiedName": "medallion.gold.daily_sales"
+      },
+      "toEntity": {
+        "id": "consumption.chatbot_ai",
+        "type": "table",
+        "fullyQualifiedName": "medallion.consumption.chatbot_ai"
+      },
+      "description": "DuckDB vista v_daily_sales"
+    },
+    {
+      "fromEntity": {
+        "id": "gold.customer_360",
+        "type": "table",
+        "fullyQualifiedName": "medallion.gold.customer_360"
+      },
+      "toEntity": {
+        "id": "consumption.chatbot_ai",
+        "type": "table",
+        "fullyQualifiedName": "medallion.consumption.chatbot_ai"
+      },
+      "description": "DuckDB vista v_customer_360"
+    },
+    {
+      "fromEntity": {
+        "id": "gold.product_performance",
+        "type": "table",
+        "fullyQualifiedName": "medallion.gold.product_performance"
+      },
+      "toEntity": {
+        "id": "consumption.chatbot_ai",
+        "type": "table",
+        "fullyQualifiedName": "medallion.consumption.chatbot_ai"
+      },
+      "description": "DuckDB vista v_product_performance"
+    }
+  ]
+}

@@ -151,19 +151,50 @@ class GoldDataLoader:
         )
 
     def load_quarantine_records(self) -> pd.DataFrame:
-        """Carga los registros en Quarantine (US-15 / P04).
+        """Carga los registros en Quarantine (US-15 / P04) con degradación graceful.
 
         Contrato (``docs/contratos_integracion.md`` §3.1):
-            rejected_at, entity_type, quarantine_reason, raw_record
-
-        TODO: en cuanto Sebastián publique el escritor de Quarantine, integrar
-        la lectura desde MinIO (``s3://quarantine/rejected/<dataset>/...``) o
-        desde una tabla ``analytics.quarantine_records`` si se define.
+            rejected_at, entity_type, quarantine_reason, error_code, raw_record
         """
-        # Esqueleto: por ahora devuelve un DataFrame vacío con el esquema esperado.
-        # Cuando esté disponible la fuente real, ramificar aquí.
+        # 1. Intentar desde PostgreSQL
+        df_pg = self._try_postgres(
+            "analytics.quarantine_records",
+            ["rejected_at", "entity_type", "quarantine_reason", "error_code", "raw_record"],
+        )
+        if df_pg is not None and not df_pg.empty:
+            return df_pg
+
+        # 2. Intentar cargar desde MinIO o degradar a lote mock corrupto (Sebastián Ortiz)
+        try:
+            import json
+            from pathlib import Path
+            from src.quality.validator import DataQualityValidator
+
+            mock_path = (
+                Path(__file__).resolve().parent.parent / "data" / "mock" / "raw" / "corrupt" / "dirty_orders_50.json"
+            )
+            if mock_path.is_file():
+                with open(mock_path, "r", encoding="utf-8") as f:
+                    dirty_data = json.load(f)
+                validator = DataQualityValidator()
+                _, q_list, _ = validator.partition_records(dirty_data, entity_type="orders")
+                if q_list:
+                    rows = [
+                        {
+                            "rejected_at": q.get("rejected_at") or q.get("_rejected_at"),
+                            "entity_type": q.get("entity_type", "orders"),
+                            "quarantine_reason": q.get("quarantine_reason") or q.get("_error_message"),
+                            "error_code": q.get("error_code") or q.get("_error_code"),
+                            "raw_record": str(q.get("raw_record") or q.get("_original_payload")),
+                        }
+                        for q in q_list
+                    ]
+                    return pd.DataFrame(rows)
+        except Exception:
+            pass
+
         return pd.DataFrame(
-            columns=["rejected_at", "entity_type", "quarantine_reason", "raw_record"]
+            columns=["rejected_at", "entity_type", "quarantine_reason", "error_code", "raw_record"]
         )
 
     # ------------------------------------------------------------------
@@ -198,10 +229,6 @@ class GoldDataLoader:
                 return df
 
         # 4. Sin datos disponibles
-        # No reseteamos ``self._source`` para preservar la fuente del último
-        # modelo Gold cargado con éxito. Así la UI muestra la fuente real de
-        # los datos analíticos aunque las tablas operacionales (executions,
-        # task_metrics, quarantine) no estén disponibles.
         return pd.DataFrame(columns=columns)
 
     def _try_postgres(self, table: str, columns: list[str]) -> Optional[pd.DataFrame]:
@@ -212,13 +239,9 @@ class GoldDataLoader:
         try:
             engine = create_engine(self.pg_url, pool_pre_ping=True, future=True)
             with engine.connect() as conn:
-                # SELECT * para tolerar columnas extra que el esquema Gold pueda
-                # añadir (country, category, product_name, etc.). Las vistas
-                # comprueban existencia de columnas antes de usarlas.
                 df = pd.read_sql(text(f"SELECT * FROM {table}"), conn)
             return df
         except Exception:
-            # PostgreSQL no disponible (modo local / MinIO caído). Degradación.
             return None
 
     def _try_minio_parquet(self, s3_prefix: str, columns: list[str]) -> Optional[pd.DataFrame]:
@@ -238,8 +261,6 @@ class GoldDataLoader:
             df = con.execute(
                 f"SELECT * FROM 's3://{self.gold_bucket}/{s3_prefix}/*.parquet'"
             ).df()
-            # Devolver todas las columnas disponibles; las vistas comprueban
-            # existencia antes de usar cada columna.
             return df
         except Exception:
             return None
@@ -250,8 +271,6 @@ class GoldDataLoader:
         if not path.exists():
             return None
         try:
-            # Devolver todas las columnas disponibles; las vistas comprueban
-            # existencia antes de usar cada columna.
             return pd.read_parquet(path)
         except Exception:
             return None

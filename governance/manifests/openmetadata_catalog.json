@@ -1,0 +1,332 @@
+[
+  {
+    "name": "silver.orders",
+    "fullyQualifiedName": "medallion_lakehouse.silver.silver.orders",
+    "description": "Órdenes de compra limpias, deduplicadas, tipadas y validadas en Parquet Snappy",
+    "columns": [
+      {
+        "name": "order_id",
+        "dataType": "VARCHAR(64)",
+        "description": "Identificador único de la orden",
+        "tags": []
+      },
+      {
+        "name": "customer_id",
+        "dataType": "VARCHAR(64)",
+        "description": "Identificador del cliente",
+        "tags": []
+      },
+      {
+        "name": "order_date",
+        "dataType": "DATE",
+        "description": "Fecha de emisión de la orden (YYYY-MM-DD)",
+        "tags": []
+      },
+      {
+        "name": "total_amount",
+        "dataType": "DOUBLE",
+        "description": "Monto total monetario de la orden",
+        "tags": [
+          {
+            "tagFQN": "Security.SENSITIVE_FINANCIAL"
+          }
+        ]
+      },
+      {
+        "name": "status",
+        "dataType": "VARCHAR(20)",
+        "description": "Estado de la orden (COMPLETED, PENDING, etc.)",
+        "tags": []
+      },
+      {
+        "name": "shipping_country",
+        "dataType": "VARCHAR(10)",
+        "description": "País de destino de envío",
+        "tags": []
+      },
+      {
+        "name": "category",
+        "dataType": "VARCHAR(50)",
+        "description": "Categoría del producto principal",
+        "tags": []
+      },
+      {
+        "name": "quantity",
+        "dataType": "INT",
+        "description": "Unidades compradas",
+        "tags": []
+      },
+      {
+        "name": "unit_price",
+        "dataType": "DOUBLE",
+        "description": "Precio unitario del ítem",
+        "tags": [
+          {
+            "tagFQN": "Security.SENSITIVE_FINANCIAL"
+          }
+        ]
+      },
+      {
+        "name": "year",
+        "dataType": "INT",
+        "description": "Partición temporal anual",
+        "tags": []
+      },
+      {
+        "name": "month",
+        "dataType": "INT",
+        "description": "Partición temporal mensual",
+        "tags": []
+      }
+    ],
+    "owner": "Esteban Padilla"
+  },
+  {
+    "name": "silver.customers",
+    "fullyQualifiedName": "medallion_lakehouse.silver.silver.customers",
+    "description": "Catálogo de clientes con emails validados y PII identificado para gobierno",
+    "columns": [
+      {
+        "name": "customer_id",
+        "dataType": "VARCHAR(64)",
+        "description": "Identificador único del cliente",
+        "tags": []
+      },
+      {
+        "name": "first_name",
+        "dataType": "VARCHAR(100)",
+        "description": "Nombre de pila del cliente",
+        "tags": [
+          {
+            "tagFQN": "Security.PII"
+          }
+        ]
+      },
+      {
+        "name": "last_name",
+        "dataType": "VARCHAR(100)",
+        "description": "Apellido del cliente",
+        "tags": [
+          {
+            "tagFQN": "Security.PII"
+          }
+        ]
+      },
+      {
+        "name": "email",
+        "dataType": "VARCHAR(150)",
+        "description": "Correo electrónico verificado",
+        "tags": [
+          {
+            "tagFQN": "Security.PII"
+          }
+        ]
+      },
+      {
+        "name": "phone",
+        "dataType": "VARCHAR(30)",
+        "description": "Número telefónico en formato estándar",
+        "tags": [
+          {
+            "tagFQN": "Security.PII"
+          }
+        ]
+      },
+      {
+        "name": "country",
+        "dataType": "VARCHAR(10)",
+        "description": "País de residencia del cliente",
+        "tags": []
+      },
+      {
+        "name": "city",
+        "dataType": "VARCHAR(100)",
+        "description": "Ciudad de residencia",
+        "tags": []
+      },
+      {
+        "name": "registration_date",
+        "dataType": "DATE",
+        "description": "Fecha de registro en la plataforma",
+        "tags": []
+      }
+    ],
+    "owner": "Esteban Padilla"
+  },
+  {
+    "name": "gold.daily_sales",
+    "fullyQualifiedName": "medallion_lakehouse.gold.gold.daily_sales",
+    "description": "Modelo analítico dimensional de ventas diarias por país y categoría",
+    "columns": [
+      {
+        "name": "order_date",
+        "dataType": "DATE",
+        "description": "Fecha de agregación analítica (grano primario)",
+        "tags": []
+      },
+      {
+        "name": "shipping_country",
+        "dataType": "VARCHAR(10)",
+        "description": "País de envío",
+        "tags": []
+      },
+      {
+        "name": "category",
+        "dataType": "VARCHAR(50)",
+        "description": "Categoría de producto",
+        "tags": []
+      },
+      {
+        "name": "total_revenue",
+        "dataType": "DOUBLE",
+        "description": "Ingresos brutos acumulados en órdenes COMPLETED",
+        "tags": [
+          {
+            "tagFQN": "Security.SENSITIVE_FINANCIAL"
+          }
+        ]
+      },
+      {
+        "name": "orders_count",
+        "dataType": "INT",
+        "description": "Cantidad total de órdenes completadas",
+        "tags": []
+      },
+      {
+        "name": "units_sold",
+        "dataType": "INT",
+        "description": "Unidades totales vendidas",
+        "tags": []
+      },
+      {
+        "name": "avg_ticket",
+        "dataType": "DOUBLE",
+        "description": "Ticket promedio (total_revenue / orders_count)",
+        "tags": [
+          {
+            "tagFQN": "Security.SENSITIVE_FINANCIAL"
+          }
+        ]
+      },
+      {
+        "name": "returns_count",
+        "dataType": "INT",
+        "description": "Total de órdenes devueltas",
+        "tags": []
+      },
+      {
+        "name": "refunded_amount",
+        "dataType": "DOUBLE",
+        "description": "Monto reembolsado en devoluciones",
+        "tags": [
+          {
+            "tagFQN": "Security.SENSITIVE_FINANCIAL"
+          }
+        ]
+      }
+    ],
+    "owner": "Esteban Padilla / Sergio"
+  },
+  {
+    "name": "gold.customer_360",
+    "fullyQualifiedName": "medallion_lakehouse.gold.gold.customer_360",
+    "description": "Modelo analítico 360 de clientes con métricas RFM y valor acumulado",
+    "columns": [
+      {
+        "name": "customer_id",
+        "dataType": "VARCHAR(64)",
+        "description": "Identificador del cliente",
+        "tags": []
+      },
+      {
+        "name": "country",
+        "dataType": "VARCHAR(10)",
+        "description": "País del cliente",
+        "tags": []
+      },
+      {
+        "name": "first_purchase_date",
+        "dataType": "DATE",
+        "description": "Fecha de la primera compra registrada",
+        "tags": []
+      },
+      {
+        "name": "last_purchase_date",
+        "dataType": "DATE",
+        "description": "Fecha de la última compra registrada",
+        "tags": []
+      },
+      {
+        "name": "total_orders",
+        "dataType": "INT",
+        "description": "Número total de órdenes emitidas",
+        "tags": []
+      },
+      {
+        "name": "lifetime_value",
+        "dataType": "DOUBLE",
+        "description": "Gasto histórico total acumulado (LTV)",
+        "tags": [
+          {
+            "tagFQN": "Security.SENSITIVE_FINANCIAL"
+          }
+        ]
+      },
+      {
+        "name": "avg_order_value",
+        "dataType": "DOUBLE",
+        "description": "Monto promedio por orden",
+        "tags": [
+          {
+            "tagFQN": "Security.SENSITIVE_FINANCIAL"
+          }
+        ]
+      },
+      {
+        "name": "favorite_category",
+        "dataType": "VARCHAR(50)",
+        "description": "Categoría con más unidades adquiridas",
+        "tags": []
+      }
+    ],
+    "owner": "Esteban Padilla / Dylan Gamero"
+  },
+  {
+    "name": "quarantine.anomalies",
+    "fullyQualifiedName": "medallion_lakehouse.quarantine.quarantine.anomalies",
+    "description": "Registros corruptos o anómalos segregados por el motor de calidad de Sebastián",
+    "columns": [
+      {
+        "name": "_error_code",
+        "dataType": "VARCHAR(50)",
+        "description": "Código de error técnico (ERR_NULL_KEY, etc.)",
+        "tags": []
+      },
+      {
+        "name": "_error_message",
+        "dataType": "TEXT",
+        "description": "Mensaje legible del motivo de rechazo",
+        "tags": []
+      },
+      {
+        "name": "_rejected_at",
+        "dataType": "TIMESTAMP",
+        "description": "Marca temporal UTC del descarte",
+        "tags": []
+      },
+      {
+        "name": "entity_type",
+        "dataType": "VARCHAR(30)",
+        "description": "Entidad de negocio evaluada",
+        "tags": []
+      },
+      {
+        "name": "_original_payload",
+        "dataType": "JSON",
+        "description": "Registro crudo original para trazabilidad y auditoría",
+        "tags": []
+      }
+    ],
+    "owner": "Sebastián Ortiz"
+  }
+]
