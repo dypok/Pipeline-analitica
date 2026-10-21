@@ -31,8 +31,8 @@ if _PROJECT_ROOT not in sys.path:
 
 import streamlit as st
 
-from dashboards.data_loader import get_loader
 from dashboards.components.filters import render_sidebar_filters
+from dashboards.data_loader import get_loader
 from dashboards.views import (
     render_chatbot_assistant,
     render_customer_analysis,
@@ -87,7 +87,11 @@ def main() -> None:
         st.success(f"Datos cargados desde: `{source_label}`")
 
     # --- Sidebar de filtros (afecta a las pestañas analíticas) -------------
-    filters = render_sidebar_filters(data["daily_sales"])
+    filters = render_sidebar_filters(
+        data["daily_sales"],
+        data["customer_360"],
+        data["product_performance"],
+    )
 
     # --- Pestañas de navegación -------------------------------------------
     tabs = st.tabs(

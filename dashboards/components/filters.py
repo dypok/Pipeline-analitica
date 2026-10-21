@@ -1,21 +1,41 @@
 """Barra lateral con filtros dinámicos (US-14).
 
 Filtros:
-    - Rango de fechas (selector de calendario).
-    - Multiselect de países (cuando el modelo Gold exponga ``country``).
-    - Multiselect de categorías (cuando el modelo Gold exponga ``category``).
+    - Rango de fechas (selector de calendario) -> afecta 'Visión General de Ventas'.
+    - Multiselect de países -> afecta 'Análisis de Clientes' (origen: ``customer_360.country``).
+    - Multiselect de categorías -> afecta 'Visión General de Ventas' (vía
+      ``daily_sales.top_category``) y 'Rendimiento de Productos' (vía
+      ``product_performance.category``).
 
-Los filtros son tolerantes: si las columnas no existen aún en el modelo Gold,
-se omiten con un aviso en la UI sin romper el dashboard.
+Los filtros son tolerantes: si las columnas no existen en el modelo Gold,
+se omiten con un aviso en la UI sin romper el dashboard. Esto permite que el
+dashboard funcione con cualquier esquema Gold (solo ``daily_sales_kpis`` o
+también ``customer_360``/``product_performance`` publicados por Esteban).
 """
 
 from __future__ import annotations
 
-from datetime import date, timedelta
+from datetime import timedelta
 from typing import Optional
 
 import pandas as pd
 import streamlit as st
+
+
+def _collect_categories(
+    daily_sales: pd.DataFrame,
+    product_performance: Optional[pd.DataFrame],
+) -> list[str]:
+    """Une las categorías de ``daily_sales.top_category`` y ``product_performance.category``."""
+    cat_sets: list[set] = []
+    if not daily_sales.empty and "top_category" in daily_sales.columns:
+        cat_sets.append(set(daily_sales["top_category"].dropna().unique().tolist()))
+    if product_performance is not None and not product_performance.empty and "category" in product_performance.columns:
+        cat_sets.append(set(product_performance["category"].dropna().unique().tolist()))
+    if not cat_sets:
+        return []
+    union = set().union(*cat_sets)
+    return sorted(union)
 
 
 def render_sidebar_filters(
@@ -27,19 +47,20 @@ def render_sidebar_filters(
 
     Returns:
         Diccionario con ``date_range``, ``countries`` y ``categories``.
+        Cada entrada puede ser ``None`` si la dimensión no está disponible.
     """
     st.sidebar.title("🔎 Filtros del Dashboard")
     st.sidebar.markdown("Ajusta los criterios para recalcular todos los KPIs.")
 
     selection: dict = {}
 
-    # --- Rango de fechas ---------------------------------------------------
+    # --- Rango de fechas (afecta: Visión General de Ventas) ----------------
     if not daily_sales.empty and "kpi_date" in daily_sales.columns:
         min_date = daily_sales["kpi_date"].min().date()
         max_date = daily_sales["kpi_date"].max().date()
         default_start = max_date - timedelta(days=30)
         selection["date_range"] = st.sidebar.date_input(
-            "Rango de fechas",
+            "Rango de fechas  *(Visión General)*",
             value=(max(min_date, default_start), max_date),
             min_value=min_date,
             max_value=max_date,
@@ -48,40 +69,45 @@ def render_sidebar_filters(
         st.sidebar.info("Sin datos de fechas disponibles para filtrar.")
         selection["date_range"] = None
 
-    # --- Filtro por países (pendiente dimensión en Gold) -------------------
-    if "country" in daily_sales.columns:
-        countries = sorted(daily_sales["country"].dropna().unique().tolist())
+    # --- Filtro por países (afecta: Análisis de Clientes) ------------------
+    # Las países provienen de ``customer_360.country`` (no de ``daily_sales``,
+    # que no expone la dimensión geográfica en el contrato vinculante).
+    countries_options: list[str] = []
+    if customer_360 is not None and not customer_360.empty and "country" in customer_360.columns:
+        countries_options = sorted(customer_360["country"].dropna().unique().tolist())
+
+    if countries_options:
         selection["countries"] = st.sidebar.multiselect(
-            "Países",
-            options=countries,
-            default=countries,
+            "Países  *(Análisis de Clientes)*",
+            options=countries_options,
+            default=countries_options,
         )
     else:
         selection["countries"] = None
-        # TODO: habilitar este filtro cuando el modelo Gold incluya ``shipping_country``
-        # (ver US-07 y ``docs/contratos_integracion.md`` §3.1, columna de Silver).
-
-    # --- Filtro por categorías (pendiente dimensión en Gold) ----------------
-    if "category" in daily_sales.columns:
-        categories = sorted(daily_sales["category"].dropna().unique().tolist())
-        selection["categories"] = st.sidebar.multiselect(
-            "Categorías de producto",
-            options=categories,
-            default=categories,
+        st.sidebar.caption(
+            "_Filtro de países deshabilitado: ``customer_360`` no disponible "
+            "o sin columna ``country`` (pendiente US-07, Esteban Padilla)._"
         )
-    elif "top_category" in daily_sales.columns:
-        categories = sorted(daily_sales["top_category"].dropna().unique().tolist())
+
+    # --- Filtro por categorías (afecta: Ventas + Productos) -----------------
+    categories_options = _collect_categories(daily_sales, product_performance)
+    if categories_options:
         selection["categories"] = st.sidebar.multiselect(
-            "Categorías (top por día)",
-            options=categories,
-            default=categories,
+            "Categorías  *(Ventas + Productos)*",
+            options=categories_options,
+            default=categories_options,
         )
     else:
         selection["categories"] = None
+        st.sidebar.caption(
+            "_Filtro de categorías deshabilitado: ni ``daily_sales.top_category`` "
+            "ni ``product_performance.category`` están disponibles._"
+        )
 
     st.sidebar.markdown("---")
     st.sidebar.caption(
-        "Filtros adicionales (país/categoría) se habilitarán en cuanto el "
-        "modelo Gold exponga esas dimensiones (US-07, Esteban Padilla)."
+        "Los filtros se aplican por pestaña según las dimensiones que cada "
+        "modelo Gold expone. ``daily_sales`` no incluye país por contrato "
+        "(``docs/contratos_integracion.md`` §4.1)."
     )
     return selection

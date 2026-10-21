@@ -121,16 +121,30 @@ def filter_by_selections(
     categories: Optional[list] = None,
     date_col: str = "kpi_date",
 ) -> pd.DataFrame:
-    """Aplica los filtros del sidebar a un DataFrame del modelo Gold."""
+    """Aplica los filtros del sidebar a un DataFrame del modelo Gold.
+
+    Reglas de filtrado (tolerantes a la ausencia de columnas):
+        - ``date_range``  -> filtra por ``date_col`` (por defecto ``kpi_date``).
+        - ``countries``   -> filtra por ``country`` si la columna existe.
+        - ``categories``  -> filtra por ``category`` si la columna existe;
+          si no, filtra por ``top_category`` (caso ``daily_sales_kpis``).
+
+    Si un filtro es ``None`` (dimensión no disponible) o lista vacía, no se
+    aplica y se devuelven todas las filas. Esto evita que el dashboard quede
+    en blanco cuando el usuario deselecciona todas las opciones.
+    """
     out = df.copy()
     if date_range and date_col in out.columns and len(date_range) == 2:
         start, end = pd.to_datetime(date_range[0]), pd.to_datetime(date_range[1])
         out = out[(out[date_col] >= start) & (out[date_col] <= end)]
-    # TODO: aplicar filtros por países y categorías cuando el modelo Gold exponga
-    # esas dimensiones (shipping_country, category). Hoy ``daily_sales_kpis`` no
-    # las incluye, pero la capa Silver sí las tiene y se incluirán en Gold.
+    # Filtro por país (customer_360.country)
     if countries and "country" in out.columns:
         out = out[out["country"].isin(countries)]
-    if categories and "category" in out.columns:
-        out = out[out["category"].isin(categories)]
+    # Filtro por categoría: prefiera ``category`` (product_performance);
+    # si no existe, use ``top_category`` (daily_sales_kpis).
+    if categories:
+        if "category" in out.columns:
+            out = out[out["category"].isin(categories)]
+        elif "top_category" in out.columns:
+            out = out[out["top_category"].isin(categories)]
     return out

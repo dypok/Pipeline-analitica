@@ -66,6 +66,13 @@ def test_t03_1_mock_data_generation_execution(tmp_path):
     assert (gold_dir / "customer_360.parquet").exists()
     assert (gold_dir / "product_performance.parquet").exists()
 
+    # Esquema US-07 (grano order_date, shipping_country, category) del Gold
+    # precocinado que genera generate_mock_data.py.
+    df_sales = pd.read_parquet(gold_dir / "daily_sales.parquet")
+    expected_us07_cols = {"order_date", "shipping_country", "category", "total_revenue", "orders_count", "units_sold"}
+    assert expected_us07_cols.issubset(set(df_sales.columns))
+    assert len(df_sales) > 0
+
 
 def test_t03_2_referential_integrity():
     """
@@ -140,9 +147,15 @@ def test_gold_parquet_schemas():
     if not (gold_dir / "daily_sales.parquet").exists():
         pytest.skip("Archivos Parquet Gold no encontrados")
 
-    # 1. daily_sales
+    # 1. daily_sales (capa semántica del dashboard: docs/contratos_integracion.md
+    #    §4.1 ``analytics.daily_sales_kpis``). El grano US-07 (order_date,
+    #    shipping_country, category) se valida en test_t03_1 sobre la salida
+    #    de generate_mock_data.py.
     df_sales = pd.read_parquet(gold_dir / "daily_sales.parquet")
-    expected_sales_cols = {"order_date", "shipping_country", "category", "total_revenue", "orders_count", "units_sold"}
+    expected_sales_cols = {
+        "kpi_date", "total_orders", "completed_orders", "cancelled_orders",
+        "total_revenue", "average_ticket", "distinct_customers", "top_category",
+    }
     assert expected_sales_cols.issubset(set(df_sales.columns))
     assert len(df_sales) > 0
 

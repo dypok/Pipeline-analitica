@@ -1,0 +1,4 @@
+# Changelog: 20-10-2026
+
+- [Tuesday]-[20/10/2026]-[Sergio] : Advanced US-14 on branch feature/dashboard: sidebar filters are now functional per tab (dates -> Sales Overview, countries from `customer_360.country` -> Customer Analysis, categories from `daily_sales.top_category` + `product_performance.category` -> Sales + Products). Added ISO-2 to ISO-3 mapping for the Plotly choropleth, category filtering on the Products tab, product search by ID and name, and tolerant fallback filtering in `filter_by_selections`.
+- [Tuesday]-[20/10/2026]-[Sergio] : Regenerated `data/mock/gold/*.parquet` via `scripts/generate_mock_gold.py` to match the binding contract `analytics.daily_sales_kpis` (docs/contratos_integracion.md §4.1) and updated `tests/unit/test_mock_data.py` to validate the dashboard semantic schema plus the US-07 grain from `generate_mock_data.py`. Suite: 27/27 passing.
