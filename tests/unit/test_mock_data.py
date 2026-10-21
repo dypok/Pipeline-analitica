@@ -142,31 +142,51 @@ def test_gold_parquet_schemas():
     """
     Verifica que los archivos Parquet en data/mock/gold/ sean legibles y contengan
     las columnas y granos analíticos correctos definidos en la especificación Medallion.
+
+    Separa explícitamente los dos modelos que coexisten en Gold:
+    - ``daily_sales.parquet``: Gold US-07 (grano fecha×país×categoría, §7.2),
+      consumido por el chatbot de Dylan (``v_daily_sales``).
+    - ``daily_sales_kpis.parquet``: data mart §4.1 (grano 1 fila/día),
+      consumido por el dashboard de Sergio (``analytics.daily_sales_kpis``).
     """
     gold_dir = Path("data/mock/gold")
     if not (gold_dir / "daily_sales.parquet").exists():
         pytest.skip("Archivos Parquet Gold no encontrados")
 
-    # 1. daily_sales (capa semántica del dashboard: docs/contratos_integracion.md
-    #    §4.1 ``analytics.daily_sales_kpis``). El grano US-07 (order_date,
-    #    shipping_country, category) se valida en test_t03_1 sobre la salida
-    #    de generate_mock_data.py.
+    # 1. daily_sales (Gold US-07, §7.2): grano fecha × país × categoría.
+    #    Consumido por el backend de Dylan vía DuckDB (v_daily_sales).
     df_sales = pd.read_parquet(gold_dir / "daily_sales.parquet")
-    expected_sales_cols = {
+    expected_sales_us07_cols = {
+        "order_date", "shipping_country", "category", "total_revenue",
+        "orders_count", "units_sold", "avg_ticket", "returns_count", "refunded_amount",
+    }
+    assert expected_sales_us07_cols.issubset(set(df_sales.columns))
+    assert len(df_sales) > 0
+
+    # 2. daily_sales_kpis (data mart §4.1): grano 1 fila/día, consumido por el
+    #    dashboard. Es el modelo ``analytics.daily_sales_kpis`` del contrato.
+    df_kpis = pd.read_parquet(gold_dir / "daily_sales_kpis.parquet")
+    expected_kpi_cols = {
         "kpi_date", "total_orders", "completed_orders", "cancelled_orders",
         "total_revenue", "average_ticket", "distinct_customers", "top_category",
     }
-    assert expected_sales_cols.issubset(set(df_sales.columns))
-    assert len(df_sales) > 0
+    assert expected_kpi_cols.issubset(set(df_kpis.columns))
+    assert len(df_kpis) > 0
 
-    # 2. customer_360
+    # 3. customer_360 (US-07 + country para el choropleth)
     df_cust = pd.read_parquet(gold_dir / "customer_360.parquet")
-    expected_cust_cols = {"customer_id", "first_purchase_date", "last_purchase_date", "total_orders", "lifetime_value"}
+    expected_cust_cols = {
+        "customer_id", "first_purchase_date", "last_purchase_date", "total_orders",
+        "lifetime_value", "units_bought", "avg_order_value", "favorite_category", "country",
+    }
     assert expected_cust_cols.issubset(set(df_cust.columns))
     assert len(df_cust) > 0
 
-    # 3. product_performance
+    # 4. product_performance (US-07 + product_name/category para el dashboard)
     df_prod = pd.read_parquet(gold_dir / "product_performance.parquet")
-    expected_prod_cols = {"product_id", "product_name", "category", "units_sold", "gross_revenue", "margin"}
+    expected_prod_cols = {
+        "product_id", "product_name", "category", "units_sold", "gross_revenue",
+        "returns_count", "return_rate", "margin",
+    }
     assert expected_prod_cols.issubset(set(df_prod.columns))
     assert len(df_prod) > 0

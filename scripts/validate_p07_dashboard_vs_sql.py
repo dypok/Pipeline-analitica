@@ -1,7 +1,8 @@
 """Validación cruzada P06/P07: KPIs del dashboard vs SQL directo con DuckDB.
 
 Compara `dashboards.kpi_calculator.compute_global_kpis` (lo que muestra la UI)
-contra un ``SELECT SUM(...)`` real sobre ``data/mock/gold/daily_sales.parquet``.
+contra un ``SELECT SUM(...)`` real sobre ``data/mock/gold/daily_sales_kpis.parquet``
+(data mart §4.1, el modelo que consume el dashboard).
 Cualquier diferencia != 0 invalida los criterios de aceptación P06/P07.
 """
 from __future__ import annotations
@@ -17,7 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from dashboards.kpi_calculator import compute_global_kpis
 
-GOLD = "data/mock/gold/daily_sales.parquet"
+GOLD = "data/mock/gold/daily_sales_kpis.parquet"
 
 # 1) KPIs calculados por la capa del dashboard (Pandas)
 df = pd.read_parquet(GOLD)

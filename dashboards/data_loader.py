@@ -68,11 +68,17 @@ class GoldDataLoader:
     # API pública
     # ------------------------------------------------------------------
     def load_daily_sales(self) -> pd.DataFrame:
-        """Carga el modelo ``daily_sales`` (KPIs diarios de ventas)."""
+        """Carga el modelo ``daily_sales_kpis`` (data mart §4.1, 1 fila/día).
+
+        NOTA: Lee el **data mart** ``analytics.daily_sales_kpis`` (§4.1), que es
+        el modelo pre-agregado para dashboards. No confundir con el Gold US-07
+        ``daily_sales`` (grano fecha×país×categoría, §7.2), que consume el
+        chatbot de Dylan vía DuckDB. En local el mock es ``daily_sales_kpis.parquet``.
+        """
         df = self._load_model(
             sql_table="analytics.daily_sales_kpis",
-            s3_prefix="analytics/daily_sales",
-            local_file="daily_sales.parquet",
+            s3_prefix="analytics/daily_sales_kpis",
+            local_file="daily_sales_kpis.parquet",
             columns=[
                 "kpi_date", "total_orders", "completed_orders", "cancelled_orders",
                 "total_revenue", "average_ticket", "distinct_customers", "top_category",
