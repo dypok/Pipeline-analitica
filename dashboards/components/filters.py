@@ -2,8 +2,8 @@
 
 Filtros:
     - Rango de fechas (selector de calendario).
-    - Multiselect de países (cuando el modelo Gold exponga ``country``).
-    - Multiselect de categorías (cuando el modelo Gold exponga ``category``).
+    - Multiselect de países (soporta tanto ``country`` como ``shipping_country``).
+    - Multiselect de categorías (soporta tanto ``category`` como ``top_category``).
 
 Los filtros son tolerantes: si las columnas no existen aún en el modelo Gold,
 se omiten con un aviso en la UI sin romper el dashboard.
@@ -34,9 +34,15 @@ def render_sidebar_filters(
     selection: dict = {}
 
     # --- Rango de fechas ---------------------------------------------------
-    if not daily_sales.empty and "kpi_date" in daily_sales.columns:
-        min_date = daily_sales["kpi_date"].min().date()
-        max_date = daily_sales["kpi_date"].max().date()
+    date_col = (
+        "kpi_date"
+        if "kpi_date" in daily_sales.columns
+        else ("order_date" if "order_date" in daily_sales.columns else None)
+    )
+    if not daily_sales.empty and date_col:
+        dates = pd.to_datetime(daily_sales[date_col])
+        min_date = dates.min().date()
+        max_date = dates.max().date()
         default_start = max_date - timedelta(days=30)
         selection["date_range"] = st.sidebar.date_input(
             "Rango de fechas",
@@ -48,9 +54,14 @@ def render_sidebar_filters(
         st.sidebar.info("Sin datos de fechas disponibles para filtrar.")
         selection["date_range"] = None
 
-    # --- Filtro por países (pendiente dimensión en Gold) -------------------
-    if "country" in daily_sales.columns:
-        countries = sorted(daily_sales["country"].dropna().unique().tolist())
+    # --- Filtro por países -------------------------------------------------
+    country_col = (
+        "country"
+        if "country" in daily_sales.columns
+        else ("shipping_country" if "shipping_country" in daily_sales.columns else None)
+    )
+    if country_col:
+        countries = sorted(daily_sales[country_col].dropna().unique().tolist())
         selection["countries"] = st.sidebar.multiselect(
             "Países",
             options=countries,
@@ -58,21 +69,17 @@ def render_sidebar_filters(
         )
     else:
         selection["countries"] = None
-        # TODO: habilitar este filtro cuando el modelo Gold incluya ``shipping_country``
-        # (ver US-07 y ``docs/contratos_integracion.md`` §3.1, columna de Silver).
 
-    # --- Filtro por categorías (pendiente dimensión en Gold) ----------------
-    if "category" in daily_sales.columns:
-        categories = sorted(daily_sales["category"].dropna().unique().tolist())
+    # --- Filtro por categorías ---------------------------------------------
+    cat_col = (
+        "category"
+        if "category" in daily_sales.columns
+        else ("top_category" if "top_category" in daily_sales.columns else None)
+    )
+    if cat_col:
+        categories = sorted(daily_sales[cat_col].dropna().unique().tolist())
         selection["categories"] = st.sidebar.multiselect(
             "Categorías de producto",
-            options=categories,
-            default=categories,
-        )
-    elif "top_category" in daily_sales.columns:
-        categories = sorted(daily_sales["top_category"].dropna().unique().tolist())
-        selection["categories"] = st.sidebar.multiselect(
-            "Categorías (top por día)",
             options=categories,
             default=categories,
         )
@@ -81,7 +88,6 @@ def render_sidebar_filters(
 
     st.sidebar.markdown("---")
     st.sidebar.caption(
-        "Filtros adicionales (país/categoría) se habilitarán en cuanto el "
-        "modelo Gold exponga esas dimensiones (US-07, Esteban Padilla)."
+        "Filtros sincronizados con la capa Gold del Pipeline Analítica."
     )
     return selection
