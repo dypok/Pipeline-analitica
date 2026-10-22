@@ -36,6 +36,7 @@ class DuckDBClient:
             "v_daily_sales": self.data_path / "daily_sales.parquet",
             "v_customer_360": self.data_path / "customer_360.parquet",
             "v_product_performance": self.data_path / "product_performance.parquet",
+            "v_pipeline_execution_logs": self.data_path / "pipeline_execution_logs.parquet",
         }
 
         for view_name, parquet_path in views_mapping.items():

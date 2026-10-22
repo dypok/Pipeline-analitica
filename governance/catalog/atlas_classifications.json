@@ -1,0 +1,54 @@
+{
+  "version": "1.0",
+  "timestamp": "2026-10-22T12:49:50.181952+00:00",
+  "classifications": [
+    {
+      "name": "PII",
+      "description": "Personally Identifiable Information - Requiere anonimización o hashing para acceso no autorizado.",
+      "super_types": []
+    },
+    {
+      "name": "SENSITIVE_FINANCIAL",
+      "description": "Información financiera confidencial sujeta a auditoría y políticas de control de margen.",
+      "super_types": []
+    },
+    {
+      "name": "PUBLIC",
+      "description": "Metadatos operacionales y atributos públicos sin restricciones de privacidad.",
+      "super_types": []
+    }
+  ],
+  "entity_mappings": {
+    "customers": {
+      "customer_id": "PUBLIC",
+      "first_name": "PII",
+      "last_name": "PII",
+      "email": "PII",
+      "phone": "PII",
+      "country": "PUBLIC"
+    },
+    "orders": {
+      "order_id": "PUBLIC",
+      "customer_id": "PUBLIC",
+      "order_date": "PUBLIC",
+      "total_amount": "SENSITIVE_FINANCIAL",
+      "unit_price": "SENSITIVE_FINANCIAL",
+      "status": "PUBLIC"
+    },
+    "customer_360": {
+      "customer_id": "PUBLIC",
+      "email": "PII",
+      "lifetime_value": "SENSITIVE_FINANCIAL",
+      "total_orders": "PUBLIC",
+      "avg_order_value": "SENSITIVE_FINANCIAL"
+    },
+    "product_performance": {
+      "product_id": "PUBLIC",
+      "cost_price": "SENSITIVE_FINANCIAL",
+      "margin": "SENSITIVE_FINANCIAL",
+      "gross_revenue": "SENSITIVE_FINANCIAL",
+      "return_rate": "PUBLIC"
+    }
+  },
+  "status": "OFFLINE_AUDITED"
+}

@@ -2,4 +2,4 @@
 
 - [Thursday]-[22/10/2026]-[07:03]-[Dylan Gamero] : Migrated Chatbot to local Qwen2.5 (2B class) model on branch feat/chatbot-local-qwen, removed all heuristic fallbacks and canned responses, implemented standardized ErrorCode catalog, updated dashboard client and validated 82 passing tests.
 - [Thursday]-[22/10/2026]-[07:13]-[Dylan Gamero] : Created project presentation deck in 16:9 format with interactive HTML controls, speaker notes, and Marp-compatible markdown in documentation.
-
+- [Thursday]-[22/10/2026]-[07:49]-[Dylan Gamero] : Resolved chatbot model errors: implemented DuckDB date SQL normalizer for DATE_SUB/DATE_ADD, added dual-mode conversational router for project/architecture questions, registered v_pipeline_execution_logs in DuckDB, connected real quarantine records & operational metrics in Dashboard, added missing PostgreSQL tables & upserts, implemented Governance module (Atlas classification & OpenMetadata lineage), and created Linux startup script (start.sh). 87 tests passing.

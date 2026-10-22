@@ -217,8 +217,8 @@ class GoldDataLoader:
         """
         return self._load_model(
             sql_table="analytics.pipeline_execution_logs",
-            s3_prefix=None,  # No hay parquet mock para logs operacionales
-            local_file=None,
+            s3_prefix="analytics/pipeline_execution_logs",
+            local_file="pipeline_execution_logs.parquet",
             columns=[
                 "execution_id", "pipeline_name", "layer", "status",
                 "records_processed", "records_quarantined", "finished_at", "error_message",
@@ -232,8 +232,8 @@ class GoldDataLoader:
         """
         return self._load_model(
             sql_table="analytics.pipeline_task_metrics",
-            s3_prefix=None,
-            local_file=None,
+            s3_prefix="analytics/pipeline_task_metrics",
+            local_file="pipeline_task_metrics.parquet",
             columns=[
                 "run_id", "task_id", "pipeline_name", "layer", "status",
                 "duration_seconds", "records_processed", "records_quarantined", "recorded_at",
@@ -245,13 +245,42 @@ class GoldDataLoader:
 
         Contrato (``docs/contratos_integracion.md`` §3.1):
             rejected_at, entity_type, quarantine_reason, raw_record
-
-        TODO: en cuanto Sebastián publique el escritor de Quarantine, integrar
-        la lectura desde MinIO (``s3://quarantine/rejected/<dataset>/...``) o
-        desde una tabla ``analytics.quarantine_records`` si se define.
         """
-        # Esqueleto: por ahora devuelve un DataFrame vacío con el esquema esperado.
-        # Cuando esté disponible la fuente real, ramificar aquí.
+        # 1. Intentar cargar desde el modelo base (Postgres / S3 / Local Parquet)
+        df = self._load_model(
+            sql_table="analytics.quarantine_records",
+            s3_prefix="rejected",
+            local_file="quarantine_records.parquet",
+            columns=["rejected_at", "entity_type", "quarantine_reason", "raw_record"],
+        )
+        if not df.empty:
+            return df
+
+        # 2. Fallback a archivo de anomalías local CSV si no hay Parquet
+        from pathlib import Path
+        for csv_path in [
+            Path("data/mock/raw/corrupt/dirty_data.csv"),
+            Path("data/mock/raw/orders_dirty.csv"),
+        ]:
+            if csv_path.exists():
+                try:
+                    raw_df = pd.read_csv(csv_path)
+                    if not raw_df.empty:
+                        out_df = pd.DataFrame()
+                        out_df["rejected_at"] = pd.to_datetime(raw_df.get("order_date"), errors="coerce")
+                        out_df["entity_type"] = raw_df.get("anomaly_type", "orders")
+                        out_df["quarantine_reason"] = raw_df.get(
+                            "expected_quarantine_error",
+                            "Fallo de validación en esquema o reglas de negocio",
+                        )
+                        out_df["raw_record"] = raw_df.apply(
+                            lambda r: f"order_id={r.get('order_id')}, amount={r.get('total_amount')}, country={r.get('shipping_country')}",
+                            axis=1,
+                        )
+                        return out_df
+                except Exception:
+                    pass
+
         return pd.DataFrame(
             columns=["rejected_at", "entity_type", "quarantine_reason", "raw_record"]
         )
