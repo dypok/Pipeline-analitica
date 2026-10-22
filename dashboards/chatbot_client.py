@@ -31,6 +31,7 @@ class ChatbotAnswer:
     columns: Optional[List[str]] = None
     backend_reachable: bool = True
     error: Optional[str] = None
+    error_code: Optional[str] = None
 
 
 class ChatbotClient:
@@ -76,12 +77,16 @@ class ChatbotClient:
                     error=f"Backend error {resp.status_code}",
                 )
             payload = resp.json()
+            is_success = payload.get("success", True)
+            err_code = payload.get("error_code")
             return ChatbotAnswer(
                 answer=payload.get("answer", ""),
                 sql=payload.get("sql"),
                 rows=payload.get("rows"),
                 columns=payload.get("columns"),
                 backend_reachable=True,
+                error=None if is_success else (f"[{err_code}] {payload.get('answer')}" if err_code else payload.get("answer")),
+                error_code=err_code,
             )
         except httpx.ConnectError:
             return ChatbotAnswer(

@@ -18,11 +18,14 @@ class Settings(BaseSettings):
     MAX_QUERY_ROWS: int = 500
     QUERY_TIMEOUT_SECONDS: int = 5
 
-    # Proveedor LLM para el Chatbot
-    LLM_PROVIDER: str = "mock"  # "mock", "gemini", "openai"
+    # Proveedor LLM para el Chatbot (por defecto modelo local Qwen2.5 sin API keys)
+    LLM_PROVIDER: str = "local"  # "local", "gemini", "openai"
+    LOCAL_LLM_URL: str = "http://localhost:11434/v1"
+    LOCAL_LLM_MODEL: str = "qwen2.5:1.5b"
+    LOCAL_LLM_TIMEOUT: float = 30.0
     GEMINI_API_KEY: str | None = None
     OPENAI_API_KEY: str | None = None
-    LLM_MODEL: str = "gemini-1.5-flash"
+    LLM_MODEL: str = "qwen2.5:1.5b"
 
     # MinIO (opcional para integración directa en producción)
     MINIO_ENDPOINT: str = "localhost:9000"
