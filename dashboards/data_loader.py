@@ -164,7 +164,34 @@ class GoldDataLoader:
         if df_pg is not None and not df_pg.empty:
             return df_pg
 
-        # 2. Intentar cargar desde MinIO o degradar a lote mock corrupto (Sebastián Ortiz)
+        # 2. Intentar cargar desde MinIO (si el pipeline ya escribió en s3://quarantine/)
+        try:
+            from src.common.s3_client import S3Client
+            from src.common.config import get_settings
+
+            settings = get_settings()
+            s3 = S3Client(endpoint_url=settings.minio_host_endpoint)
+            q_bucket = settings.get_bucket("quarantine")
+            objects = s3.list_objects(q_bucket, "rejected/")
+            if objects:
+                latest_obj = sorted(objects)[-1]
+                q_list = s3.read_json(q_bucket, latest_obj)
+                if q_list:
+                    rows = [
+                        {
+                            "rejected_at": q.get("rejected_at") or q.get("_rejected_at"),
+                            "entity_type": q.get("entity_type", "orders"),
+                            "quarantine_reason": q.get("quarantine_reason") or q.get("_error_message"),
+                            "error_code": q.get("error_code") or q.get("_error_code"),
+                            "raw_record": str(q.get("raw_record") or q.get("_original_payload")),
+                        }
+                        for q in q_list
+                    ]
+                    return pd.DataFrame(rows)
+        except Exception:
+            pass
+
+        # 3. Degradar a lote mock corrupto (Sebastián Ortiz)
         try:
             import json
             from pathlib import Path
