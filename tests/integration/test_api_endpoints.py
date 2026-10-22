@@ -1,3 +1,4 @@
+from unittest.mock import patch
 from fastapi.testclient import TestClient
 from app.backend.main import app
 
@@ -65,12 +66,39 @@ def test_execute_query_forbidden_drop_fails():
     assert "Consulta no permitida" in response.json()["detail"]
 
 
-def test_chatbot_ask_endpoint():
+def test_chatbot_ask_endpoint_success():
     payload = {"question": "¿Qué país generó más ingresos?"}
+    sql_mock = "SELECT shipping_country, SUM(total_revenue) AS total_revenue FROM v_daily_sales GROUP BY shipping_country ORDER BY total_revenue DESC LIMIT 5"
+    synth_mock = "El país con mayores ingresos registrados en el período analizado es Colombia."
+    with patch(
+        "app.backend.services.chatbot_service.chatbot_service._post_to_openai_compatible_endpoint",
+        side_effect=[sql_mock, synth_mock],
+    ):
+        response = client.post("/api/v1/chatbot/ask", json=payload)
+        assert response.status_code == 200
+        data = response.json()
+        assert data["success"] is True
+        assert data["sql"] is not None
+        assert len(data["data"]) > 0
+        assert data["rows"] == data["data"]
+        assert data["error_code"] is None
+        assert data["chart_suggestion"] in ("bar", "line", "table", "metric")
+
+
+def test_chatbot_ask_endpoint_out_of_scope_error():
+    payload = {"question": "¿Cuál será la proyección de ingresos para el año 2045?"}
     response = client.post("/api/v1/chatbot/ask", json=payload)
     assert response.status_code == 200
     data = response.json()
-    assert data["success"] is True
-    assert data["sql"] is not None
-    assert len(data["data"]) > 0
-    assert data["chart_suggestion"] in ("bar", "line", "table", "metric")
+    assert data["success"] is False
+    assert data["error_code"] == "ERR_OUT_OF_SCOPE"
+    assert "históricos" in data["answer"].lower()
+
+
+def test_chatbot_ask_endpoint_empty_question():
+    payload = {"question": "   "}
+    response = client.post("/api/v1/chatbot/ask", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["success"] is False
+    assert data["error_code"] == "ERR_EMPTY_QUESTION"

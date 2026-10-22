@@ -1,39 +1,111 @@
+from unittest.mock import patch
+import httpx
+import pytest
+
+from app.backend.api.models import ErrorCode
 from app.backend.services.chatbot_service import ChatbotService
 
 
-def test_chatbot_sales_question():
-    service = ChatbotService()
-    res = service.ask("¿Cuánto vendimos en total?")
-    assert res["success"] is True
-    assert res["sql"] is not None
-    assert "total_revenue" in res["sql"].lower()
-    assert "$" in res["answer"] or "ventas" in res["answer"].lower()
-    assert res["row_count"] >= 1
+@pytest.fixture
+def service():
+    return ChatbotService()
 
 
-def test_chatbot_country_question():
-    service = ChatbotService()
-    res = service.ask("¿Qué país generó más ingresos?")
-    assert res["success"] is True
-    assert res["sql"] is not None
-    assert "shipping_country" in res["sql"].lower()
-    assert len(res["data"]) > 0
+def test_chatbot_empty_question(service):
+    res = service.ask("   ")
+    assert res["success"] is False
+    assert res["error_code"] == ErrorCode.ERR_EMPTY_QUESTION.value
+    assert "pregunta válida" in res["answer"]
 
 
-def test_chatbot_top_products_question():
-    service = ChatbotService()
-    res = service.ask("¿Cuáles son los 5 productos más vendidos?")
-    assert res["success"] is True
-    assert "v_product_performance" in res["sql"]
-    assert len(res["data"]) <= 5
-
-
-def test_chatbot_impossible_question_p09():
-    service = ChatbotService()
+def test_chatbot_impossible_question_p09(service):
     # Prueba P09: Pregunta sobre el futuro lejano o imposible
     res = service.ask("¿Cuál será la proyección de ventas para el año 2045?")
-    assert res["success"] is True
+    assert res["success"] is False
+    assert res["error_code"] == ErrorCode.ERR_OUT_OF_SCOPE.value
     assert res["sql"] is None
     assert "históricos" in res["answer"].lower()
-    assert "no es posible" in res["answer"].lower()
     assert len(res["data"]) == 0
+
+
+def test_chatbot_llm_connection_error(service):
+    # Simula falla de conexión al endpoint local (ej. Ollama apagado)
+    with patch.object(
+        service,
+        "_post_to_openai_compatible_endpoint",
+        side_effect=httpx.ConnectError("Connection refused to localhost:11434"),
+    ):
+        res = service.ask("¿Cuánto vendimos en total?")
+        assert res["success"] is False
+        assert res["error_code"] == ErrorCode.ERR_LLM_UNAVAILABLE.value
+        assert "No se pudo conectar" in res["answer"]
+
+
+def test_chatbot_llm_timeout_error(service):
+    # Simula timeout de inferencia en el modelo local
+    with patch.object(
+        service,
+        "_post_to_openai_compatible_endpoint",
+        side_effect=httpx.TimeoutException("Read timed out"),
+    ):
+        res = service.ask("¿Cuánto vendimos en total?")
+        assert res["success"] is False
+        assert res["error_code"] == ErrorCode.ERR_LLM_TIMEOUT.value
+        assert "tiempo límite" in res["answer"]
+
+
+def test_chatbot_sql_security_violation(service):
+    # Simula que el modelo intentó generar un DROP TABLE
+    with patch.object(
+        service,
+        "_post_to_openai_compatible_endpoint",
+        return_value="DROP TABLE v_daily_sales;",
+    ):
+        res = service.ask("Elimina la tabla de ventas")
+        assert res["success"] is False
+        assert res["error_code"] == ErrorCode.ERR_SQL_SECURITY.value
+        assert "controles de seguridad" in res["answer"]
+
+
+def test_chatbot_invalid_sql_generated(service):
+    # Simula que el modelo devolvió texto plano o NO_SQL
+    with patch.object(
+        service,
+        "_post_to_openai_compatible_endpoint",
+        return_value="NO_SQL",
+    ):
+        res = service.ask("¿Cómo se cocina una pasta?")
+        assert res["success"] is False
+        assert res["error_code"] == ErrorCode.ERR_SQL_GENERATION.value
+
+
+def test_chatbot_no_data_found(service):
+    # Simula consulta que no arroja filas en DuckDB
+    sql_mock = "SELECT * FROM v_daily_sales WHERE shipping_country = 'PAIS_INEXISTENTE'"
+    with patch.object(service, "_post_to_openai_compatible_endpoint", return_value=sql_mock):
+        res = service.ask("¿Cuánto vendimos en un país inventado?")
+        assert res["success"] is True
+        assert res["error_code"] == ErrorCode.ERR_NO_DATA_FOUND.value
+        assert res["row_count"] == 0
+        assert len(res["data"]) == 0
+
+
+def test_chatbot_successful_flow(service):
+    # Simula flujo exitoso: 1er llamado genera SQL, 2do llamado sintetiza respuesta
+    sql_mock = "SELECT shipping_country, SUM(total_revenue) AS total_revenue FROM v_daily_sales GROUP BY shipping_country ORDER BY total_revenue DESC LIMIT 5"
+    synthesis_mock = "Los 5 países con mayores ventas registradas son encabezados por los resultados mostrados en la tabla adjunta."
+
+    with patch.object(
+        service,
+        "_post_to_openai_compatible_endpoint",
+        side_effect=[sql_mock, synthesis_mock],
+    ):
+        res = service.ask("¿Cuáles son los 5 países con más ventas?")
+        assert res["success"] is True
+        assert res["error_code"] is None
+        assert res["sql"] is not None
+        assert res["row_count"] > 0
+        assert len(res["data"]) > 0
+        assert len(res["rows"]) > 0
+        assert res["answer"] == synthesis_mock
+        assert res["chart_suggestion"] in ("bar", "line", "table")

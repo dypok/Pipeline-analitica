@@ -77,7 +77,7 @@ def render_chatbot_assistant() -> None:
     with st.chat_message("assistant"):
         with st.spinner("Consultando la capa Gold..."):
             answer = client.ask(question)
-        if answer.backend_reachable and answer.answer:
+        if answer.backend_reachable and not answer.error and answer.answer:
             st.markdown(answer.answer)
             if answer.rows:
                 df = pd.DataFrame(answer.rows, columns=answer.columns or None)
@@ -95,7 +95,8 @@ def render_chatbot_assistant() -> None:
                 }
             )
         else:
-            st.error(answer.answer or f"Error: {answer.error}")
+            error_msg = answer.error or answer.answer or "Error desconocido al procesar la solicitud."
+            st.error(f"⚠️ {error_msg}")
             st.session_state.chat_history.append(
-                {"role": "assistant", "content": answer.answer or f"Error: {answer.error}"}
+                {"role": "assistant", "content": f"⚠️ {error_msg}"}
             )
