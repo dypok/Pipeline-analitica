@@ -10,6 +10,44 @@ class SecurityException(Exception):
     pass
 
 
+def normalize_duckdb_sql(sql: str) -> str:
+    """Normaliza sintaxis de dialectos SQL comunes (MySQL, BigQuery) generados por LLMs a sintaxis nativa de DuckDB."""
+    # 1. DATE_SUB(date, INTERVAL n unit) -> (date - INTERVAL n unit)
+    sql = re.sub(
+        r"DATE_SUB\s*\(\s*([^,]+?)\s*,\s*INTERVAL\s+([^)]+?)\s*\)",
+        r"(\1 - INTERVAL \2)",
+        sql,
+        flags=re.IGNORECASE,
+    )
+    # 2. DATE_SUB(date, n) -> (date - INTERVAL 'n day')
+    sql = re.sub(
+        r"DATE_SUB\s*\(\s*([^,]+?)\s*,\s*(\d+)\s*\)",
+        r"(\1 - INTERVAL '\2 day')",
+        sql,
+        flags=re.IGNORECASE,
+    )
+    # 3. DATE_ADD(date, INTERVAL n unit) -> (date + INTERVAL n unit)
+    sql = re.sub(
+        r"DATE_ADD\s*\(\s*([^,]+?)\s*,\s*INTERVAL\s+([^)]+?)\s*\)",
+        r"(\1 + INTERVAL \2)",
+        sql,
+        flags=re.IGNORECASE,
+    )
+    # 4. DATE_ADD(date, n) -> (date + INTERVAL 'n day')
+    sql = re.sub(
+        r"DATE_ADD\s*\(\s*([^,]+?)\s*,\s*(\d+)\s*\)",
+        r"(\1 + INTERVAL '\2 day')",
+        sql,
+        flags=re.IGNORECASE,
+    )
+    # 5. CURDATE() -> CURRENT_DATE, NOW() -> CURRENT_TIMESTAMP
+    sql = re.sub(r"\bCURDATE\(\)", "CURRENT_DATE", sql, flags=re.IGNORECASE)
+    sql = re.sub(r"\bNOW\(\)", "CURRENT_TIMESTAMP", sql, flags=re.IGNORECASE)
+    # 6. IFNULL(a, b) -> COALESCE(a, b)
+    sql = re.sub(r"\bIFNULL\s*\(", "COALESCE(", sql, flags=re.IGNORECASE)
+    return sql
+
+
 class SQLGuard:
     """Validador estricto de seguridad para consultas SQL generadas por el Chatbot o usuarios.
     Garantiza que solo se ejecuten consultas de solo lectura (SELECT) sobre las vistas autorizadas.
@@ -19,6 +57,7 @@ class SQLGuard:
         "v_daily_sales",
         "v_customer_360",
         "v_product_performance",
+        "v_pipeline_execution_logs",
     }
 
     FORBIDDEN_KEYWORDS = [
@@ -69,7 +108,7 @@ class SQLGuard:
         if not sql or not sql.strip():
             raise SecurityException("La consulta SQL no puede estar vacía.")
 
-        clean_sql = sql.strip().rstrip(";")
+        clean_sql = normalize_duckdb_sql(sql.strip().rstrip(";"))
 
         # 1. Comprobar patrones de inyección y comentarios maliciosos
         for pattern in cls.FORBIDDEN_PATTERNS:

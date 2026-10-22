@@ -452,7 +452,11 @@ class GoldAggregator:
         try:
             if self.db_client.ping():
                 db_published_count = self.db_client.upsert_daily_sales_kpis(kpi_rows)
-                logger.info(f"Métricas publicadas en analytics.daily_sales_kpis ({db_published_count} registros)")
+                if not df_customer_360.empty:
+                    self.db_client.upsert_customer_360_kpis(df_customer_360.to_dict(orient="records"))
+                if not df_product_perf.empty:
+                    self.db_client.upsert_product_performance(df_product_perf.to_dict(orient="records"))
+                logger.info(f"Métricas publicadas en PostgreSQL analytics ({db_published_count} registros diarios)")
             else:
                 logger.warning("PostgreSQL analítico no disponible. Se continúa con MinIO Gold.")
         except Exception as e:

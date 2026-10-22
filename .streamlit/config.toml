@@ -1,13 +1,98 @@
-[theme]
-base = "light"
-primaryColor = "#1E88E5"
-backgroundColor = "#FFFFFF"
-secondaryBackgroundColor = "#F8F9FA"
-textColor = "#212529"
-font = "sans serif"
+# Configuración de Streamlit — Tema "Data Observability" (cian neón sobre casi-negro)
+#
+# Referencia: dashboard sci-fi de observabilidad. Acento cian monochromático,
+# fondos casi negros, gráficos de área rellena. Sin violeta.
+# Docs: https://docs.streamlit.io/develop/api-reference/configuration/config.toml
 
+[theme]
+base = "dark"
+
+# --- Paleta: cian neón monochromático ---
+primaryColor = "#22D3EE"             # Cian acento
+backgroundColor = "#03060E"          # Casi negro azulado (fondo)
+secondaryBackgroundColor = "#0A1220"  # Tarjetas / widgets
+textColor = "#E8F6FF"
+linkColor = "#22D3EE"
+linkUnderline = false
+
+# --- Forma y espaciado ---
+baseRadius = "14px"
+buttonRadius = "10px"
+paddingTop = "1.5rem"
+paddingBottom = "2.5rem"
+
+# --- Sidebar ---
+showSidebarBorder = true
+
+# --- Tipografía (baseFontSize debe ser ENTERO en px; string lanza TypeError) ---
+baseFontSize = 15
+baseFontWeight = 400
+headingFontSizes = ["2rem", "1.5rem", "1.2rem"]
+headingFontWeights = [700, 700, 600]
+
+# --- Métricas ---
+metricValueFontSize = "2rem"
+metricValueFontWeight = 700
+
+# --- Fuente de código (bloques SQL) ---
+codeFont = "JetBrains Mono"
+codeFontSize = "0.85rem"
+codeFontWeight = 400
+
+# --- Tablas ---
+dataframeBorderColor = "#16233C"
+dataframeHeaderBackgroundColor = "#070C16"
+
+# --- Paleta de gráficos: tonos de cian + semánticos ---
+chartCategoricalColors = [
+    "#00E5FF", "#22D3EE", "#67E8F9", "#A5F3FC", "#38BDF8",
+    "#22C55E", "#F59E0B", "#F43F5E",
+]
+# Escala secuencial de cian con exactamente 10 pasos.
+chartSequentialColors = [
+    "#071019", "#0A2233", "#0D3447", "#10455C", "#135670",
+    "#17708C", "#1B92A8", "#1FB6C4", "#22D3EE", "#7FF0FF",
+]
+
+[theme.sidebar]
+backgroundColor = "#05090F"
+textColor = "#E8F6FF"
+
+# =============================================================================
+# Web fonts reales
+# =============================================================================
+[[theme.fontFaces]]
+family = "Inter"
+url = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+weight = "400"
+style = "normal"
+
+[[theme.fontFaces]]
+family = "Inter"
+url = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+weight = "600"
+style = "normal"
+
+[[theme.fontFaces]]
+family = "Inter"
+url = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+weight = "700"
+style = "normal"
+
+[[theme.fontFaces]]
+family = "JetBrains Mono"
+url = "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap"
+weight = "400"
+style = "normal"
+
+# =============================================================================
+# Comportamiento
+# =============================================================================
 [browser]
 gatherUsageStats = false
 
 [server]
 headless = true
+
+[client]
+toolbarMode = "auto"

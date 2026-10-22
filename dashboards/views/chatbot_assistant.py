@@ -20,7 +20,7 @@ from dashboards.chatbot_client import ChatbotClient, get_client  # type: ignore[
 
 def render_chatbot_assistant() -> None:
     """Renderiza la pestaña 'Asistente IA'."""
-    st.header("🤖 Asistente IA")
+    st.header("Asistente IA")
     st.markdown(
         "Haz preguntas en lenguaje natural sobre las ventas, clientes y "
         "productos. El asistente traduce tu pregunta a SQL sobre la capa Gold "
@@ -33,7 +33,7 @@ def render_chatbot_assistant() -> None:
     backend_ok = client.health()
     if not backend_ok:
         st.warning(
-            f"⚠️ El backend del chatbot no está reachable en `{client.base_url}`. "
+            f"No se pudo conectar al backend del chatbot en `{client.base_url}`. "
             "Asegúrate de que Dylan tenga levantado el servicio FastAPI (US-13). "
             "Podrás seguir escribiendo mensajes pero recibirás un mensaje de error."
         )
@@ -77,7 +77,7 @@ def render_chatbot_assistant() -> None:
     with st.chat_message("assistant"):
         with st.spinner("Consultando la capa Gold..."):
             answer = client.ask(question)
-        if answer.backend_reachable and answer.answer:
+        if answer.backend_reachable and not answer.error and answer.answer:
             st.markdown(answer.answer)
             if answer.rows:
                 df = pd.DataFrame(answer.rows, columns=answer.columns or None)
@@ -95,7 +95,8 @@ def render_chatbot_assistant() -> None:
                 }
             )
         else:
-            st.error(answer.answer or f"Error: {answer.error}")
+            error_msg = answer.error or answer.answer or "Error desconocido al procesar la solicitud."
+            st.error(f"⚠️ {error_msg}")
             st.session_state.chat_history.append(
-                {"role": "assistant", "content": answer.answer or f"Error: {answer.error}"}
+                {"role": "assistant", "content": f"⚠️ {error_msg}"}
             )

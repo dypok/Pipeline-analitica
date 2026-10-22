@@ -175,3 +175,92 @@ class DatabaseClient:
 
         logger.info(f"Guardados {len(records)} registros en analytics.daily_sales_kpis")
         return len(records)
+
+    def upsert_customer_360_kpis(self, records: List[Dict[str, Any]]) -> int:
+        """Inserta o actualiza métricas de la capa Gold en analytics.customer_360_kpis."""
+        if not records:
+            return 0
+
+        sql = text("""
+            INSERT INTO analytics.customer_360_kpis (
+                customer_id, first_name, last_name, email, country,
+                total_lifetime_orders, total_lifetime_spend, average_order_value,
+                first_order_date, last_order_date, customer_tier, updated_at
+            ) VALUES (
+                :customer_id, :first_name, :last_name, :email, :country,
+                :total_lifetime_orders, :total_lifetime_spend, :average_order_value,
+                :first_order_date, :last_order_date, :customer_tier, CURRENT_TIMESTAMP
+            )
+            ON CONFLICT (customer_id) DO UPDATE SET
+                first_name = EXCLUDED.first_name,
+                last_name = EXCLUDED.last_name,
+                email = EXCLUDED.email,
+                country = EXCLUDED.country,
+                total_lifetime_orders = EXCLUDED.total_lifetime_orders,
+                total_lifetime_spend = EXCLUDED.total_lifetime_spend,
+                average_order_value = EXCLUDED.average_order_value,
+                first_order_date = EXCLUDED.first_order_date,
+                last_order_date = EXCLUDED.last_order_date,
+                customer_tier = EXCLUDED.customer_tier,
+                updated_at = CURRENT_TIMESTAMP;
+        """)
+
+        with self.engine.begin() as conn:
+            for rec in records:
+                conn.execute(sql, rec)
+
+        logger.info(f"Guardados {len(records)} registros en analytics.customer_360_kpis")
+        return len(records)
+
+    def upsert_product_performance(self, records: List[Dict[str, Any]]) -> int:
+        """Inserta o actualiza métricas de la capa Gold en analytics.product_performance."""
+        if not records:
+            return 0
+
+        sql = text("""
+            INSERT INTO analytics.product_performance (
+                product_id, product_name, category, units_sold, gross_revenue,
+                returns_count, return_rate, margin, performance_tier, updated_at
+            ) VALUES (
+                :product_id, :product_name, :category, :units_sold, :gross_revenue,
+                :returns_count, :return_rate, :margin, :performance_tier, CURRENT_TIMESTAMP
+            )
+            ON CONFLICT (product_id) DO UPDATE SET
+                product_name = EXCLUDED.product_name,
+                category = EXCLUDED.category,
+                units_sold = EXCLUDED.units_sold,
+                gross_revenue = EXCLUDED.gross_revenue,
+                returns_count = EXCLUDED.returns_count,
+                return_rate = EXCLUDED.return_rate,
+                margin = EXCLUDED.margin,
+                performance_tier = EXCLUDED.performance_tier,
+                updated_at = CURRENT_TIMESTAMP;
+        """)
+
+        with self.engine.begin() as conn:
+            for rec in records:
+                conn.execute(sql, rec)
+
+        logger.info(f"Guardados {len(records)} registros en analytics.product_performance")
+        return len(records)
+
+    def insert_quarantine_records(self, records: List[Dict[str, Any]]) -> int:
+        """Inserta registros anómalos rechazados en analytics.quarantine_records."""
+        if not records:
+            return 0
+
+        sql = text("""
+            INSERT INTO analytics.quarantine_records (
+                record_id, rejected_at, entity_type, quarantine_reason, raw_record
+            ) VALUES (
+                :record_id, :rejected_at, :entity_type, :quarantine_reason, :raw_record
+            )
+            ON CONFLICT (record_id) DO NOTHING;
+        """)
+
+        with self.engine.begin() as conn:
+            for rec in records:
+                conn.execute(sql, rec)
+
+        logger.info(f"Guardados {len(records)} registros en analytics.quarantine_records")
+        return len(records)

@@ -17,6 +17,7 @@ def test_duckdb_registered_views(client):
     assert "v_daily_sales" in views
     assert "v_customer_360" in views
     assert "v_product_performance" in views
+    assert "v_pipeline_execution_logs" in views
 
 
 def test_duckdb_execute_query(client):

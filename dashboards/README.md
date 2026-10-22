@@ -49,6 +49,29 @@ dashboards/
     └── pipeline_health.py       # Pestaña: Salud del Pipeline (US-15)
 ```
 
+## Filtros del sidebar (US-14)
+
+El sidebar aplica filtros **por pestaña**, cada uno tomando su dimensión del
+modelo Gold que la expone por contrato (`docs/contratos_integracion.md`):
+
+| Filtro | Origen de la dimensión | Pestañas que afecta |
+| :--- | :--- | :--- |
+| **Rango de fechas** | `daily_sales.kpi_date` (o `order_date`) | 📈 Visión General de Ventas |
+| **Países** | `customer_360.country` | 👥 Análisis de Clientes |
+| **Categorías** | `daily_sales.top_category` ∪ `product_performance.category` | 📈 Ventas + 📦 Productos |
+
+Notas de diseño:
+
+- `daily_sales_kpis` (§4.1) **no expone la dimensión país**; por eso el filtro
+  de países se alimenta de `customer_360.country`, no de `daily_sales`.
+- El filtro de categorías une las dos fuentes para que el selector muestre el
+  catálogo completo aunque falte uno de los modelos Gold.
+- Los filtros son **tolerantes al esquema**: si una columna no existe en el
+  modelo cargado, el filtro se omite con un aviso en la UI sin romper el
+  dashboard. El loader normaliza además `kpi_date`↔`order_date`,
+  `top_category`↔`category` y `country`↔`shipping_country`, de modo que el
+  dashboard funciona con el data mart §4.1 **o** con el Gold US-07.
+
 ## Estrategia de datos (degradación graceful)
 
 El `GoldDataLoader` intenta, en orden:
@@ -60,6 +83,20 @@ El `GoldDataLoader` intenta, en orden:
 
 Esto permite maquetar desde el día 1 con los Parquet mock y cambiar a
 producción sin tocar la UI.
+
+### Separación de capas Gold (importante)
+
+El dashboard consume el **data mart** `analytics.daily_sales_kpis` (§4.1,
+grano 1 fila/día), **no** el Gold US-07 `daily_sales` (§7.2, grano
+fecha×país×categoría) que consulta el chatbot de Dylan. En local:
+
+| Archivo | Capa | Consumidor |
+| :--- | :--- | :--- |
+| `data/mock/gold/daily_sales_kpis.parquet` | Data mart §4.1 | Dashboard (Sergio) |
+| `data/mock/gold/daily_sales.parquet` | Gold US-07 | Chatbot (Dylan, vía DuckDB) |
+
+Como tolerancia, el loader normaliza columnas para poder leer cualquiera de
+los dos esquemas si la fuente disponible es la otra.
 
 ## Dependencias externas
 

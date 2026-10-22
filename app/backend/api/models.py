@@ -1,5 +1,18 @@
-from typing import Any
+from enum import Enum
+from typing import Any, Optional
 from pydantic import BaseModel, Field
+
+
+class ErrorCode(str, Enum):
+    """Catálogo estandarizado de códigos de error para el Chatbot y consultas analíticas."""
+    ERR_EMPTY_QUESTION = "ERR_EMPTY_QUESTION"
+    ERR_OUT_OF_SCOPE = "ERR_OUT_OF_SCOPE"
+    ERR_LLM_UNAVAILABLE = "ERR_LLM_UNAVAILABLE"
+    ERR_LLM_TIMEOUT = "ERR_LLM_TIMEOUT"
+    ERR_SQL_GENERATION = "ERR_SQL_GENERATION"
+    ERR_SQL_SECURITY = "ERR_SQL_SECURITY"
+    ERR_QUERY_EXECUTION = "ERR_QUERY_EXECUTION"
+    ERR_NO_DATA_FOUND = "ERR_NO_DATA_FOUND"
 
 
 class HealthResponse(BaseModel):
@@ -24,6 +37,7 @@ class ExecuteQueryResponse(BaseModel):
     execution_time_ms: float = 0.0
     truncated: bool = False
     error: str | None = None
+    error_code: str | None = None
 
 
 class ChatbotAskRequest(BaseModel):
@@ -34,10 +48,12 @@ class ChatbotAskRequest(BaseModel):
 class ChatbotAskResponse(BaseModel):
     success: bool
     answer: str
-    sql: str | None = None
+    sql: Optional[str] = None
     columns: list[str] = []
     data: list[dict[str, Any]] = []
     rows: list[dict[str, Any]] = []
     row_count: int = 0
     execution_time_ms: float = 0.0
-    chart_suggestion: str | None = None
+    chart_suggestion: Optional[str] = None
+    error_code: Optional[str] = None
+    error_detail: Optional[str] = None

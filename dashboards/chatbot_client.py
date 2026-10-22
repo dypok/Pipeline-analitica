@@ -31,16 +31,23 @@ class ChatbotAnswer:
     columns: Optional[List[str]] = None
     backend_reachable: bool = True
     error: Optional[str] = None
+    error_code: Optional[str] = None
 
 
 class ChatbotClient:
     """Cliente para el endpoint ``/api/v1/chatbot/ask``."""
 
-    DEFAULT_TIMEOUT = 30.0
+    DEFAULT_TIMEOUT: Optional[float] = None  # Sin tiempo fijo para modelo local en CPU
 
     def __init__(self, base_url: Optional[str] = None, timeout: Optional[float] = None) -> None:
         self.base_url = (base_url or os.getenv("BACKEND_API_URL", "http://localhost:8000")).rstrip("/")
-        self.timeout = timeout or float(os.getenv("CHATBOT_TIMEOUT", self.DEFAULT_TIMEOUT))
+        env_timeout = os.getenv("CHATBOT_TIMEOUT")
+        if timeout is not None:
+            self.timeout = timeout
+        elif env_timeout and env_timeout.lower() not in ("none", "0", "false", ""):
+            self.timeout = float(env_timeout)
+        else:
+            self.timeout = self.DEFAULT_TIMEOUT
         self._endpoint = f"{self.base_url}/api/v1/chatbot/ask"
 
     def health(self) -> bool:
@@ -76,12 +83,26 @@ class ChatbotClient:
                     error=f"Backend error {resp.status_code}",
                 )
             payload = resp.json()
+            is_success = payload.get("success", True)
+            err_code = payload.get("error_code")
             return ChatbotAnswer(
                 answer=payload.get("answer", ""),
                 sql=payload.get("sql"),
                 rows=payload.get("rows"),
                 columns=payload.get("columns"),
                 backend_reachable=True,
+                error=None if is_success else (f"[{err_code}] {payload.get('answer')}" if err_code else payload.get("answer")),
+                error_code=err_code,
+            )
+        except httpx.TimeoutException:
+            return ChatbotAnswer(
+                answer=(
+                    "El modelo local de IA sigue procesando la consulta en CPU. "
+                    "Por favor espera unos instantes o formula una pregunta más directa."
+                ),
+                backend_reachable=True,
+                error="[ERR_LLM_TIMEOUT] La inferencia del modelo local superó el tiempo de espera.",
+                error_code="ERR_LLM_TIMEOUT",
             )
         except httpx.ConnectError:
             return ChatbotAnswer(
@@ -90,13 +111,15 @@ class ChatbotClient:
                     f"FastAPI esté levantado en {self.base_url} (Dylan, US-13)."
                 ),
                 backend_reachable=False,
-                error="connection_refused",
+                error="[ERR_LLM_UNAVAILABLE] connection_refused",
+                error_code="ERR_LLM_UNAVAILABLE",
             )
         except Exception as exc:
             return ChatbotAnswer(
                 answer="",
                 backend_reachable=False,
-                error=str(exc),
+                error=f"Error inesperado: {str(exc)}",
+                error_code="ERR_LLM_UNAVAILABLE",
             )
 
 

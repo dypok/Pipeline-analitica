@@ -32,12 +32,74 @@ load_dotenv()
 
 
 def _is_service_reachable(host: str, port: int, timeout: float = 0.3) -> bool:
-    """Verifica rápidamente si un servicio de red está escuchando en el puerto dado."""
+    """Verifica rápidamente si un servicio de red está escuchando en el puerto dado.
+
+    Evita esperas largas de SQLAlchemy/DuckDB cuando el servicio está caído
+    (degradación graceful inmediata en modo local).
+    """
     try:
         with socket.create_connection((host, port), timeout=timeout):
             return True
     except (socket.timeout, ConnectionRefusedError, OSError):
         return False
+
+
+def _normalize_daily_sales(df: pd.DataFrame) -> pd.DataFrame:
+    """Normaliza un DataFrame al esquema del data mart §4.1 tolerando el Gold US-07.
+
+    Acepta indistintamente el modelo ``analytics.daily_sales_kpis`` (kpi_date,
+    total_orders, ...) o el Gold US-07 (order_date, orders_count, ...). Crea
+    las columnas faltantes a partir de las disponibles para que las vistas del
+    dashboard funcionen sin importar el esquema de origen. Idempotente.
+    """
+    if df.empty:
+        return df
+    out = df.copy()
+
+    # Fechas: kpi_date <-> order_date
+    if "order_date" in out.columns and "kpi_date" not in out.columns:
+        out["kpi_date"] = pd.to_datetime(out["order_date"])
+    elif "kpi_date" in out.columns:
+        out["kpi_date"] = pd.to_datetime(out["kpi_date"])
+        if "order_date" not in out.columns:
+            out["order_date"] = out["kpi_date"]
+
+    # Órdenes: total_orders <-> orders_count
+    if "orders_count" in out.columns and "total_orders" not in out.columns:
+        out["total_orders"] = out["orders_count"]
+    elif "total_orders" in out.columns and "orders_count" not in out.columns:
+        out["orders_count"] = out["total_orders"]
+
+    # completed/cancelled solo existen en el data mart; en el Gold US-07 se
+    # aproximan (completed = todas; cancelled = returns_count).
+    if "completed_orders" not in out.columns:
+        out["completed_orders"] = out.get("total_orders", out.get("orders_count", 0))
+    if "cancelled_orders" not in out.columns:
+        out["cancelled_orders"] = out.get("returns_count", 0)
+    if "returns_count" not in out.columns:
+        out["returns_count"] = out.get("cancelled_orders", 0)
+    if "distinct_customers" not in out.columns:
+        out["distinct_customers"] = out.get("total_orders", out.get("orders_count", 0))
+
+    # Ticket promedio: average_ticket <-> avg_ticket
+    if "avg_ticket" in out.columns and "average_ticket" not in out.columns:
+        out["average_ticket"] = out["avg_ticket"]
+    elif "average_ticket" in out.columns and "avg_ticket" not in out.columns:
+        out["avg_ticket"] = out["average_ticket"]
+
+    # Categoría: top_category <-> category
+    if "category" in out.columns and "top_category" not in out.columns:
+        out["top_category"] = out["category"]
+    elif "top_category" in out.columns and "category" not in out.columns:
+        out["category"] = out["top_category"]
+
+    # País: country <-> shipping_country
+    if "shipping_country" in out.columns and "country" not in out.columns:
+        out["country"] = out["shipping_country"]
+    elif "country" in out.columns and "shipping_country" not in out.columns:
+        out["shipping_country"] = out["country"]
+
+    return out
 
 
 @dataclass(frozen=True)
@@ -81,58 +143,23 @@ class GoldDataLoader:
     # API pública
     # ------------------------------------------------------------------
     def load_daily_sales(self) -> pd.DataFrame:
-        """Carga el modelo ``daily_sales`` (KPIs diarios de ventas)."""
+        """Carga el modelo ``daily_sales_kpis`` (data mart §4.1, 1 fila/día).
+
+        NOTA: Lee el **data mart** ``analytics.daily_sales_kpis`` (§4.1), que es
+        el modelo pre-agregado para dashboards. No confundir con el Gold US-07
+        ``daily_sales`` (grano fecha×país×categoría, §7.2), que consume el
+        chatbot de Dylan vía DuckDB. En local el mock es ``daily_sales_kpis.parquet``.
+        """
         df = self._load_model(
             sql_table="analytics.daily_sales_kpis",
-            s3_prefix="analytics/daily_sales",
-            local_file="daily_sales.parquet",
+            s3_prefix="analytics/daily_sales_kpis",
+            local_file="daily_sales_kpis.parquet",
             columns=[
                 "kpi_date", "total_orders", "completed_orders", "cancelled_orders",
                 "total_revenue", "average_ticket", "distinct_customers", "top_category",
             ],
         )
-        if not df.empty:
-            # Compatibilidad bidireccional entre schema PostgreSQL y Parquet Gold
-            if "order_date" in df.columns and "kpi_date" not in df.columns:
-                df["kpi_date"] = pd.to_datetime(df["order_date"])
-            elif "kpi_date" in df.columns:
-                df["kpi_date"] = pd.to_datetime(df["kpi_date"])
-                if "order_date" not in df.columns:
-                    df["order_date"] = df["kpi_date"]
-
-            if "orders_count" in df.columns and "total_orders" not in df.columns:
-                df["total_orders"] = df["orders_count"]
-            elif "total_orders" in df.columns and "orders_count" not in df.columns:
-                df["orders_count"] = df["total_orders"]
-
-            if "completed_orders" not in df.columns:
-                df["completed_orders"] = df.get("total_orders", df.get("orders_count", 0))
-
-            if "cancelled_orders" not in df.columns:
-                df["cancelled_orders"] = df.get("returns_count", 0)
-
-            if "returns_count" not in df.columns:
-                df["returns_count"] = df.get("cancelled_orders", 0)
-
-            if "distinct_customers" not in df.columns:
-                df["distinct_customers"] = df.get("total_orders", df.get("orders_count", 0))
-
-            if "avg_ticket" in df.columns and "average_ticket" not in df.columns:
-                df["average_ticket"] = df["avg_ticket"]
-            elif "average_ticket" in df.columns and "avg_ticket" not in df.columns:
-                df["avg_ticket"] = df["average_ticket"]
-
-            if "category" in df.columns and "top_category" not in df.columns:
-                df["top_category"] = df["category"]
-            elif "top_category" in df.columns and "category" not in df.columns:
-                df["category"] = df["top_category"]
-
-            if "shipping_country" in df.columns and "country" not in df.columns:
-                df["country"] = df["shipping_country"]
-            elif "country" in df.columns and "shipping_country" not in df.columns:
-                df["shipping_country"] = df["country"]
-
-        return df
+        return _normalize_daily_sales(df)
 
     def load_customer_360(self) -> pd.DataFrame:
         """Carga el modelo ``customer_360`` (visión 360° del cliente).
@@ -152,17 +179,18 @@ class GoldDataLoader:
             ],
         )
         if not df.empty:
-            if "total_lifetime_orders" in df.columns and "total_orders" not in df.columns:
-                df["total_orders"] = df["total_lifetime_orders"]
-            if "total_lifetime_spend" in df.columns and "lifetime_value" not in df.columns:
-                df["lifetime_value"] = df["total_lifetime_spend"]
-            if "average_order_value" in df.columns and "avg_order_value" not in df.columns:
-                df["avg_order_value"] = df["average_order_value"]
-            if "first_order_date" in df.columns and "first_purchase_date" not in df.columns:
-                df["first_purchase_date"] = df["first_order_date"]
-            if "last_order_date" in df.columns and "last_purchase_date" not in df.columns:
-                df["last_purchase_date"] = df["last_order_date"]
-
+            # Tolerancia a aliases de esquema alternativos (data lake vs data mart).
+            df = df.copy()
+            aliases = {
+                "total_lifetime_orders": "total_orders",
+                "total_lifetime_spend": "lifetime_value",
+                "average_order_value": "avg_order_value",
+                "first_order_date": "first_purchase_date",
+                "last_order_date": "last_purchase_date",
+            }
+            for src, dst in aliases.items():
+                if src in df.columns and dst not in df.columns:
+                    df[dst] = df[src]
         for col in ("first_purchase_date", "last_purchase_date"):
             if col in df.columns:
                 df[col] = pd.to_datetime(df[col], errors="coerce")
@@ -206,8 +234,8 @@ class GoldDataLoader:
         """
         return self._load_model(
             sql_table="analytics.pipeline_execution_logs",
-            s3_prefix=None,  # No hay parquet mock para logs operacionales
-            local_file=None,
+            s3_prefix="analytics/pipeline_execution_logs",
+            local_file="pipeline_execution_logs.parquet",
             columns=[
                 "execution_id", "pipeline_name", "layer", "status",
                 "records_processed", "records_quarantined", "finished_at", "error_message",
@@ -221,8 +249,8 @@ class GoldDataLoader:
         """
         return self._load_model(
             sql_table="analytics.pipeline_task_metrics",
-            s3_prefix=None,
-            local_file=None,
+            s3_prefix="analytics/pipeline_task_metrics",
+            local_file="pipeline_task_metrics.parquet",
             columns=[
                 "run_id", "task_id", "pipeline_name", "layer", "status",
                 "duration_seconds", "records_processed", "records_quarantined", "recorded_at",
@@ -270,7 +298,19 @@ class GoldDataLoader:
         except Exception:
             pass
 
-        # 3. Degradar a lote mock corrupto (Sebastián Ortiz)
+        # 3. Intentar desde Parquet local mock
+        df_parquet = self._load_model(
+            sql_table="analytics.quarantine_records",
+            s3_prefix="rejected",
+            local_file="quarantine_records.parquet",
+            columns=["rejected_at", "entity_type", "quarantine_reason", "error_code", "raw_record"],
+        )
+        if df_parquet is not None and not df_parquet.empty:
+            if "error_code" not in df_parquet.columns:
+                df_parquet["error_code"] = "VALIDATION_ERROR"
+            return df_parquet
+
+        # 4. Degradar a lote mock corrupto (Sebastián Ortiz)
         try:
             import json
             from pathlib import Path
@@ -298,6 +338,32 @@ class GoldDataLoader:
                     return pd.DataFrame(rows)
         except Exception:
             pass
+
+        # 5. Fallback a archivo de anomalías local CSV
+        from pathlib import Path
+        for csv_path in [
+            Path("data/mock/raw/corrupt/dirty_data.csv"),
+            Path("data/mock/raw/orders_dirty.csv"),
+        ]:
+            if csv_path.exists():
+                try:
+                    raw_df = pd.read_csv(csv_path)
+                    if not raw_df.empty:
+                        out_df = pd.DataFrame()
+                        out_df["rejected_at"] = pd.to_datetime(raw_df.get("order_date"), errors="coerce")
+                        out_df["entity_type"] = raw_df.get("anomaly_type", "orders")
+                        out_df["quarantine_reason"] = raw_df.get(
+                            "expected_quarantine_error",
+                            "Fallo de validación en esquema o reglas de negocio",
+                        )
+                        out_df["error_code"] = raw_df.get("error_code", "ERR_DIRTY_DATA")
+                        out_df["raw_record"] = raw_df.apply(
+                            lambda r: f"order_id={r.get('order_id')}, amount={r.get('total_amount')}, country={r.get('shipping_country')}",
+                            axis=1,
+                        )
+                        return out_df
+                except Exception:
+                    pass
 
         return pd.DataFrame(
             columns=["rejected_at", "entity_type", "quarantine_reason", "error_code", "raw_record"]
@@ -335,10 +401,15 @@ class GoldDataLoader:
                 return df
 
         # 4. Sin datos disponibles
+        # No reseteamos ``self._source`` para preservar la fuente del último
+        # modelo Gold cargado con éxito. Así la UI muestra la fuente real de
+        # los datos analíticos aunque las tablas operacionales (executions,
+        # task_metrics, quarantine) no estén disponibles.
         return pd.DataFrame(columns=columns)
 
     def _try_postgres(self, table: str, columns: list[str]) -> Optional[pd.DataFrame]:
-        # Verificación rápida de disponibilidad de socket antes de invocar SQLAlchemy
+        # Verificación rápida de disponibilidad de socket antes de invocar
+        # SQLAlchemy (evita esperas largas cuando Postgres está caído).
         try:
             parsed = urlparse(self.pg_url.replace("postgresql+psycopg2://", "http://"))
             host = parsed.hostname or "localhost"
@@ -360,13 +431,17 @@ class GoldDataLoader:
                 connect_args={"connect_timeout": 2},
             )
             with engine.connect() as conn:
+                # SELECT * para tolerar columnas extra que el esquema Gold pueda
+                # añadir (country, category, product_name, etc.). Las vistas
+                # comprueban existencia de columnas antes de usarlas.
                 df = pd.read_sql(text(f"SELECT * FROM {table}"), conn)
             return df
         except Exception:
+            # PostgreSQL no disponible (modo local / MinIO caído). Degradación.
             return None
 
     def _try_minio_parquet(self, s3_prefix: str, columns: list[str]) -> Optional[pd.DataFrame]:
-        # Verificación rápida de socket para MinIO
+        # Verificación rápida de socket para MinIO (evita timeouts de DuckDB).
         try:
             parsed = urlparse(self.minio_endpoint)
             host = parsed.hostname or "localhost"
@@ -392,6 +467,8 @@ class GoldDataLoader:
             df = con.execute(
                 f"SELECT * FROM 's3://{self.gold_bucket}/{s3_prefix}/*.parquet'"
             ).df()
+            # Devolver todas las columnas disponibles; las vistas comprueban
+            # existencia antes de usar cada columna.
             return df
         except Exception:
             return None
@@ -402,6 +479,8 @@ class GoldDataLoader:
         if not path.exists():
             return None
         try:
+            # Devolver todas las columnas disponibles; las vistas comprueban
+            # existencia antes de usar cada columna.
             return pd.read_parquet(path)
         except Exception:
             return None

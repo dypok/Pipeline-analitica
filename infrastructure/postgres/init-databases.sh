@@ -74,9 +74,34 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "analytics_db" <<-E
         PRIMARY KEY (run_id, task_id)
     );
 
+    -- Tabla analítica Gold: Rendimiento y márgenes por producto
+    CREATE TABLE IF NOT EXISTS analytics.product_performance (
+        product_id VARCHAR(50) PRIMARY KEY,
+        product_name VARCHAR(150),
+        category VARCHAR(100),
+        units_sold INT DEFAULT 0,
+        gross_revenue NUMERIC(12, 2) DEFAULT 0.00,
+        returns_count INT DEFAULT 0,
+        return_rate NUMERIC(6, 4) DEFAULT 0.0000,
+        margin NUMERIC(12, 2) DEFAULT 0.00,
+        performance_tier VARCHAR(50) DEFAULT 'Standard Performer',
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- Tabla de auditoría de registros anómalos (Quarantine)
+    CREATE TABLE IF NOT EXISTS analytics.quarantine_records (
+        record_id VARCHAR(100) PRIMARY KEY,
+        rejected_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        entity_type VARCHAR(50) NOT NULL,
+        quarantine_reason TEXT NOT NULL,
+        raw_record TEXT
+    );
+
     CREATE INDEX IF NOT EXISTS idx_daily_sales_date ON analytics.daily_sales_kpis(kpi_date);
     CREATE INDEX IF NOT EXISTS idx_customer_tier ON analytics.customer_360_kpis(customer_tier);
+    CREATE INDEX IF NOT EXISTS idx_product_category ON analytics.product_performance(category);
     CREATE INDEX IF NOT EXISTS idx_task_metrics_run ON analytics.pipeline_task_metrics(run_id);
+    CREATE INDEX IF NOT EXISTS idx_quarantine_reason ON analytics.quarantine_records(quarantine_reason);
 EOSQL
 
 echo "=== [PostgreSQL Init] Inicialización completada con éxito ==="
