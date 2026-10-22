@@ -109,3 +109,55 @@ def test_chatbot_successful_flow(service):
         assert len(res["rows"]) > 0
         assert res["answer"] == synthesis_mock
         assert res["chart_suggestion"] in ("bar", "line", "table")
+
+
+def test_chatbot_date_sub_normalization(service):
+    # Simula que el LLM genera DATE_SUB(CURRENT_DATE, 1) como en el caso reportado por el usuario
+    sql_with_date_sub = "SELECT total_revenue FROM v_daily_sales WHERE order_date = DATE_SUB(CURRENT_DATE, 1) LIMIT 500"
+    synthesis_mock = "El ingreso de ayer fue registrado exitosamente."
+
+    with patch.object(
+        service,
+        "_post_to_openai_compatible_endpoint",
+        side_effect=[sql_with_date_sub, synthesis_mock],
+    ):
+        res = service.ask("Cual es el ingreso total de ayer")
+        assert res["success"] is True
+        assert res["error_code"] is None
+        # Verifica que el SQL ejecutado fue normalizado para DuckDB y no tiene DATE_SUB
+        assert "DATE_SUB" not in res["sql"].upper()
+        assert "INTERVAL" in res["sql"].upper()
+
+
+def test_chatbot_conversational_project_question(service):
+    # Prueba que preguntas como 'Como funciona el proyecto' se respondan conversacionalmente sin fallar
+    explanation = "La plataforma opera bajo una arquitectura Medallion (Landing -> Bronze -> Silver -> Gold + Quarantine) procesando datos con MinIO, Spark y DuckDB."
+
+    with patch.object(
+        service,
+        "_post_to_openai_compatible_endpoint",
+        return_value=explanation,
+    ):
+        res = service.ask("Como funciona el proyecto")
+        assert res["success"] is True
+        assert res["error_code"] is None
+        assert res["sql"] is None
+        assert len(res["data"]) == 0
+        assert "Medallion" in res["answer"]
+
+
+def test_chatbot_bronze_layer_query(service):
+    # Prueba consulta sobre la capa bronze (ejecutada sobre v_pipeline_execution_logs)
+    sql_bronze = "SELECT records_processed FROM v_pipeline_execution_logs WHERE UPPER(layer) = 'BRONZE' LIMIT 1"
+    synthesis_mock = "En la capa Bronze se procesaron 5,000 registros exitosamente."
+
+    with patch.object(
+        service,
+        "_post_to_openai_compatible_endpoint",
+        side_effect=[sql_bronze, synthesis_mock],
+    ):
+        res = service.ask("cuantos datos hay en capa bronze")
+        assert res["success"] is True
+        assert res["error_code"] is None
+        assert res["sql"] is not None
+        assert res["row_count"] > 0

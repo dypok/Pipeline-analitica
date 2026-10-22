@@ -1,0 +1,91 @@
+{
+  "platform": "Medallion Data Platform",
+  "version": "2.0",
+  "emitted_at": "2026-10-22T12:49:50.193125+00:00",
+  "nodes": [
+    {
+      "id": "landing.orders",
+      "name": "landing_orders_raw",
+      "layer": "Landing",
+      "service_type": "MinIO",
+      "description": "Payload crudo original JSON/CSV inmutable con hash SHA-256"
+    },
+    {
+      "id": "bronze.orders",
+      "name": "bronze_orders",
+      "layer": "Bronze",
+      "service_type": "MinIO",
+      "description": "Datos históricos estructurados en Parquet con metadatos de ingesta"
+    },
+    {
+      "id": "silver.orders",
+      "name": "silver_orders",
+      "layer": "Silver",
+      "service_type": "MinIO",
+      "description": "Órdenes limpias, deduplicadas, validadas y tipadas"
+    },
+    {
+      "id": "quarantine.orders",
+      "name": "quarantine_orders",
+      "layer": "Quarantine",
+      "service_type": "MinIO",
+      "description": "Registros con anomalías (montos negativos, nulos) aislados"
+    },
+    {
+      "id": "gold.daily_sales",
+      "name": "daily_sales",
+      "layer": "Gold",
+      "service_type": "MinIO/DuckDB",
+      "description": "Data Mart de ventas diarias por canal y país"
+    },
+    {
+      "id": "gold.customer_360",
+      "name": "customer_360",
+      "layer": "Gold",
+      "service_type": "MinIO/DuckDB",
+      "description": "Visión 360 del cliente con segmentación RFM"
+    },
+    {
+      "id": "gold.product_performance",
+      "name": "product_performance",
+      "layer": "Gold",
+      "service_type": "MinIO/DuckDB",
+      "description": "Rotación de inventario y márgenes por producto"
+    }
+  ],
+  "edges": [
+    {
+      "from_entity": "landing.orders",
+      "to_entity": "bronze.orders",
+      "transformation_job": "BronzeLoader.process_landing_to_bronze"
+    },
+    {
+      "from_entity": "bronze.orders",
+      "to_entity": "silver.orders",
+      "transformation_job": "SilverTransformer.process_bronze_to_silver"
+    },
+    {
+      "from_entity": "bronze.orders",
+      "to_entity": "quarantine.orders",
+      "transformation_job": "DataQualityValidator.partition_records"
+    },
+    {
+      "from_entity": "silver.orders",
+      "to_entity": "gold.daily_sales",
+      "transformation_job": "GoldAggregator.build_daily_sales"
+    },
+    {
+      "from_entity": "silver.orders",
+      "to_entity": "gold.customer_360",
+      "transformation_job": "GoldAggregator.build_customer_360"
+    },
+    {
+      "from_entity": "silver.orders",
+      "to_entity": "gold.product_performance",
+      "transformation_job": "GoldAggregator.build_product_performance"
+    }
+  ],
+  "total_nodes": 7,
+  "total_edges": 6,
+  "status": "AUDITED_OFFLINE"
+}

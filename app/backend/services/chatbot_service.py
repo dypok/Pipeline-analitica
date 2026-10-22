@@ -27,16 +27,49 @@ class ChatbotService:
     """
 
     SYSTEM_SQL_PROMPT = """Eres el generador SQL de la Plataforma Medallion.
-Tu única tarea es convertir la pregunta del usuario en una consulta SQL para DuckDB sobre las siguientes vistas de la capa Gold:
+Tu tarea es convertir la pregunta del usuario en una consulta SQL para DuckDB sobre las siguientes vistas:
 
 1. v_daily_sales (order_date, shipping_country, category, total_revenue, orders_count, units_sold, avg_ticket, returns_count, refunded_amount)
 2. v_customer_360 (customer_id, first_purchase_date, last_purchase_date, total_orders, lifetime_value, units_bought, avg_order_value, favorite_category)
 3. v_product_performance (product_id, product_name, category, units_sold, gross_revenue, returns_count, return_rate, margin)
+4. v_pipeline_execution_logs (execution_id, pipeline_name, layer, status, records_processed, records_quarantined, finished_at, error_message)
 
-Reglas estrictas:
+Reglas estrictas de SQL para DuckDB:
 - Genera ÚNICAMENTE una consulta SELECT de solo lectura.
 - No incluyas bloques markdown ni explicaciones, solo la instrucción SQL pura.
-- Si la pregunta no se relaciona con estas tablas o no se puede responder, responde únicamente: NO_SQL
+- Fechas y cálculos en DuckDB:
+  * Para fechas relativas como 'ayer': usa `order_date = (CURRENT_DATE - INTERVAL '1 day')` o `order_date = (SELECT MAX(order_date) FROM v_daily_sales)`.
+  * NUNCA uses DATE_SUB(date, int). Usa siempre `(date - INTERVAL 'n day')` o `(date - n)`.
+  * Para 'ingreso total', siempre usa `SUM(total_revenue)`.
+  * Para 'total de órdenes', usa `SUM(orders_count)` en v_daily_sales o `COUNT(*)` según la tabla.
+  * Para capas del pipeline (ej. bronze, silver, gold, landing), consulta `v_pipeline_execution_logs` filtrando por `UPPER(layer) = 'BRONZE'`.
+- Si la pregunta es un saludo, una pregunta conceptual sobre el funcionamiento del proyecto o no se puede responder con SQL, responde únicamente: NO_SQL
+"""
+
+    SYSTEM_CONVERSATIONAL_PROMPT = """Eres el Asistente Inteligente de la Plataforma Extensible de Datos (Pipeline Analítica).
+Responde de forma clara, amable y profesional a preguntas generales sobre el proyecto, su arquitectura, funcionamiento, tecnologías y conceptos de ingeniería de datos.
+
+Conocimiento clave de la plataforma:
+- Arquitectura Medallion en 5 zonas:
+  1. Landing: Recepción inmutable de datos crudos (CSV, JSON, APIs REST) en MinIO S3 con hashing SHA-256.
+  2. Bronze: Preservación histórica estructurada en formato Parquet columnar con metadatos de auditoría (_ingestion_id, timestamp).
+  3. Silver: Limpieza, deduplicación, validación de reglas de calidad con Apache Spark y tipado estricto.
+  4. Quarantine: Aislamiento automático de registros corruptos o anómalos sin detener el lote.
+  5. Gold: Modelos analíticos dimensionales (v_daily_sales, v_customer_360, v_product_performance).
+- Tecnologías:
+  - Almacenamiento: MinIO (Object Storage compatible S3).
+  - Procesamiento: Apache Spark 3.5.1 (PySpark).
+  - Orquestación: Apache Airflow (DAGs idempotentes con reintentos y SLAs).
+  - Consultas analíticas: DuckDB sobre Parquet (latencia < 200 ms).
+  - Visualización: Dashboards interactivos en Streamlit con Plotly.
+  - Asistente IA: FastAPI con modelo local soberano Qwen2.5 (2B) sin coste de API ni dependencias en la nube.
+  - Gobernanza: OpenMetadata (linaje y catálogo) y Apache Atlas (clasificación de PII y seguridad).
+
+Instrucciones:
+- Si el usuario te saluda, salúdalo amablemente y explícale qué consultas analíticas (ventas, clientes, productos) o explicaciones de arquitectura puedes resolver.
+- Si pregunta "¿Cómo funciona el proyecto?", describe el flujo de extremo a extremo desde la ingesta hasta los dashboards y el asistente.
+- Si pregunta por una capa específica (ej. "capa bronze"), explica qué hace esa capa y qué datos contiene.
+- Responde en prosa markdown concisa, profesional y estructurada sin generar código SQL.
 """
 
     SYSTEM_SYNTHESIS_PROMPT = """Eres el asistente analítico de la Plataforma Medallion.
@@ -69,7 +102,27 @@ No inventes información ni asumas datos fuera de la muestra proporcionada.
                 success=False,
             )
 
-        # 3. Generación Text-to-SQL con el modelo local Qwen2.5
+        # 3. Detección temprana de preguntas conversacionales / conceptuales sobre el proyecto
+        if self._is_conversational_or_project_question(clean_question):
+            try:
+                conv_answer = self._answer_conversational(clean_question)
+                return {
+                    "success": True,
+                    "answer": conv_answer,
+                    "sql": None,
+                    "data": [],
+                    "rows": [],
+                    "columns": [],
+                    "row_count": 0,
+                    "execution_time_ms": 0.0,
+                    "chart_suggestion": None,
+                    "error_code": None,
+                    "error_detail": None,
+                }
+            except Exception as exc:
+                logger.warning("Fallo en respuesta conversacional: %s. Procediendo a flujo SQL.", str(exc))
+
+        # 4. Generación Text-to-SQL con el modelo local Qwen2.5
         try:
             generated_sql = self._generate_sql(clean_question, dataset_hint)
         except LLMException as llm_err:
@@ -93,6 +146,26 @@ No inventes información ni asumas datos fuera de la muestra proporcionada.
             return self._build_error_response(ErrorCode.ERR_SQL_GENERATION, f"Error generando consulta SQL: {str(exc)}")
 
         if not generated_sql or generated_sql.upper().strip() == "NO_SQL":
+            # Si el modelo determinó NO_SQL pero es una pregunta sobre la plataforma / capas, responder conversacionalmente
+            if self._is_platform_question(clean_question):
+                try:
+                    conv_answer = self._answer_conversational(clean_question)
+                    return {
+                        "success": True,
+                        "answer": conv_answer,
+                        "sql": None,
+                        "data": [],
+                        "rows": [],
+                        "columns": [],
+                        "row_count": 0,
+                        "execution_time_ms": 0.0,
+                        "chart_suggestion": None,
+                        "error_code": None,
+                        "error_detail": None,
+                    }
+                except Exception:
+                    pass
+
             return self._build_error_response(
                 ErrorCode.ERR_SQL_GENERATION,
                 "El modelo no pudo generar una consulta SQL válida para los datos solicitados. "
@@ -165,6 +238,37 @@ No inventes información ni asumas datos fuera de la muestra proporcionada.
             r"\b(clima|pol[ií]tica|presidente|f[uú]tbol|receta|hor[oó]scopo)\b",
         ]
         return any(re.search(pat, question, re.IGNORECASE) for pat in patterns)
+
+    def _is_conversational_or_project_question(self, question: str) -> bool:
+        """Determina si la consulta es un saludo o pregunta conceptual sobre el funcionamiento del proyecto."""
+        q = question.lower().strip()
+        # Saludos directos
+        if re.search(r"^(hola|buenos d[ií]as|buenas tardes|buenas noches|saludos|qu[eé] tal|hey)\b", q):
+            return True
+        # Preguntas sobre cómo funciona la plataforma
+        if re.search(r"\b(c[oó]mo funciona|qu[eé] es el proyecto|de qu[eé] trata|expl[ií]came el proyecto|arquitectura|qu[eé] puedes hacer|qui[eé]n eres)\b", q):
+            # A menos que sea una pregunta analítica explícita como "cuál es el total" o "cuántas ventas"
+            if not re.search(r"\b(total_revenue|cu[aá]nto vendimos|ingreso total|top \d|cu[aá]ntas [oó]rdenes)\b", q):
+                return True
+        return False
+
+    def _is_platform_question(self, question: str) -> bool:
+        """Determina si una pregunta que no generó SQL habla sobre conceptos de la plataforma."""
+        q = question.lower().strip()
+        keywords = ["bronze", "silver", "gold", "landing", "quarantine", "cuarentena", "medallion", "pipeline", "spark", "minio", "airflow", "duckdb"]
+        return any(k in q for k in keywords)
+
+    def _answer_conversational(self, question: str) -> str:
+        """Genera una respuesta conversacional fundamentada en la arquitectura de la plataforma."""
+        messages = [
+            {"role": "system", "content": self.SYSTEM_CONVERSATIONAL_PROMPT},
+            {"role": "user", "content": question},
+        ]
+        return self._post_to_openai_compatible_endpoint(
+            messages=messages,
+            temperature=0.3,
+            max_tokens=400,
+        )
 
     def _generate_sql(self, question: str, dataset_hint: str | None = None) -> str:
         """Invoca el LLM configurado para traducir lenguaje natural a SQL."""
