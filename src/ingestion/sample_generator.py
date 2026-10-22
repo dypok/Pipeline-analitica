@@ -3,6 +3,7 @@
 import json
 import random
 from datetime import datetime, timedelta
+from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
 
@@ -15,6 +16,28 @@ class MockDataGenerator:
         self.countries = ["CO", "MX", "AR", "CL", "PE", "US", "ES"]
         self.statuses = ["COMPLETED", "PENDING", "CANCELLED", "SHIPPED"]
         self.payment_methods = ["CREDIT_CARD", "DEBIT_CARD", "PSE", "PAYPAL", "CASH"]
+        self.products = self._load_products()
+
+    def _load_products(self) -> List[Dict[str, Any]]:
+        """Carga el catálogo de productos o genera uno sintético coherente."""
+        try:
+            p_file = Path(__file__).resolve().parent.parent.parent / "data" / "mock" / "raw" / "products.json"
+            if p_file.is_file():
+                with open(p_file, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    if data:
+                        return data
+        except Exception:
+            pass
+        prods = []
+        for i, cat in enumerate(self.categories * 15, start=1):
+            prods.append({
+                "product_id": f"PROD-{i:04d}",
+                "product_name": f"Producto {cat} Mod-{i}",
+                "category": cat,
+                "unit_price": round(random.uniform(15.0, 350.0), 2),
+            })
+        return prods
 
     def generate_customers(self, count: int = 100) -> List[Dict[str, Any]]:
         """Genera un listado de clientes sintéticos."""
@@ -55,9 +78,20 @@ class MockDataGenerator:
         for i in range(1, count + 1):
             cust_id = f"CUST-{random.randint(1, customer_count):05d}"
             order_date = base_date + timedelta(days=random.randint(0, 90))
-            category = random.choice(self.categories)
+
+            prod = random.choice(self.products) if self.products else None
+            if prod:
+                product_id = prod["product_id"]
+                product_name = prod.get("product_name", f"Producto {product_id}")
+                category = prod.get("category", random.choice(self.categories))
+                unit_price = float(prod.get("unit_price", round(random.uniform(5.0, 500.0), 2)))
+            else:
+                product_id = f"PROD-{random.randint(1, 50):04d}"
+                product_name = f"Producto {product_id}"
+                category = random.choice(self.categories)
+                unit_price = round(random.uniform(5.0, 500.0), 2)
+
             quantity = random.randint(1, 10)
-            unit_price = round(random.uniform(5.0, 500.0), 2)
             total_amount = round(quantity * unit_price, 2)
             status = random.choice(self.statuses)
 
@@ -80,6 +114,8 @@ class MockDataGenerator:
                 {
                     "order_id": f"ORD-{i:06d}",
                     "customer_id": cust_id,
+                    "product_id": product_id,
+                    "product_name": product_name,
                     "order_date": order_date.strftime("%Y-%m-%d"),
                     "category": category,
                     "quantity": quantity,
