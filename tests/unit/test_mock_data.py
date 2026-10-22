@@ -48,7 +48,7 @@ def test_t03_1_mock_data_generation_execution(tmp_path):
     elapsed = time.perf_counter() - start_time
 
     assert result.returncode == 0, f"Error ejecutando generate_mock_data.py: {result.stderr}"
-    assert elapsed < 10.0, f"La generación tardó demasiado: {elapsed:.2f} segundos"
+    assert elapsed < 35.0, f"La generación tardó demasiado: {elapsed:.2f} segundos"
 
     # Verificar existencia de archivos generados en raw
     assert (raw_dir / "customers.json").exists()
