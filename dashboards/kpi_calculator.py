@@ -23,8 +23,9 @@ def compute_global_kpis(daily_sales: pd.DataFrame) -> dict:
 
     Args:
         daily_sales: DataFrame con el modelo ``daily_sales_kpis`` ya cargado
-            (columnas: kpi_date, total_orders, completed_orders, cancelled_orders,
-            total_revenue, average_ticket, distinct_customers, top_category).
+            (columnas: kpi_date / order_date, total_orders / orders_count,
+            completed_orders, cancelled_orders / returns_count,
+            total_revenue, average_ticket / avg_ticket, distinct_customers, top_category / category).
 
     Returns:
         Diccionario con los KPIs para las tarjetas de la UI.
@@ -38,11 +39,32 @@ def compute_global_kpis(daily_sales: pd.DataFrame) -> dict:
             "distinct_customers": 0,
         }
 
-    total_revenue = float(daily_sales["total_revenue"].sum())
-    total_orders = int(daily_sales["total_orders"].sum())
-    completed_orders = int(daily_sales["completed_orders"].sum())
-    cancelled_orders = int(daily_sales["cancelled_orders"].sum())
-    distinct_customers = int(daily_sales["distinct_customers"].sum())
+    total_revenue = float(daily_sales["total_revenue"].sum()) if "total_revenue" in daily_sales.columns else 0.0
+
+    orders_col = (
+        "total_orders"
+        if "total_orders" in daily_sales.columns
+        else ("orders_count" if "orders_count" in daily_sales.columns else None)
+    )
+    total_orders = int(daily_sales[orders_col].sum()) if orders_col else 0
+
+    completed_orders = (
+        int(daily_sales["completed_orders"].sum())
+        if "completed_orders" in daily_sales.columns
+        else total_orders
+    )
+
+    cancelled_orders = (
+        int(daily_sales["cancelled_orders"].sum())
+        if "cancelled_orders" in daily_sales.columns
+        else (int(daily_sales["returns_count"].sum()) if "returns_count" in daily_sales.columns else 0)
+    )
+
+    distinct_customers = (
+        int(daily_sales["distinct_customers"].sum())
+        if "distinct_customers" in daily_sales.columns
+        else total_orders
+    )
 
     average_ticket = (total_revenue / completed_orders) if completed_orders > 0 else 0.0
     return_rate = (cancelled_orders / total_orders) if total_orders > 0 else 0.0
@@ -58,24 +80,44 @@ def compute_global_kpis(daily_sales: pd.DataFrame) -> dict:
 
 def compute_revenue_trend(daily_sales: pd.DataFrame) -> pd.DataFrame:
     """Serie temporal de ingresos por día (para el gráfico de líneas de Plotly)."""
-    if daily_sales.empty:
+    date_col = (
+        "kpi_date"
+        if "kpi_date" in daily_sales.columns
+        else ("order_date" if "order_date" in daily_sales.columns else None)
+    )
+    if daily_sales.empty or not date_col or "total_revenue" not in daily_sales.columns:
         return pd.DataFrame(columns=["kpi_date", "total_revenue"])
-    out = daily_sales[["kpi_date", "total_revenue"]].copy()
+    out = daily_sales[[date_col, "total_revenue"]].copy()
+    if date_col != "kpi_date":
+        out = out.rename(columns={date_col: "kpi_date"})
+    out["kpi_date"] = pd.to_datetime(out["kpi_date"])
+    out = out.groupby("kpi_date", as_index=False)["total_revenue"].sum()
     out = out.sort_values("kpi_date")
     return out
 
 
 def compute_top_categories(daily_sales: pd.DataFrame, top_n: int = 10) -> pd.DataFrame:
-    """Ranking de categorías por órdenes completadas (gráfico de barras).
-
-    TODO: cuando el modelo Gold exponga la dimensión categoría, sustituir este
-    cómputo por una agregación directa sobre ``daily_sales`` particionada.
-    """
-    if daily_sales.empty or "top_category" not in daily_sales.columns:
+    """Ranking de categorías por órdenes completadas (gráfico de barras)."""
+    cat_col = (
+        "top_category"
+        if "top_category" in daily_sales.columns
+        else ("category" if "category" in daily_sales.columns else None)
+    )
+    orders_col = (
+        "completed_orders"
+        if "completed_orders" in daily_sales.columns
+        else (
+            "orders_count"
+            if "orders_count" in daily_sales.columns
+            else ("total_orders" if "total_orders" in daily_sales.columns else None)
+        )
+    )
+    if daily_sales.empty or not cat_col or not orders_col:
         return pd.DataFrame(columns=["top_category", "completed_orders"])
     out = (
-        daily_sales.groupby("top_category", as_index=False)["completed_orders"]
+        daily_sales.groupby(cat_col, as_index=False)[orders_col]
         .sum()
+        .rename(columns={cat_col: "top_category", orders_col: "completed_orders"})
         .sort_values("completed_orders", ascending=False)
         .head(top_n)
     )
@@ -122,15 +164,34 @@ def filter_by_selections(
     date_col: str = "kpi_date",
 ) -> pd.DataFrame:
     """Aplica los filtros del sidebar a un DataFrame del modelo Gold."""
+    if df.empty:
+        return df
+
     out = df.copy()
-    if date_range and date_col in out.columns and len(date_range) == 2:
+    actual_date_col = (
+        date_col
+        if date_col in out.columns
+        else ("order_date" if "order_date" in out.columns else None)
+    )
+    if date_range and actual_date_col and len(date_range) == 2:
         start, end = pd.to_datetime(date_range[0]), pd.to_datetime(date_range[1])
-        out = out[(out[date_col] >= start) & (out[date_col] <= end)]
-    # TODO: aplicar filtros por países y categorías cuando el modelo Gold exponga
-    # esas dimensiones (shipping_country, category). Hoy ``daily_sales_kpis`` no
-    # las incluye, pero la capa Silver sí las tiene y se incluirán en Gold.
-    if countries and "country" in out.columns:
-        out = out[out["country"].isin(countries)]
-    if categories and "category" in out.columns:
-        out = out[out["category"].isin(categories)]
+        dates = pd.to_datetime(out[actual_date_col])
+        out = out[(dates >= start) & (dates <= end)]
+
+    country_col = (
+        "country"
+        if "country" in out.columns
+        else ("shipping_country" if "shipping_country" in out.columns else None)
+    )
+    if countries and country_col:
+        out = out[out[country_col].isin(countries)]
+
+    cat_col = (
+        "category"
+        if "category" in out.columns
+        else ("top_category" if "top_category" in out.columns else None)
+    )
+    if categories and cat_col:
+        out = out[out[cat_col].isin(categories)]
+
     return out

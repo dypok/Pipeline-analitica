@@ -19,6 +19,8 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+import socket
+from urllib.parse import urlparse
 from dataclasses import dataclass
 from functools import lru_cache
 from typing import Optional
@@ -27,6 +29,15 @@ import pandas as pd
 from dotenv import load_dotenv
 
 load_dotenv()
+
+
+def _is_service_reachable(host: str, port: int, timeout: float = 0.3) -> bool:
+    """Verifica rápidamente si un servicio de red está escuchando en el puerto dado."""
+    try:
+        with socket.create_connection((host, port), timeout=timeout):
+            return True
+    except (socket.timeout, ConnectionRefusedError, OSError):
+        return False
 
 
 @dataclass(frozen=True)
@@ -80,8 +91,47 @@ class GoldDataLoader:
                 "total_revenue", "average_ticket", "distinct_customers", "top_category",
             ],
         )
-        if not df.empty and "kpi_date" in df.columns:
-            df["kpi_date"] = pd.to_datetime(df["kpi_date"])
+        if not df.empty:
+            # Compatibilidad bidireccional entre schema PostgreSQL y Parquet Gold
+            if "order_date" in df.columns and "kpi_date" not in df.columns:
+                df["kpi_date"] = pd.to_datetime(df["order_date"])
+            elif "kpi_date" in df.columns:
+                df["kpi_date"] = pd.to_datetime(df["kpi_date"])
+                if "order_date" not in df.columns:
+                    df["order_date"] = df["kpi_date"]
+
+            if "orders_count" in df.columns and "total_orders" not in df.columns:
+                df["total_orders"] = df["orders_count"]
+            elif "total_orders" in df.columns and "orders_count" not in df.columns:
+                df["orders_count"] = df["total_orders"]
+
+            if "completed_orders" not in df.columns:
+                df["completed_orders"] = df.get("total_orders", df.get("orders_count", 0))
+
+            if "cancelled_orders" not in df.columns:
+                df["cancelled_orders"] = df.get("returns_count", 0)
+
+            if "returns_count" not in df.columns:
+                df["returns_count"] = df.get("cancelled_orders", 0)
+
+            if "distinct_customers" not in df.columns:
+                df["distinct_customers"] = df.get("total_orders", df.get("orders_count", 0))
+
+            if "avg_ticket" in df.columns and "average_ticket" not in df.columns:
+                df["average_ticket"] = df["avg_ticket"]
+            elif "average_ticket" in df.columns and "avg_ticket" not in df.columns:
+                df["avg_ticket"] = df["average_ticket"]
+
+            if "category" in df.columns and "top_category" not in df.columns:
+                df["top_category"] = df["category"]
+            elif "top_category" in df.columns and "category" not in df.columns:
+                df["category"] = df["top_category"]
+
+            if "shipping_country" in df.columns and "country" not in df.columns:
+                df["country"] = df["shipping_country"]
+            elif "country" in df.columns and "shipping_country" not in df.columns:
+                df["shipping_country"] = df["country"]
+
         return df
 
     def load_customer_360(self) -> pd.DataFrame:
@@ -101,6 +151,18 @@ class GoldDataLoader:
                 "total_orders", "lifetime_value", "avg_order_value", "favorite_category",
             ],
         )
+        if not df.empty:
+            if "total_lifetime_orders" in df.columns and "total_orders" not in df.columns:
+                df["total_orders"] = df["total_lifetime_orders"]
+            if "total_lifetime_spend" in df.columns and "lifetime_value" not in df.columns:
+                df["lifetime_value"] = df["total_lifetime_spend"]
+            if "average_order_value" in df.columns and "avg_order_value" not in df.columns:
+                df["avg_order_value"] = df["average_order_value"]
+            if "first_order_date" in df.columns and "first_purchase_date" not in df.columns:
+                df["first_purchase_date"] = df["first_order_date"]
+            if "last_order_date" in df.columns and "last_purchase_date" not in df.columns:
+                df["last_purchase_date"] = df["last_order_date"]
+
         for col in ("first_purchase_date", "last_purchase_date"):
             if col in df.columns:
                 df[col] = pd.to_datetime(df[col], errors="coerce")
@@ -254,21 +316,21 @@ class GoldDataLoader:
         """Intenta cargar el modelo desde PostgreSQL → MinIO → Local Parquet."""
         # 1. PostgreSQL (recomendado)
         df = self._try_postgres(sql_table, columns)
-        if df is not None:
+        if df is not None and not df.empty:
             self._source = LoaderSource("postgres", sql_table)
             return df
 
         # 2. MinIO vía DuckDB
         if s3_prefix is not None:
             df = self._try_minio_parquet(s3_prefix, columns)
-            if df is not None:
+            if df is not None and not df.empty:
                 self._source = LoaderSource("minio", f"s3://{self.gold_bucket}/{s3_prefix}/")
                 return df
 
         # 3. Parquet local (mock)
         if local_file is not None:
             df = self._try_local_parquet(local_file, columns)
-            if df is not None:
+            if df is not None and not df.empty:
                 self._source = LoaderSource("local_parquet", local_file)
                 return df
 
@@ -276,12 +338,27 @@ class GoldDataLoader:
         return pd.DataFrame(columns=columns)
 
     def _try_postgres(self, table: str, columns: list[str]) -> Optional[pd.DataFrame]:
+        # Verificación rápida de disponibilidad de socket antes de invocar SQLAlchemy
+        try:
+            parsed = urlparse(self.pg_url.replace("postgresql+psycopg2://", "http://"))
+            host = parsed.hostname or "localhost"
+            port = parsed.port or 5433
+            if not _is_service_reachable(host, port, timeout=0.3):
+                return None
+        except Exception:
+            pass
+
         try:
             from sqlalchemy import create_engine, text
         except ImportError:
             return None
         try:
-            engine = create_engine(self.pg_url, pool_pre_ping=True, future=True)
+            engine = create_engine(
+                self.pg_url,
+                pool_pre_ping=True,
+                future=True,
+                connect_args={"connect_timeout": 2},
+            )
             with engine.connect() as conn:
                 df = pd.read_sql(text(f"SELECT * FROM {table}"), conn)
             return df
@@ -289,6 +366,16 @@ class GoldDataLoader:
             return None
 
     def _try_minio_parquet(self, s3_prefix: str, columns: list[str]) -> Optional[pd.DataFrame]:
+        # Verificación rápida de socket para MinIO
+        try:
+            parsed = urlparse(self.minio_endpoint)
+            host = parsed.hostname or "localhost"
+            port = parsed.port or 9000
+            if not _is_service_reachable(host, port, timeout=0.3):
+                return None
+        except Exception:
+            pass
+
         try:
             import duckdb
         except ImportError:
