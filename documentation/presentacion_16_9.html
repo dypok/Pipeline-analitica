@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Presentación: Plataforma Extensible de Datos (16:9)</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    /* 16:9 container styling */
+    .aspect-16-9 {
+      aspect-ratio: 16 / 9;
+    }
+    .slide-enter {
+      opacity: 0;
+      transform: scale(0.98);
+      transition: opacity 0.25s ease-out, transform 0.25s ease-out;
+    }
+    .slide-active {
+      opacity: 1;
+      transform: scale(1);
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col items-center justify-center p-2 sm:p-4 md:p-6 font-sans select-none">
+
+  <!-- Top bar with Presentation Title, Progress and Controls -->
+  <header class="w-full max-w-6xl flex items-center justify-between py-2 px-4 mb-2 bg-slate-900/80 backdrop-blur border border-slate-800 rounded-xl text-xs sm:text-sm">
+    <div class="flex items-center space-x-2">
+      <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-sky-500/20 text-sky-400 border border-sky-500/30">16:9 DECK</span>
+      <span class="font-medium text-slate-300 truncate max-w-[200px] sm:max-w-md">Plataforma Extensible de Datos • v2.0</span>
+    </div>
+    
+    <div class="flex items-center space-x-3">
+      <!-- Slide selector -->
+      <select id="slideSelect" class="bg-slate-800 border border-slate-700 text-slate-300 rounded px-2 py-1 text-xs focus:outline-none focus:border-sky-500 cursor-pointer">
+        <!-- Populated via JS -->
+      </select>
+      
+      <!-- Notes Toggle Button -->
+      <button id="toggleNotesBtn" title="Ver notas del orador" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded border border-slate-700 flex items-center space-x-1 transition">
+        <span>🎙️</span>
+        <span class="hidden sm:inline">Notas</span>
+      </button>
+
+      <!-- Fullscreen Button -->
+      <button id="fullscreenBtn" title="Pantalla completa" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded border border-slate-700 flex items-center space-x-1 transition">
+        <span>⛶</span>
+        <span class="hidden sm:inline">Pantalla</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main 16:9 Slide Stage -->
+  <main id="slideStage" class="relative w-full max-w-6xl aspect-16-9 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl shadow-sky-950/20 overflow-hidden flex flex-col justify-between">
+    
+    <!-- Top Progress Bar -->
+    <div class="w-full bg-slate-800 h-1.5 overflow-hidden">
+      <div id="progressBar" class="bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-400 h-full transition-all duration-300 ease-out" style="width: 8.33%;"></div>
+    </div>
+
+    <!-- Slide Content Container (Swapped dynamically) -->
+    <div id="slideContainer" class="flex-1 p-6 sm:p-10 md:p-12 flex flex-col justify-between overflow-y-auto no-scrollbar slide-enter slide-active">
+      <!-- Content injected by JS -->
+    </div>
+
+    <!-- Slide Footer -->
+    <footer class="w-full px-6 py-3 bg-slate-950/70 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
+      <div class="flex items-center space-x-3">
+        <span class="font-semibold text-sky-400 tracking-wider">PIPELINE ANALÍTICA</span>
+        <span class="text-slate-600">|</span>
+        <span id="slideCategory" class="text-slate-400 font-medium">Arquitectura & Estrategia</span>
+      </div>
+      
+      <div class="flex items-center space-x-2">
+        <button id="prevBtn" class="p-1.5 px-3 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700 transition flex items-center text-xs font-semibold space-x-1">
+          <span>◀</span>
+          <span class="hidden sm:inline">Anterior</span>
+        </button>
+        <span id="slideCounter" class="px-2 font-mono text-slate-300 font-bold">1 / 12</span>
+        <button id="nextBtn" class="p-1.5 px-3 bg-sky-600 hover:bg-sky-500 text-white rounded-lg shadow-sm transition flex items-center text-xs font-semibold space-x-1">
+          <span class="hidden sm:inline">Siguiente</span>
+          <span>▶</span>
+        </button>
+      </div>
+    </footer>
+  </main>
+
+  <!-- Speaker Notes Drawer (Toggled by user) -->
+  <aside id="notesDrawer" class="w-full max-w-6xl mt-3 p-4 bg-slate-900/90 border border-amber-500/30 rounded-xl text-xs sm:text-sm text-slate-300 hidden">
+    <div class="flex items-center space-x-2 text-amber-400 font-semibold mb-1">
+      <span>🎙️ NOTAS PARA EL ORADOR:</span>
+    </div>
+    <p id="speakerNotesText" class="italic text-slate-300 leading-relaxed"></p>
+  </aside>
+
+  <!-- Navigation Tips -->
+  <div class="mt-3 text-slate-400 text-xs text-center flex items-center justify-center space-x-4">
+    <span>💡 Usa <kbd class="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700 text-slate-300">←</kbd> y <kbd class="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700 text-slate-300">→</kbd> o la barra espaciadora para avanzar</span>
+  </div>
+
+  <script>
+    // 12 High-Impact Slides Data
+    const slidesData = [
+      {
+        id: 1,
+        title: "Plataforma Extensible de Datos",
+        category: "Portada Ejecutiva",
+        html: `
+          <div class="h-full flex flex-col justify-center items-center text-center my-auto">
+            <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-sky-500/10 text-sky-400 border border-sky-500/30 mb-6">
+              ARQUITECTURA LAKEHOUSE • MEDALLION 2.0 • IA LOCAL
+            </div>
+            <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight text-white mb-4 leading-tight">
+              Plataforma Extensible de <span class="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-cyan-300 to-indigo-400">Datos y Analítica</span>
+            </h1>
+            <p class="text-base sm:text-xl text-slate-300 max-w-2xl mx-auto mb-8 font-light leading-relaxed">
+              Integración modular, gobernanza activa, dashboards de ultra-baja latencia con DuckDB y Chatbot asistido por LLM local sin coste de API.
+            </p>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-2xl w-full text-left">
+              <div class="bg-slate-800/60 p-3 rounded-lg border border-slate-700/60">
+                <div class="text-[10px] text-slate-400 uppercase font-semibold">Almacenamiento</div>
+                <div class="text-sm font-bold text-sky-300">MinIO S3</div>
+              </div>
+              <div class="bg-slate-800/60 p-3 rounded-lg border border-slate-700/60">
+                <div class="text-[10px] text-slate-400 uppercase font-semibold">Procesamiento</div>
+                <div class="text-sm font-bold text-indigo-300">Apache Spark</div>
+              </div>
+              <div class="bg-slate-800/60 p-3 rounded-lg border border-slate-700/60">
+                <div class="text-[10px] text-slate-400 uppercase font-semibold">Motor Consulta</div>
+                <div class="text-sm font-bold text-emerald-300">DuckDB + Parquet</div>
+              </div>
+              <div class="bg-slate-800/60 p-3 rounded-lg border border-slate-700/60">
+                <div class="text-[10px] text-slate-400 uppercase font-semibold">Inteligencia Artificial</div>
+                <div class="text-sm font-bold text-amber-300">Qwen 2.5 (2B Local)</div>
+              </div>
+            </div>
+          </div>
+        `,
+        notes: "Buenos días. Hoy presentamos la Plataforma Extensible de Datos: un sistema integral que une la robustez de una arquitectura Medallion en MinIO y Spark con un motor de consultas ultrarrápido en DuckDB y un asistente inteligente que funciona 100% en infraestructura local."
+      },
+      {
+        id: 2,
+        title: "El Problema de Negocio y Técnico",
+        category: "Diagnóstico & Dolor",
+        html: `
+          <div class="h-full flex flex-col justify-center">
+            <div class="mb-4">
+              <span class="text-rose-400 font-semibold text-xs uppercase tracking-wider">El Diagnóstico</span>
+              <h2 class="text-2xl sm:text-3xl font-bold text-white mt-1">¿Por qué las empresas no confían en sus datos ni escalan su analítica?</h2>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 my-auto">
+              <div class="bg-slate-800/70 border border-rose-500/20 rounded-xl p-5 hover:border-rose-500/40 transition">
+                <div class="w-10 h-10 rounded-lg bg-rose-500/10 text-rose-400 flex items-center justify-center font-bold text-xl mb-3">📁</div>
+                <h3 class="text-base font-bold text-rose-300 mb-2">Silos y Formatos Dispersos</h3>
+                <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                  Fuentes fragmentadas en archivos CSV manuales, JSON sin esquema fijo y APIs heterogéneas sin contrato unificado.
+                </p>
+              </div>
+
+              <div class="bg-slate-800/70 border border-amber-500/20 rounded-xl p-5 hover:border-amber-500/40 transition">
+                <div class="w-10 h-10 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center font-bold text-xl mb-3">🔍</div>
+                <h3 class="text-base font-bold text-amber-300 mb-2">Linaje Opaco y Calidad Nula</h3>
+                <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                  Cuando una métrica cambia o falla, no se puede auditar qué proceso la originó. Datos corruptos contaminan los reportes ejecutivos.
+                </p>
+              </div>
+
+              <div class="bg-slate-800/70 border border-indigo-500/20 rounded-xl p-5 hover:border-indigo-500/40 transition">
+                <div class="w-10 h-10 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center font-bold text-xl mb-3">🤖</div>
+                <h3 class="text-base font-bold text-indigo-300 mb-2">IA con Alucinaciones y Riesgo</h3>
+                <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                  Los chatbots convencionales inventan respuestas numéricas o envían datos confidenciales a APIs en la nube con costos por token impredecibles.
+                </p>
+              </div>
+            </div>
+          </div>
+        `,
+        notes: "Presentamos los 3 grandes dolores: primero, fuentes aisladas sin formato estándar; segundo, falta de linaje y gobierno donde nadie sabe de dónde viene un dato; y tercero, la adopción frustrante de IA generativa por alucinaciones y altos costos en la nube."
+      },
+      {
+        id: 3,
+        title: "Propuesta de Valor",
+        category: "Visión & Principios",
+        html: `
+          <div class="h-full flex flex-col justify-center">
+            <div class="mb-4">
+              <span class="text-sky-400 font-semibold text-xs uppercase tracking-wider">La Solución</span>
+              <h2 class="text-2xl sm:text-3xl font-bold text-white mt-1">Una Única Fuente de Verdad Conectada a Dos Vías de Consumo</h2>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 my-auto">
+              <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-5 flex flex-col justify-between">
+                <div>
+                  <div class="inline-block px-2.5 py-1 rounded bg-sky-500/20 text-sky-300 text-xs font-bold mb-3">PRINCIPIO 1: ARQUITECTURA MEDALLION</div>
+                  <h3 class="text-lg font-bold text-white mb-2">Tratamiento por Etapas de Madurez</h3>
+                  <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                    Separación estricta de responsabilidades: <b>Landing</b> (crudo inmutable) → <b>Bronze</b> (estructurado) → <b>Silver</b> (limpio y validado) → <b>Gold</b> (modelos de negocio analíticos) + <b>Quarantine</b> (aislamiento de anomalías).
+                  </p>
+                </div>
+                <div class="mt-4 pt-3 border-t border-slate-700/60 text-xs text-sky-400 flex items-center font-medium">
+                  ✓ Idempotencia garantizada con Apache Spark
+                </div>
+              </div>
+
+              <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-5 flex flex-col justify-between">
+                <div>
+                  <div class="inline-block px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-300 text-xs font-bold mb-3">PRINCIPIO 2: CONSUMO CONSISTENTE</div>
+                  <h3 class="text-lg font-bold text-white mb-2">Mismas Métricas: Dashboard y Chatbot</h3>
+                  <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                    Tanto los tableros visuales de <b>Streamlit</b> como el <b>Chatbot con IA</b> consultan la misma capa Gold mediante <b>DuckDB</b>. El chatbot no inventa cifras: formula sentencias SQL reales y comprobadas.
+                  </p>
+                </div>
+                <div class="mt-4 pt-3 border-t border-slate-700/60 text-xs text-emerald-400 flex items-center font-medium">
+                  ✓ Cero alucinaciones, respuestas 100% auditables
+                </div>
+              </div>
+            </div>
+          </div>
+        `,
+        notes: "Nuestra propuesta de valor se apoya en dos pilares: la pureza del dato a través de la arquitectura Medallion con Spark, y el consumo consistente donde los tableros de BI y el chatbot de IA comparten la misma capa analítica sobre DuckDB."
+      },
+      {
+        id: 4,
+        title: "Arquitectura End-to-End",
+        category: "Diseño de Sistemas",
+        html: `
+          <div class="h-full flex flex-col justify-between">
+            <div>
+              <span class="text-sky-400 font-semibold text-xs uppercase tracking-wider">Topología Global</span>
+              <h2 class="text-2xl sm:text-3xl font-bold text-white mt-0.5">Arquitectura Técnica de Extremo a Extremo</h2>
+            </div>
+            
+            <!-- Architecture Flow Diagram -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3 my-auto">
+              <!-- Column 1: Fuentes -->
+              <div class="bg-slate-800/70 border border-slate-700 rounded-xl p-3.5 flex flex-col">
+                <div class="text-xs font-bold text-slate-400 uppercase mb-2 flex items-center justify-between">
+                  <span>1. Ingesta Multi-Fuente</span>
+                  <span class="text-sky-400 text-base">📥</span>
+                </div>
+                <div class="space-y-2 text-xs flex-1">
+                  <div class="p-2 bg-slate-900/80 rounded border border-slate-700/60 text-slate-300"><b>APIs REST:</b> Conectores paginados con auth token</div>
+                  <div class="p-2 bg-slate-900/80 rounded border border-slate-700/60 text-slate-300"><b>Archivos CSV:</b> Transaccionales por lotes</div>
+                  <div class="p-2 bg-slate-900/80 rounded border border-slate-700/60 text-slate-300"><b>Payloads JSON:</b> Eventos semiestructurados</div>
+                </div>
+                <div class="mt-2 text-[11px] text-sky-400 font-medium">Contrato Común de Ingesta</div>
+              </div>
+
+              <!-- Column 2: Almacenamiento MinIO -->
+              <div class="bg-slate-800/70 border border-sky-500/30 rounded-xl p-3.5 flex flex-col bg-sky-950/10">
+                <div class="text-xs font-bold text-sky-400 uppercase mb-2 flex items-center justify-between">
+                  <span>2. Lakehouse (MinIO)</span>
+                  <span class="text-sky-400 text-base">🪣</span>
+                </div>
+                <div class="space-y-1.5 text-xs flex-1">
+                  <div class="p-1.5 bg-slate-900/80 rounded border border-slate-700 text-slate-300"><b>Landing:</b> Inmutable crudo</div>
+                  <div class="p-1.5 bg-slate-900/80 rounded border border-amber-500/30 text-amber-300"><b>Bronze:</b> Parquet histórico</div>
+                  <div class="p-1.5 bg-slate-900/80 rounded border border-slate-400/30 text-slate-200"><b>Silver:</b> Limpio & normalizado</div>
+                  <div class="p-1.5 bg-slate-900/80 rounded border border-yellow-500/30 text-yellow-300"><b>Gold:</b> Data Marts listos</div>
+                  <div class="p-1.5 bg-rose-950/50 rounded border border-rose-500/40 text-rose-300"><b>Quarantine:</b> Anómalos</div>
+                </div>
+                <div class="mt-2 text-[11px] text-indigo-400 font-medium">Procesado con Apache Spark</div>
+              </div>
+
+              <!-- Column 3: Motor Analítico -->
+              <div class="bg-slate-800/70 border border-emerald-500/30 rounded-xl p-3.5 flex flex-col bg-emerald-950/10">
+                <div class="text-xs font-bold text-emerald-400 uppercase mb-2 flex items-center justify-between">
+                  <span>3. Capa de Consulta</span>
+                  <span class="text-emerald-400 text-base">⚡</span>
+                </div>
+                <div class="space-y-2 text-xs flex-1">
+                  <div class="p-2.5 bg-slate-900/80 rounded border border-emerald-500/20 text-slate-200">
+                    <span class="font-bold text-emerald-300">DuckDB Embebido</span>
+                    <p class="text-[11px] text-slate-400 mt-1">Consultas vectorizadas en memoria leyendo directamente sobre Parquet Gold.</p>
+                  </div>
+                  <div class="p-2 bg-slate-900/80 rounded border border-slate-700 text-slate-300 text-[11px]">
+                    Latencia sub-segundo (&lt; 200 ms) sin bases de datos adicionales.
+                  </div>
+                </div>
+                <div class="mt-2 text-[11px] text-emerald-400 font-medium">Cero infraestructura costosa</div>
+              </div>
+
+              <!-- Column 4: Capa de Consumo -->
+              <div class="bg-slate-800/70 border border-indigo-500/30 rounded-xl p-3.5 flex flex-col bg-indigo-950/10">
+                <div class="text-xs font-bold text-indigo-400 uppercase mb-2 flex items-center justify-between">
+                  <span>4. Experiencia Usuario</span>
+                  <span class="text-indigo-400 text-base">🖥️</span>
+                </div>
+                <div class="space-y-2 text-xs flex-1">
+                  <div class="p-2 bg-slate-900/80 rounded border border-slate-700 text-slate-300">
+                    <b class="text-sky-300">Dashboards Streamlit:</b> KPIs, gráficos Plotly interactivos y filtros.
+                  </div>
+                  <div class="p-2 bg-slate-900/80 rounded border border-slate-700 text-slate-300">
+                    <b class="text-amber-300">Chatbot FastAPI:</b> NL-to-SQL + LLM local (Qwen 2.5 2B) sin API keys.
+                  </div>
+                </div>
+                <div class="mt-2 text-[11px] text-indigo-400 font-medium">Servicios Transversales: Airflow + Atlas</div>
+              </div>
+            </div>
+          </div>
+        `,
+        notes: "Este diagrama sintetiza los cuatro bloques de la plataforma: 1) Ingesta multipropósito, 2) Lakehouse MinIO con Spark gobernando las zonas Medallion y Cuarentena, 3) DuckDB como acelerador de consultas analíticas, y 4) el consumo final en Streamlit y el Chatbot con modelo local."
+      },
+      {
+        id: 5,
+        title: "Arquitectura Medallion al Detalle",
+        category: "Ingeniería de Datos",
+        html: `
+          <div class="h-full flex flex-col justify-between">
+            <div>
+              <span class="text-amber-400 font-semibold text-xs uppercase tracking-wider">Pipeline de Madurez</span>
+              <h2 class="text-2xl sm:text-3xl font-bold text-white mt-0.5">Tratamiento Progresivo y Zona de Cuarentena</h2>
+            </div>
+            
+            <div class="space-y-2.5 my-auto text-xs sm:text-sm">
+              <div class="flex items-center space-x-3 bg-slate-800/60 p-2.5 rounded-lg border-l-4 border-slate-400">
+                <span class="font-bold text-slate-300 w-24">LANDING</span>
+                <span class="text-slate-400 flex-1">Recepción inmutable del archivo crudo (CSV/JSON/API). Preserva cabeceras originales y metadatos de auditoría (timestamp, hash).</span>
+                <span class="text-slate-500 font-mono text-xs">minio://landing/</span>
+              </div>
+              <div class="flex items-center space-x-3 bg-slate-800/60 p-2.5 rounded-lg border-l-4 border-amber-600">
+                <span class="font-bold text-amber-400 w-24">BRONZE</span>
+                <span class="text-slate-400 flex-1">Conversión a formato Parquet columnar con preservación íntegra de filas. Control de versiones por partición temporal.</span>
+                <span class="text-slate-500 font-mono text-xs">minio://bronze/</span>
+              </div>
+              <div class="flex items-center space-x-3 bg-slate-800/60 p-2.5 rounded-lg border-l-4 border-slate-300">
+                <span class="font-bold text-slate-200 w-24">SILVER</span>
+                <span class="text-slate-400 flex-1">Deduplicación, casting de tipos estricto, estandarización de nulos y aplicación de reglas de negocio validadas.</span>
+                <span class="text-slate-500 font-mono text-xs">minio://silver/</span>
+              </div>
+              <div class="flex items-center space-x-3 bg-slate-800/60 p-2.5 rounded-lg border-l-4 border-yellow-400">
+                <span class="font-bold text-yellow-300 w-24">GOLD</span>
+                <span class="text-slate-400 flex-1">Modelos dimensionales agregados listos para consumo: ventas diarias, métricas de cliente y rotación de producto.</span>
+                <span class="text-slate-500 font-mono text-xs">minio://gold/</span>
+              </div>
+              <div class="flex items-center space-x-3 bg-rose-950/30 p-2.5 rounded-lg border-l-4 border-rose-500">
+                <span class="font-bold text-rose-400 w-24">QUARANTINE</span>
+                <span class="text-rose-200 flex-1"><b>Aislamiento de errores:</b> Los registros corruptos no frenan el lote; se desvían con código de error para reintento y auditoría.</span>
+                <span class="text-rose-400/80 font-mono text-xs">minio://quarantine/</span>
+              </div>
+            </div>
+          </div>
+        `,
+        notes: "Aquí explicamos el paso por cada capa. Es fundamental destacar la zona de Cuarentena: en la mayoría de pipelines un registro mal formado rompe la ejecución entera; aquí se aísla con trazabilidad, garantizando que el resto del lote se procese de forma confiable."
+      },
+      {
+        id: 6,
+        title: "Modelos Analíticos en Capa Gold",
+        category: "Modelado Dimensional",
+        html: `
+          <div class="h-full flex flex-col justify-between">
+            <div>
+              <span class="text-yellow-400 font-semibold text-xs uppercase tracking-wider">Capa de Negocio</span>
+              <h2 class="text-2xl sm:text-3xl font-bold text-white mt-0.5">Modelos Analíticos Diseñados para Decisiones Inmediatas</h2>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 my-auto">
+              <div class="bg-slate-800/60 border border-slate-700 rounded-xl p-5 hover:border-yellow-500/40 transition">
+                <div class="text-xs font-bold text-sky-400 uppercase tracking-wider mb-1">Modelo 1</div>
+                <h3 class="text-lg font-bold text-white mb-2">daily_sales</h3>
+                <p class="text-xs text-slate-300 mb-3 leading-relaxed">
+                  Agregación temporal diaria que consolida ventas netas, número de pedidos completados, ticket promedio y descuentos por canal comercial.
+                </p>
+                <div class="text-[11px] text-slate-400 bg-slate-900/80 p-2 rounded font-mono">
+                  Métricas: total_revenue, order_count, avg_ticket
+                </div>
+              </div>
+
+              <div class="bg-slate-800/60 border border-slate-700 rounded-xl p-5 hover:border-yellow-500/40 transition">
+                <div class="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-1">Modelo 2</div>
+                <h3 class="text-lg font-bold text-white mb-2">customer_360</h3>
+                <p class="text-xs text-slate-300 mb-3 leading-relaxed">
+                  Visión unificada del cliente basada en la metodología RFM (Recencia, Frecuencia, Valor Monetario), categorización de fidelidad y LTV.
+                </p>
+                <div class="text-[11px] text-slate-400 bg-slate-900/80 p-2 rounded font-mono">
+                  Segmentos: Champions, At Risk, Loyal, Lost
+                </div>
+              </div>
+
+              <div class="bg-slate-800/60 border border-slate-700 rounded-xl p-5 hover:border-yellow-500/40 transition">
+                <div class="text-xs font-bold text-amber-400 uppercase tracking-wider mb-1">Modelo 3</div>
+                <h3 class="text-lg font-bold text-white mb-2">product_performance</h3>
+                <p class="text-xs text-slate-300 mb-3 leading-relaxed">
+                  Análisis granular del catálogo: unidades vendidas, ingresos generados, margen de contribución estimado y tasa de retorno por categoría.
+                </p>
+                <div class="text-[11px] text-slate-400 bg-slate-900/80 p-2 rounded font-mono">
+                  KPIs: inventory_turnover, profit_margin
+                </div>
+              </div>
+            </div>
+          </div>
+        `,
+        notes: "La capa Gold expone tres modelos esenciales: daily_sales para el rendimiento financiero cotidiano; customer_360 para entender y retener clientes mediante segmentación RFM; y product_performance para optimizar el inventario y rentabilidad del catálogo."
+      },
+      {
+        id: 7,
+        title: "Motor DuckDB y Dashboards",
+        category: "Consumo & Visualización",
+        html: `
+          <div class="h-full flex flex-col justify-between">
+            <div>
+              <span class="text-emerald-400 font-semibold text-xs uppercase tracking-wider">Velocidad Analítica</span>
+              <h2 class="text-2xl sm:text-3xl font-bold text-white mt-0.5">DuckDB y Streamlit: Rendimiento Extremo con Bajo Costo</h2>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 my-auto">
+              <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-5">
+                <div class="flex items-center space-x-2 text-emerald-400 text-sm font-bold mb-2">
+                  <span>⚡</span>
+                  <span>Por qué DuckDB es un Game Changer</span>
+                </div>
+                <ul class="space-y-2 text-xs sm:text-sm text-slate-300">
+                  <li class="flex items-start space-x-2">
+                    <span class="text-emerald-400 font-bold">•</span>
+                    <span><b>Ejecución Vectorizada:</b> Procesa millones de filas por segundo directamente en memoria RAM sin sobrecostes de infraestructura.</span>
+                  </li>
+                  <li class="flex items-start space-x-2">
+                    <span class="text-emerald-400 font-bold">•</span>
+                    <span><b>Acceso Directo a Parquet:</b> Lee directamente los archivos optimizados de Gold sin duplicar datos en otra base de datos.</span>
+                  </li>
+                  <li class="flex items-start space-x-2">
+                    <span class="text-emerald-400 font-bold">•</span>
+                    <span><b>Latencias Sub-Segundo:</b> Consultas analíticas complejas resueltas en menos de 200 ms.</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-5">
+                <div class="flex items-center space-x-2 text-sky-400 text-sm font-bold mb-2">
+                  <span>📊</span>
+                  <span>Dashboards en Streamlit & Plotly</span>
+                </div>
+                <ul class="space-y-2 text-xs sm:text-sm text-slate-300">
+                  <li class="flex items-start space-x-2">
+                    <span class="text-sky-400 font-bold">•</span>
+                    <span><b>Exploración Interactiva:</b> Filtros reactivos por fecha, canal, categoría de producto y segmento de clientes.</span>
+                  </li>
+                  <li class="flex items-start space-x-2">
+                    <span class="text-sky-400 font-bold">•</span>
+                    <span><b>Gráficos Profesionales:</b> Visualizaciones en Plotly con tooltips detallados y desglose dinámico de KPIs.</span>
+                  </li>
+                  <li class="flex items-start space-x-2">
+                    <span class="text-sky-400 font-bold">•</span>
+                    <span><b>Consistencia Absoluta:</b> Conectado al mismo endpoint que utiliza el asistente de IA.</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        `,
+        notes: "Con DuckDB evitamos el costo y la complejidad de montar un Data Warehouse externo como Snowflake o Redshift para la fase inicial. Lee directamente el formato Parquet con rendimiento analítico puro en memoria."
+      },
+      {
+        id: 8,
+        title: "Chatbot Analítico con IA Local",
+        category: "Inteligencia Artificial",
+        html: `
+          <div class="h-full flex flex-col justify-between">
+            <div>
+              <span class="text-indigo-400 font-semibold text-xs uppercase tracking-wider">Innovación Soberana</span>
+              <h2 class="text-2xl sm:text-3xl font-bold text-white mt-0.5">Chatbot NL-to-SQL Local con Qwen 2.5: Cero Fallbacks</h2>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 my-auto text-xs">
+              <div class="bg-slate-800/70 border border-slate-700 rounded-xl p-4">
+                <div class="text-indigo-400 font-bold mb-1.5 flex items-center space-x-1">
+                  <span>🔒</span>
+                  <span>100% Local (Qwen 2.5 2B)</span>
+                </div>
+                <p class="text-slate-300 leading-relaxed mb-2">
+                  Sin costos de API por token ni exposición de datos a la nube. Compatible con Ollama, vLLM y LocalAI.
+                </p>
+                <div class="bg-slate-900 p-2 rounded text-[11px] font-mono text-indigo-300">
+                  LOCAL_LLM_MODEL=qwen2.5:1.5b
+                </div>
+              </div>
+
+              <div class="bg-slate-800/70 border border-slate-700 rounded-xl p-4">
+                <div class="text-emerald-400 font-bold mb-1.5 flex items-center space-x-1">
+                  <span>🛡️</span>
+                  <span>SQLGuard AST Parser</span>
+                </div>
+                <p class="text-slate-300 leading-relaxed mb-2">
+                  La consulta generada por el LLM se valida sintáctica y semánticamente. Solo sentencias <code class="text-sky-300 font-mono">SELECT</code> son permitidas.
+                </p>
+                <div class="bg-slate-900 p-2 rounded text-[11px] font-mono text-emerald-300">
+                  Rechaza INSERT, UPDATE, DROP
+                </div>
+              </div>
+
+              <div class="bg-slate-800/70 border border-slate-700 rounded-xl p-4">
+                <div class="text-amber-400 font-bold mb-1.5 flex items-center space-x-1">
+                  <span>⚠️</span>
+                  <span>Códigos de Error Transparentes</span>
+                </div>
+                <p class="text-slate-300 leading-relaxed mb-2">
+                  Se eliminaron las respuestas enlatadas. Ante cualquier fallo se informa la causa exacta con códigos normalizados.
+                </p>
+                <div class="bg-slate-900 p-2 rounded text-[10px] font-mono text-amber-300">
+                  ERR_EMPTY, ERR_OUT_OF_SCOPE, ERR_NO_DATA
+                </div>
+              </div>
+            </div>
+            
+            <div class="bg-slate-800/40 p-2.5 rounded-lg border border-slate-700/80 flex items-center justify-between text-xs text-slate-300">
+              <span class="font-medium">Flujo: Pregunta en español → Prompt Seguro → Qwen 2.5 → SQL Validada → DuckDB → Síntesis Data-to-Text</span>
+              <span class="text-emerald-400 font-bold">✓ Cero Alucinación</span>
+            </div>
+          </div>
+        `,
+        notes: "Esta es una de las grandes novedades: eliminamos los fallbacks falsos del chatbot. Ahora corre un modelo local Qwen2.5 de 2B parámetros. El sistema traduce la pregunta a SQL, SQLGuard verifica que sea segura, DuckDB extrae los datos y el modelo los explica. Si algo falla, devuelve un código de error transparente."
+      },
+      {
+        id: 9,
+        title: "Orquestación, Linaje y Gobernanza",
+        category: "Control Operativo",
+        html: `
+          <div class="h-full flex flex-col justify-between">
+            <div>
+              <span class="text-sky-400 font-semibold text-xs uppercase tracking-wider">Gobernanza Activa</span>
+              <h2 class="text-2xl sm:text-3xl font-bold text-white mt-0.5">Orquestación Continua y Trazabilidad Extremo a Extremo</h2>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 my-auto">
+              <div class="bg-slate-800/60 border border-slate-700 rounded-xl p-4 flex flex-col justify-between">
+                <div>
+                  <div class="w-9 h-9 rounded-lg bg-sky-500/10 text-sky-400 flex items-center justify-center font-bold mb-3">⏱️</div>
+                  <h3 class="text-base font-bold text-white mb-1.5">Apache Airflow</h3>
+                  <p class="text-xs text-slate-300 leading-relaxed">
+                    Orquestación centralizada basada en DAGs. Garantiza ejecución programada, idempotencia con control de particiones y reintentos ante caídas de red.
+                  </p>
+                </div>
+                <div class="mt-3 pt-2 border-t border-slate-700/60 text-[11px] text-sky-400 font-medium">
+                  DAGs modulares e independientes
+                </div>
+              </div>
+
+              <div class="bg-slate-800/60 border border-slate-700 rounded-xl p-4 flex flex-col justify-between">
+                <div>
+                  <div class="w-9 h-9 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center font-bold mb-3">🗺️</div>
+                  <h3 class="text-base font-bold text-white mb-1.5">OpenMetadata</h3>
+                  <p class="text-xs text-slate-300 leading-relaxed">
+                    Grafo interactivo de linaje completo. Documenta el origen exacto de cada columna desde la API de ingesta hasta el KPI presentado en el dashboard.
+                  </p>
+                </div>
+                <div class="mt-3 pt-2 border-t border-slate-700/60 text-[11px] text-indigo-400 font-medium">
+                  Linaje de nivel de tabla y columna
+                </div>
+              </div>
+
+              <div class="bg-slate-800/60 border border-slate-700 rounded-xl p-4 flex flex-col justify-between">
+                <div>
+                  <div class="w-9 h-9 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center font-bold mb-3">🛡️</div>
+                  <h3 class="text-base font-bold text-white mb-1.5">Apache Atlas</h3>
+                  <p class="text-xs text-slate-300 leading-relaxed">
+                    Clasificación y etiquetado de gobernanza. Detección y protección de información sensible (PII) cumpliendo con estándares de privacidad y auditoría.
+                  </p>
+                </div>
+                <div class="mt-3 pt-2 border-t border-slate-700/60 text-[11px] text-amber-400 font-medium">
+                  Auditoría y control de cumplimiento
+                </div>
+              </div>
+            </div>
+          </div>
+        `,
+        notes: "La gobernanza es parte del ADN del sistema: Airflow orquesta las etapas asegurando idempotencia; OpenMetadata dibuja el árbol de linaje completo; y Apache Atlas clasifica datos sensibles para garantizar que la plataforma cumple con políticas de privacidad."
+      },
+      {
+        id: 10,
+        title: "Estrategia de Entrega y Calidad",
+        category: "Ingeniería de Software",
+        html: `
+          <div class="h-full flex flex-col justify-between">
+            <div>
+              <span class="text-emerald-400 font-semibold text-xs uppercase tracking-wider">Metodología de Trabajo</span>
+              <h2 class="text-2xl sm:text-3xl font-bold text-white mt-0.5">Entrega Colaborativa y Verificación Continua</h2>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-auto">
+              <div class="bg-slate-800/60 border border-slate-700 rounded-xl p-4">
+                <h3 class="text-base font-bold text-emerald-300 mb-2">Estrategia Mock-First sin Bloqueos</h3>
+                <p class="text-xs text-slate-300 mb-3 leading-relaxed">
+                  Para permitir que 7 ingenieros desarrollen en simultáneo sin depender de que el pipeline esté terminado, se implementaron generadores de datos sintéticos con contratos fijos.
+                </p>
+                <div class="space-y-1.5 text-xs text-slate-400">
+                  <div>✓ <b>Ingesta y MinIO:</b> Mock payloads para validar conectores</div>
+                  <div>✓ <b>Spark & Calidad:</b> Data sucia sintética para probar cuarentena</div>
+                  <div>✓ <b>BI & Chatbot:</b> Parquet Gold sintético para armar tableros</div>
+                </div>
+              </div>
+
+              <div class="bg-slate-800/60 border border-slate-700 rounded-xl p-4">
+                <h3 class="text-base font-bold text-sky-300 mb-2">Garantía de Calidad: 82 Pruebas Automatizadas</h3>
+                <p class="text-xs text-slate-300 mb-3 leading-relaxed">
+                  Suite completa de pruebas unitarias e integración ejecutadas en menos de 4 segundos sin necesidad de encender la infraestructura pesada de Docker.
+                </p>
+                <div class="bg-slate-900/90 p-2.5 rounded border border-emerald-500/30 text-emerald-400 font-mono text-xs">
+                  82 passed, 0 failed (3.55s) in pytest
+                </div>
+                <div class="mt-2 text-[11px] text-slate-400">
+                  Pruebas de endpoints API, SQL Guard, orquestación, DuckDB y fallos de LLM local.
+                </div>
+              </div>
+            </div>
+          </div>
+        `,
+        notes: "Destacamos la madurez del equipo: no trabajamos secuencialmente. Con la estrategia Mock-First, el equipo de dashboards y el equipo de chatbot pudieron avanzar en paralelo al equipo de Spark. Todo está respaldado por 82 pruebas automatizadas."
+      },
+      {
+        id: 11,
+        title: "Impacto y Ventajas Competitivas",
+        category: "Retorno de Inversión",
+        html: `
+          <div class="h-full flex flex-col justify-between">
+            <div>
+              <span class="text-indigo-400 font-semibold text-xs uppercase tracking-wider">Comparativa de Valor</span>
+              <h2 class="text-2xl sm:text-3xl font-bold text-white mt-0.5">Enfoque Tradicional vs Nuestra Plataforma</h2>
+            </div>
+            
+            <div class="overflow-hidden rounded-xl border border-slate-700 my-auto text-xs sm:text-sm">
+              <table class="w-full text-left">
+                <thead class="bg-slate-800 text-slate-300 uppercase text-[11px]">
+                  <tr>
+                    <th class="p-3">Dimensión</th>
+                    <th class="p-3 text-rose-400">Enfoque Tradicional</th>
+                    <th class="p-3 text-emerald-400">Nuestra Plataforma</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800 bg-slate-900/60 text-slate-300">
+                  <tr>
+                    <td class="p-3 font-semibold text-white">Costes de IA</td>
+                    <td class="p-3 text-slate-400">Cargos por token mensuales impredecibles en la nube</td>
+                    <td class="p-3 text-emerald-300 font-semibold">$0 en inferencia (Qwen 2.5 2B local en Ollama)</td>
+                  </tr>
+                  <tr>
+                    <td class="p-3 font-semibold text-white">Consistencia Analítica</td>
+                    <td class="p-3 text-slate-400">Reportes de BI y chatbots con métricas contradictorias</td>
+                    <td class="p-3 text-emerald-300 font-semibold">Fuente única (DuckDB sobre Gold) para ambos</td>
+                  </tr>
+                  <tr>
+                    <td class="p-3 font-semibold text-white">Privacidad del Dato</td>
+                    <td class="p-3 text-slate-400">Datos corporativos enviados a modelos públicos externos</td>
+                    <td class="p-3 text-emerald-300 font-semibold">100% On-Premise / Soberano y seguro</td>
+                  </tr>
+                  <tr>
+                    <td class="p-3 font-semibold text-white">Tolerancia a Fallos</td>
+                    <td class="p-3 text-slate-400">Lote abortado al encontrar un solo dato corrupto</td>
+                    <td class="p-3 text-emerald-300 font-semibold">Aislamiento en Cuarentena sin detener el pipeline</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `,
+        notes: "Esta diapositiva resume el beneficio tangible para el negocio: cero costo de tokens de IA, métricas 100% alineadas entre visualización y chatbot, total privacidad corporativa y tolerancia a fallos mediante la zona de cuarentena."
+      },
+      {
+        id: 12,
+        title: "Conclusiones y Próximos Pasos",
+        category: "Cierre & Roadmap",
+        html: `
+          <div class="h-full flex flex-col justify-between">
+            <div>
+              <span class="text-sky-400 font-semibold text-xs uppercase tracking-wider">Cierre y Futuro</span>
+              <h2 class="text-2xl sm:text-3xl font-bold text-white mt-0.5">Democratización Analítica con Rigor Técnico</h2>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 my-auto">
+              <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-5">
+                <div class="text-emerald-400 font-bold text-sm mb-2">🎯 Hitos Consolidados</div>
+                <ul class="space-y-2 text-xs sm:text-sm text-slate-300">
+                  <li class="flex items-start space-x-2">
+                    <span class="text-emerald-400 font-bold">✓</span>
+                    <span>Pipeline Lakehouse Medallion con MinIO y Spark en funcionamiento.</span>
+                  </li>
+                  <li class="flex items-start space-x-2">
+                    <span class="text-emerald-400 font-bold">✓</span>
+                    <span>Capa Gold con modelos daily_sales, customer_360 y product_performance.</span>
+                  </li>
+                  <li class="flex items-start space-x-2">
+                    <span class="text-emerald-400 font-bold">✓</span>
+                    <span>Chatbot local con Qwen 2.5, sin fallbacks estáticos y con catálogo de errores.</span>
+                  </li>
+                  <li class="flex items-start space-x-2">
+                    <span class="text-emerald-400 font-bold">✓</span>
+                    <span>82 pruebas automatizadas y documentación técnica viva en repositorio.</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-5">
+                <div class="text-sky-400 font-bold text-sm mb-2">🚀 Próximos Pasos (Roadmap)</div>
+                <ul class="space-y-2 text-xs sm:text-sm text-slate-300">
+                  <li class="flex items-start space-x-2">
+                    <span class="text-sky-400 font-bold">1.</span>
+                    <span>Ingesta continua en tiempo real mediante Apache Kafka y Spark Streaming.</span>
+                  </li>
+                  <li class="flex items-start space-x-2">
+                    <span class="text-sky-400 font-bold">2.</span>
+                    <span>Alertas automáticas de desviación de calidad (Data Drift) en OpenMetadata.</span>
+                  </li>
+                  <li class="flex items-start space-x-2">
+                    <span class="text-sky-400 font-bold">3.</span>
+                    <span>Afinación de prompts analíticos para predicción de demanda y rotación.</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="text-center pt-2 border-t border-slate-800 text-xs text-slate-400">
+              ¿Preguntas o comentarios? ¡Muchas gracias por su atención!
+            </div>
+          </div>
+        `,
+        notes: "Para cerrar: hemos entregado una plataforma moderna, sólida y probada que resuelve las necesidades actuales de datos y deja el camino listo para streaming y analítica predictiva. Abrimos el espacio para preguntas y discusión."
+      }
+    ];
+
+    let currentSlideIndex = 0;
+    const totalSlides = slidesData.length;
+
+    // DOM Elements
+    const slideContainer = document.getElementById("slideContainer");
+    const slideCategory = document.getElementById("slideCategory");
+    const slideCounter = document.getElementById("slideCounter");
+    const progressBar = document.getElementById("progressBar");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const slideSelect = document.getElementById("slideSelect");
+    const toggleNotesBtn = document.getElementById("toggleNotesBtn");
+    const notesDrawer = document.getElementById("notesDrawer");
+    const speakerNotesText = document.getElementById("speakerNotesText");
+    const fullscreenBtn = document.getElementById("fullscreenBtn");
+    const slideStage = document.getElementById("slideStage");
+
+    // Populate Slide Dropdown
+    slidesData.forEach((slide, idx) => {
+      const option = document.createElement("option");
+      option.value = idx;
+      option.textContent = `${idx + 1}. ${slide.title}`;
+      slideSelect.appendChild(option);
+    });
+
+    // Render Slide Function
+    function renderSlide(index) {
+      if (index < 0 || index >= totalSlides) return;
+      currentSlideIndex = index;
+      const slide = slidesData[index];
+
+      // Smooth transition
+      slideContainer.classList.remove("slide-active");
+      
+      setTimeout(() => {
+        slideContainer.innerHTML = slide.html;
+        slideCategory.textContent = `${slide.category} • ${slide.title}`;
+        slideCounter.textContent = `${index + 1} / ${totalSlides}`;
+        slideSelect.value = index;
+        speakerNotesText.textContent = slide.notes;
+
+        // Progress bar percentage
+        const progressPct = ((index + 1) / totalSlides) * 100;
+        progressBar.style.width = `${progressPct}%`;
+
+        // Update button states
+        prevBtn.disabled = index === 0;
+        prevBtn.classList.toggle("opacity-40", index === 0);
+        prevBtn.classList.toggle("cursor-not-allowed", index === 0);
+
+        nextBtn.innerHTML = index === totalSlides - 1 ? "<span>Fin</span>" : "<span class='hidden sm:inline'>Siguiente</span> <span>▶</span>";
+
+        slideContainer.classList.add("slide-active");
+      }, 150);
+    }
+
+    // Event Listeners
+    prevBtn.addEventListener("click", () => {
+      if (currentSlideIndex > 0) renderSlide(currentSlideIndex - 1);
+    });
+
+    nextBtn.addEventListener("click", () => {
+      if (currentSlideIndex < totalSlides - 1) {
+        renderSlide(currentSlideIndex + 1);
+      } else {
+        renderSlide(0); // Loop back to start
+      }
+    });
+
+    slideSelect.addEventListener("change", (e) => {
+      renderSlide(parseInt(e.target.value));
+    });
+
+    // Toggle Speaker Notes
+    toggleNotesBtn.addEventListener("click", () => {
+      notesDrawer.classList.toggle("hidden");
+    });
+
+    // Fullscreen Toggle
+    fullscreenBtn.addEventListener("click", () => {
+      if (!document.fullscreenElement) {
+        if (slideStage.requestFullscreen) {
+          slideStage.requestFullscreen();
+        } else if (slideStage.webkitRequestFullscreen) {
+          slideStage.webkitRequestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    });
+
+    // Keyboard Navigation
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") {
+        e.preventDefault();
+        if (currentSlideIndex < totalSlides - 1) renderSlide(currentSlideIndex + 1);
+      } else if (e.key === "ArrowLeft" || e.key === "PageUp" || e.key === "Backspace") {
+        e.preventDefault();
+        if (currentSlideIndex > 0) renderSlide(currentSlideIndex - 1);
+      } else if (e.key === "Home") {
+        renderSlide(0);
+      } else if (e.key === "End") {
+        renderSlide(totalSlides - 1);
+      } else if (e.key.toLowerCase() === "n") {
+        notesDrawer.classList.toggle("hidden");
+      } else if (e.key.toLowerCase() === "f") {
+        fullscreenBtn.click();
+      }
+    });
+
+    // Initial render
+    renderSlide(0);
+  </script>
+</body>
+</html>
