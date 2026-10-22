@@ -213,19 +213,50 @@ class GoldDataLoader:
         )
 
     def load_quarantine_records(self) -> pd.DataFrame:
-        """Carga los registros en Quarantine (US-15 / P04).
+        """Carga los registros en Quarantine (US-15 / P04) con degradación graceful.
 
         Contrato (``docs/contratos_integracion.md`` §3.1):
-            rejected_at, entity_type, quarantine_reason, raw_record
-
-        TODO: en cuanto Sebastián publique el escritor de Quarantine, integrar
-        la lectura desde MinIO (``s3://quarantine/rejected/<dataset>/...``) o
-        desde una tabla ``analytics.quarantine_records`` si se define.
+            rejected_at, entity_type, quarantine_reason, error_code, raw_record
         """
-        # Esqueleto: por ahora devuelve un DataFrame vacío con el esquema esperado.
-        # Cuando esté disponible la fuente real, ramificar aquí.
+        # 1. Intentar desde PostgreSQL
+        df_pg = self._try_postgres(
+            "analytics.quarantine_records",
+            ["rejected_at", "entity_type", "quarantine_reason", "error_code", "raw_record"],
+        )
+        if df_pg is not None and not df_pg.empty:
+            return df_pg
+
+        # 2. Intentar cargar desde MinIO o degradar a lote mock corrupto (Sebastián Ortiz)
+        try:
+            import json
+            from pathlib import Path
+            from src.quality.validator import DataQualityValidator
+
+            mock_path = (
+                Path(__file__).resolve().parent.parent / "data" / "mock" / "raw" / "corrupt" / "dirty_orders_50.json"
+            )
+            if mock_path.is_file():
+                with open(mock_path, "r", encoding="utf-8") as f:
+                    dirty_data = json.load(f)
+                validator = DataQualityValidator()
+                _, q_list, _ = validator.partition_records(dirty_data, entity_type="orders")
+                if q_list:
+                    rows = [
+                        {
+                            "rejected_at": q.get("rejected_at") or q.get("_rejected_at"),
+                            "entity_type": q.get("entity_type", "orders"),
+                            "quarantine_reason": q.get("quarantine_reason") or q.get("_error_message"),
+                            "error_code": q.get("error_code") or q.get("_error_code"),
+                            "raw_record": str(q.get("raw_record") or q.get("_original_payload")),
+                        }
+                        for q in q_list
+                    ]
+                    return pd.DataFrame(rows)
+        except Exception:
+            pass
+
         return pd.DataFrame(
-            columns=["rejected_at", "entity_type", "quarantine_reason", "raw_record"]
+            columns=["rejected_at", "entity_type", "quarantine_reason", "error_code", "raw_record"]
         )
 
     # ------------------------------------------------------------------

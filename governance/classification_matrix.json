@@ -1,0 +1,97 @@
+{
+  "project": "medallion-platform",
+  "version": "1.0.0",
+  "description": "Matriz declarativa de clasificación y gobernanza de datos sensibles (US-09)",
+  "taxonomies": {
+    "PII": {
+      "level": "CONFIDENTIAL",
+      "description": "Información de Identificación Personal protegida por normativas de privacidad (GDPR, Habeas Data)",
+      "masking_required": true
+    },
+    "SENSITIVE_FINANCIAL": {
+      "level": "RESTRICTED",
+      "description": "Datos comerciales y financieros sensibles sobre ingresos, márgenes, precios o reembolsos",
+      "masking_required": false
+    },
+    "OPERATIONAL_INTERNAL": {
+      "level": "INTERNAL",
+      "description": "Metadatos técnicos y de orquestación para auditoría operativa del Lakehouse",
+      "masking_required": false
+    },
+    "PUBLIC": {
+      "level": "PUBLIC",
+      "description": "Atributos no confidenciales de libre distribución (categorías, descripciones, fechas)",
+      "masking_required": false
+    }
+  },
+  "entities": {
+    "customers": {
+      "customer_id": "PUBLIC",
+      "first_name": "PII",
+      "last_name": "PII",
+      "email": "PII",
+      "phone": "PII",
+      "country": "PUBLIC",
+      "city": "PUBLIC",
+      "registration_date": "PUBLIC",
+      "status": "PUBLIC"
+    },
+    "orders": {
+      "order_id": "PUBLIC",
+      "customer_id": "PUBLIC",
+      "order_date": "PUBLIC",
+      "total_amount": "SENSITIVE_FINANCIAL",
+      "status": "PUBLIC",
+      "shipping_country": "PUBLIC",
+      "category": "PUBLIC",
+      "quantity": "PUBLIC",
+      "unit_price": "SENSITIVE_FINANCIAL",
+      "discount_amount": "SENSITIVE_FINANCIAL"
+    },
+    "products": {
+      "product_id": "PUBLIC",
+      "product_name": "PUBLIC",
+      "category": "PUBLIC",
+      "unit_price": "SENSITIVE_FINANCIAL",
+      "cost_price": "SENSITIVE_FINANCIAL"
+    },
+    "returns": {
+      "return_id": "PUBLIC",
+      "order_id": "PUBLIC",
+      "return_date": "PUBLIC",
+      "refund_amount": "SENSITIVE_FINANCIAL",
+      "return_reason": "PUBLIC"
+    },
+    "daily_sales": {
+      "order_date": "PUBLIC",
+      "shipping_country": "PUBLIC",
+      "category": "PUBLIC",
+      "total_revenue": "SENSITIVE_FINANCIAL",
+      "orders_count": "PUBLIC",
+      "units_sold": "PUBLIC",
+      "avg_ticket": "SENSITIVE_FINANCIAL",
+      "returns_count": "PUBLIC",
+      "refunded_amount": "SENSITIVE_FINANCIAL"
+    },
+    "customer_360": {
+      "customer_id": "PUBLIC",
+      "country": "PUBLIC",
+      "first_purchase_date": "PUBLIC",
+      "last_purchase_date": "PUBLIC",
+      "total_orders": "PUBLIC",
+      "lifetime_value": "SENSITIVE_FINANCIAL",
+      "avg_order_value": "SENSITIVE_FINANCIAL",
+      "favorite_category": "PUBLIC"
+    },
+    "product_performance": {
+      "product_id": "PUBLIC",
+      "product_name": "PUBLIC",
+      "category": "PUBLIC",
+      "units_sold": "PUBLIC",
+      "gross_revenue": "SENSITIVE_FINANCIAL",
+      "returns_count": "PUBLIC",
+      "return_rate": "PUBLIC",
+      "margin": "SENSITIVE_FINANCIAL"
+    }
+  }
+}

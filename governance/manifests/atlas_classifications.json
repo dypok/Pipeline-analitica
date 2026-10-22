@@ -1,0 +1,95 @@
+{
+  "classificationDefinitions": [
+    {
+      "category": "CLASSIFICATION",
+      "name": "PII",
+      "description": "Información de Identificación Personal protegida por normativas de privacidad (GDPR, Habeas Data)",
+      "superTypes": []
+    },
+    {
+      "category": "CLASSIFICATION",
+      "name": "SENSITIVE_FINANCIAL",
+      "description": "Datos comerciales y financieros sensibles sobre ingresos, márgenes, precios o reembolsos",
+      "superTypes": []
+    },
+    {
+      "category": "CLASSIFICATION",
+      "name": "OPERATIONAL_INTERNAL",
+      "description": "Metadatos técnicos y de orquestación para auditoría operativa del Lakehouse",
+      "superTypes": []
+    },
+    {
+      "category": "CLASSIFICATION",
+      "name": "PUBLIC",
+      "description": "Atributos no confidenciales de libre distribución (categorías, descripciones, fechas)",
+      "superTypes": []
+    }
+  ],
+  "entityAttributeClassifications": {
+    "customers": {
+      "first_name": [
+        "PII"
+      ],
+      "last_name": [
+        "PII"
+      ],
+      "email": [
+        "PII"
+      ],
+      "phone": [
+        "PII"
+      ]
+    },
+    "orders": {
+      "total_amount": [
+        "SENSITIVE_FINANCIAL"
+      ],
+      "unit_price": [
+        "SENSITIVE_FINANCIAL"
+      ],
+      "discount_amount": [
+        "SENSITIVE_FINANCIAL"
+      ]
+    },
+    "products": {
+      "unit_price": [
+        "SENSITIVE_FINANCIAL"
+      ],
+      "cost_price": [
+        "SENSITIVE_FINANCIAL"
+      ]
+    },
+    "returns": {
+      "refund_amount": [
+        "SENSITIVE_FINANCIAL"
+      ]
+    },
+    "daily_sales": {
+      "total_revenue": [
+        "SENSITIVE_FINANCIAL"
+      ],
+      "avg_ticket": [
+        "SENSITIVE_FINANCIAL"
+      ],
+      "refunded_amount": [
+        "SENSITIVE_FINANCIAL"
+      ]
+    },
+    "customer_360": {
+      "lifetime_value": [
+        "SENSITIVE_FINANCIAL"
+      ],
+      "avg_order_value": [
+        "SENSITIVE_FINANCIAL"
+      ]
+    },
+    "product_performance": {
+      "gross_revenue": [
+        "SENSITIVE_FINANCIAL"
+      ],
+      "margin": [
+        "SENSITIVE_FINANCIAL"
+      ]
+    }
+  }
+}
