@@ -161,3 +161,24 @@ def test_chatbot_bronze_layer_query(service):
         assert res["error_code"] is None
         assert res["sql"] is not None
         assert res["row_count"] > 0
+
+
+def test_chatbot_cuantas_capas_manejas(service):
+    # Prueba específica para la pregunta reportada por el usuario en la captura de pantalla
+    res = service.ask("cuantas capas manejas?")
+    assert res["success"] is True
+    assert res["error_code"] is None
+    assert res["sql"] is None
+    assert "Medallion" in res["answer"]
+    assert "Bronze" in res["answer"]
+    assert "Silver" in res["answer"]
+    assert "Gold" in res["answer"]
+
+
+def test_chatbot_direct_data_formatting(service):
+    # Verifica que el formateo numérico directo genera formato moneda y porcentajes correctos
+    data = [{"total_revenue": 9860.19, "return_rate": 0.05}]
+    formatted = service._direct_format_data("Cuál fue el ingreso de ayer?", data, ["total_revenue", "return_rate"])
+    assert "$9,860.19" in formatted
+    assert "5.00%" in formatted
+    assert "Gold" in formatted

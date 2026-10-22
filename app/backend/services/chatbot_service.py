@@ -136,9 +136,14 @@ No inventes información ni asumas datos fuera de la muestra proporcionada.
                 detail=str(conn_err),
             )
         except httpx.TimeoutException as timeout_err:
+            msg = (
+                f"La inferencia del modelo local superó el tiempo límite de {settings.LOCAL_LLM_TIMEOUT}s."
+                if settings.LOCAL_LLM_TIMEOUT
+                else "La inferencia del modelo local superó el tiempo límite de espera."
+            )
             return self._build_error_response(
                 ErrorCode.ERR_LLM_TIMEOUT,
-                f"La inferencia del modelo local superó el tiempo límite de {settings.LOCAL_LLM_TIMEOUT}s.",
+                msg,
                 detail=str(timeout_err),
             )
         except Exception as exc:
@@ -245,30 +250,61 @@ No inventes información ni asumas datos fuera de la muestra proporcionada.
         # Saludos directos
         if re.search(r"^(hola|buenos d[ií]as|buenas tardes|buenas noches|saludos|qu[eé] tal|hey)\b", q):
             return True
-        # Preguntas sobre cómo funciona la plataforma
-        if re.search(r"\b(c[oó]mo funciona|qu[eé] es el proyecto|de qu[eé] trata|expl[ií]came el proyecto|arquitectura|qu[eé] puedes hacer|qui[eé]n eres)\b", q):
-            # A menos que sea una pregunta analítica explícita como "cuál es el total" o "cuántas ventas"
-            if not re.search(r"\b(total_revenue|cu[aá]nto vendimos|ingreso total|top \d|cu[aá]ntas [oó]rdenes)\b", q):
+        # Preguntas sobre cómo funciona la plataforma, capas, arquitectura
+        if re.search(r"\b(c[oó]mo funciona|qu[eé] es el proyecto|de qu[eé] trata|expl[ií]came|arquitectura|qu[eé] puedes hacer|qui[eé]n eres|cu[aá]ntas capas|qu[eé] capas|cu[aá]les capas|las capas|medallion)\b", q):
+            # A menos que sea una pregunta analítica explícita como "cuál es el total", "cuántos datos" o "cuántas ventas"
+            if not re.search(r"\b(total_revenue|cu[aá]nto vendimos|ingreso total|top \d|cu[aá]ntas [oó]rdenes|cu[aá]ntos datos|cu[aá]ntos registros|cu[aá]ntas filas)\b", q):
                 return True
         return False
 
     def _is_platform_question(self, question: str) -> bool:
         """Determina si una pregunta que no generó SQL habla sobre conceptos de la plataforma."""
         q = question.lower().strip()
-        keywords = ["bronze", "silver", "gold", "landing", "quarantine", "cuarentena", "medallion", "pipeline", "spark", "minio", "airflow", "duckdb"]
+        keywords = [
+            "capa", "capas", "bronze", "silver", "gold", "landing", "quarantine", "cuarentena",
+            "medallion", "pipeline", "spark", "minio", "airflow", "duckdb", "arquitectura",
+            "dimension", "fact", "etl", "orquestacion"
+        ]
         return any(k in q for k in keywords)
 
     def _answer_conversational(self, question: str) -> str:
         """Genera una respuesta conversacional fundamentada en la arquitectura de la plataforma."""
+        q = question.lower().strip()
+
+        # Respuesta estructurada e inmediata para preguntas sobre capas o arquitectura
+        if re.search(r"\b(capas?|cu[aá]ntas capas|qu[eé] capas|medallion|arquitectura)\b", q):
+            return (
+                "La plataforma opera bajo una **Arquitectura Medallion** dividida en 4 capas de procesamiento y una capa analítica de explotación:\n\n"
+                "1. **Landing Layer (Almacenamiento Crudo)**: Ingesta de fuentes heterogéneas (CSV, JSON, REST API) hacia buckets de MinIO/S3 en formato original inmutable.\n"
+                "2. **Bronze Layer (Ingesta Estructurada)**: Preservación de datos crudos en formato Parquet con metadatos de auditoría y trazabilidad.\n"
+                "3. **Silver Layer (Calidad y Enriquecimiento con PySpark)**: Limpieza estricta, validación de esquemas y tipos, deduplicación y enrutamiento de anomalías a la zona de **Quarantine**.\n"
+                "4. **Gold Layer (Modelos Dimensionales de Negocio)**: Tablas agregadas y data marts analíticos (`daily_sales`, `customer_360`, `product_performance`) optimizados para reportería.\n"
+                "5. **Capa de Explotación Analítica**: Motor OLAP embebido **DuckDB**, API FastAPI y dashboards de observabilidad en **Streamlit**."
+            )
+
+        if re.search(r"^(hola|buenos d[ií]as|buenas tardes|buenas noches|saludos|qu[eé] tal|hey)\b", q):
+            return (
+                "¡Hola! Soy tu asistente analítico de la plataforma Medallion. "
+                "Puedo responder preguntas sobre métricas de ventas, clientes y productos (capa Gold), "
+                "así como explicar el funcionamiento de los pipelines y la arquitectura de datos. ¿En qué puedo ayudarte hoy?"
+            )
+
         messages = [
             {"role": "system", "content": self.SYSTEM_CONVERSATIONAL_PROMPT},
             {"role": "user", "content": question},
         ]
-        return self._post_to_openai_compatible_endpoint(
-            messages=messages,
-            temperature=0.3,
-            max_tokens=400,
-        )
+        try:
+            return self._post_to_openai_compatible_endpoint(
+                messages=messages,
+                temperature=0.3,
+                max_tokens=400,
+            )
+        except Exception:
+            return (
+                "Esta plataforma implementa un pipeline de datos Medallion de extremo a extremo: "
+                "Landing (ingesta raw) -> Bronze (ingesta histórica) -> Silver (calidad y cuarentena con Spark) -> Gold (data marts analíticos). "
+                "Las consultas son procesadas en memoria con DuckDB y servidas mediante FastAPI y Streamlit."
+            )
 
     def _generate_sql(self, question: str, dataset_hint: str | None = None) -> str:
         """Invoca el LLM configurado para traducir lenguaje natural a SQL."""
@@ -321,15 +357,50 @@ No inventes información ni asumas datos fuera de la muestra proporcionada.
             return self._post_to_openai_compatible_endpoint(messages=messages, temperature=0.3, max_tokens=300)
         except Exception as exc:
             logger.warning("Fallo al invocar LLM para síntesis Data-to-Text: %s. Formateando directamente.", str(exc))
-            # Presentación limpia y directa de los datos si la síntesis LLM secundaria falla
+            # Presentación limpia y directa de los datos si la síntesis LLM secundaria falla o tarda
             return self._direct_format_data(question, data, columns)
 
     def _direct_format_data(self, question: str, data: list[dict], columns: list[str]) -> str:
-        """Formatea los resultados numéricos directamente si la llamada secundaria del LLM falla."""
-        first = data[0]
-        items = [f"**{k}**: {v}" for k, v in first.items() if not k.startswith("_")]
-        details = ", ".join(items)
-        return f"Consulta completada con éxito ({len(data)} registros encontrados). Resultados principales: {details}."
+        """Formatea los resultados numéricos de forma ejecutiva, rápida y precisa."""
+        if not data:
+            return "No se encontraron registros para los filtros indicados en la capa Gold."
+
+        # Para resultados de 1 fila (métricas escalares, agregaciones)
+        if len(data) == 1:
+            first = data[0]
+            items = []
+            for k, v in first.items():
+                if k.startswith("_"):
+                    continue
+                if isinstance(v, (int, float)):
+                    if any(m in k.lower() for m in ["revenue", "ingreso", "amount", "margin", "ticket", "cost", "sales"]):
+                        formatted_v = f"${v:,.2f}"
+                    elif any(m in k.lower() for m in ["rate", "tasa", "pct", "percent"]):
+                        formatted_v = f"{v:.2%}" if v <= 1.0 else f"{v:.2f}%"
+                    else:
+                        formatted_v = f"{v:,}"
+                else:
+                    formatted_v = str(v)
+                items.append(f"**{k}**: {formatted_v}")
+            details = ", ".join(items)
+            return f"Según los datos consolidados en la capa Gold, el resultado es: {details}."
+
+        # Para múltiples filas (listados, rankings)
+        preview_count = min(len(data), 5)
+        lines = []
+        for idx, row in enumerate(data[:preview_count], 1):
+            row_items = []
+            for k, v in row.items():
+                if k.startswith("_"):
+                    continue
+                if isinstance(v, float):
+                    formatted_v = f"${v:,.2f}" if any(m in k.lower() for m in ["revenue", "amount", "margin", "ticket"]) else f"{v:.2f}"
+                else:
+                    formatted_v = str(v)
+                row_items.append(f"{k}: {formatted_v}")
+            lines.append(f"{idx}. " + ", ".join(row_items))
+        summary = "\n".join(lines)
+        return f"Se obtuvieron **{len(data)} registros** en la capa Gold. Principales resultados:\n\n{summary}"
 
     def _post_to_openai_compatible_endpoint(
         self,
@@ -367,7 +438,7 @@ No inventes información ni asumas datos fuera de la muestra proporcionada.
             ) from conn_err
         except httpx.TimeoutException as timeout_err:
             raise LLMException(
-                f"La inferencia del modelo local superó el tiempo límite de {settings.LOCAL_LLM_TIMEOUT}s.",
+                "La inferencia del modelo local superó el tiempo límite.",
                 error_code=ErrorCode.ERR_LLM_TIMEOUT,
                 detail=str(timeout_err),
             ) from timeout_err
