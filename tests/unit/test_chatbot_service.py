@@ -112,16 +112,16 @@ def test_chatbot_successful_flow(service):
 
 
 def test_chatbot_date_sub_normalization(service):
-    # Simula que el LLM genera DATE_SUB(CURRENT_DATE, 1) como en el caso reportado por el usuario
-    sql_with_date_sub = "SELECT total_revenue FROM v_daily_sales WHERE order_date = DATE_SUB(CURRENT_DATE, 1) LIMIT 500"
-    synthesis_mock = "El ingreso de ayer fue registrado exitosamente."
+    # Simula que el LLM genera DATE_SUB(...) como en el caso reportado por el usuario
+    sql_with_date_sub = "SELECT total_revenue FROM v_daily_sales WHERE order_date = DATE_SUB(DATE '2026-10-22', 1) LIMIT 500"
+    synthesis_mock = "El ingreso fue registrado exitosamente."
 
     with patch.object(
         service,
         "_post_to_openai_compatible_endpoint",
         side_effect=[sql_with_date_sub, synthesis_mock],
     ):
-        res = service.ask("Cual es el ingreso total de ayer")
+        res = service.ask("Cual es el ingreso del 21 de octubre")
         assert res["success"] is True
         assert res["error_code"] is None
         # Verifica que el SQL ejecutado fue normalizado para DuckDB y no tiene DATE_SUB

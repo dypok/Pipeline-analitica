@@ -267,7 +267,7 @@
             </div>
           </div>
         `,
-        notes: "Aquí explicamos el paso por cada capa. Es fundamental destacar la zona de Cuarentena: en la mayoría de pipelines un registro mal formado rompe la ejecución entera; aquí se aísla con trazabilidad, garantizando que el resto del lote se procese de forma confiable."
+        notes: "Aquí explicamos el paso por cada capa. Es fundamental destacar que la Cuarentena se activa durante el proceso de limpieza y validación de calidad entre Bronze y Silver: si un registro viene con valores corruptos o nulos, se desvía a Cuarentena antes de entrar a Silver, garantizando que Silver y Gold permanezcan 100% limpios sin detener el pipeline."
       },
       {
         id: 6,

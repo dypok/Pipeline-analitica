@@ -270,7 +270,7 @@ Aquí observamos el flujo completo de la plataforma. La ingesta alimenta el alma
 
 <!--
 Notas del Orador:
-Cada capa tiene un rol claro. Una característica clave es la zona de Cuarentena: si un registro viene con valores negativos o fechas inválidas, no aborta el lote completo; se aísla en cuarentena con el motivo del fallo para su posterior revisión.
+Cada capa tiene un rol claro. Una característica clave es la zona de Cuarentena: durante el proceso de limpieza y validación de calidad entre Bronze y Silver, si un registro viene con valores negativos o fechas inválidas, no aborta el lote completo ni entra a Silver; se desvía a Cuarentena con su error_code para auditoría y posterior reintento.
 -->
 
 ---
