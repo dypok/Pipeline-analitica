@@ -94,6 +94,86 @@ style: |
     letter-spacing: 0.05em;
     text-transform: uppercase;
   }
+  .hero-container {
+    height: 660px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    margin: 0 auto;
+  }
+  .hero-badge {
+    display: inline-block;
+    padding: 5px 16px;
+    border-radius: 9999px;
+    background: rgba(56, 189, 248, 0.12);
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    color: #38bdf8;
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .hero-title {
+    font-size: 2.15rem;
+    font-weight: 900;
+    color: #ffffff;
+    margin: 0 0 10px 0;
+    letter-spacing: -0.025em;
+    white-space: nowrap;
+  }
+  .hero-subtitle {
+    font-size: 0.95rem;
+    color: #94a3b8;
+    max-width: 900px;
+    margin: 0 auto 28px auto;
+    line-height: 1.45;
+  }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    width: 100%;
+    max-width: 1040px;
+    text-align: left;
+  }
+  .hero-card {
+    background: #151f32;
+    border: 1px solid #293548;
+    border-radius: 10px;
+    padding: 14px 16px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  }
+  .hero-icon-box {
+    width: 24px;
+    height: 24px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-bottom: 8px;
+  }
+  .hero-card-tag {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    margin-bottom: 4px;
+  }
+  .hero-card-val {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 4px;
+  }
+  .hero-card-desc {
+    font-size: 0.76rem;
+    color: #94a3b8;
+    line-height: 1.35;
+  }
   table {
     width: 100%;
     border-collapse: collapse;
@@ -132,37 +212,44 @@ style: |
 ---
 
 <!-- Slide 1: Portada -->
-<div style="height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
-  <div style="margin-bottom: 16px;">
-    <span class="badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3);">
-      ARQUITECTURA LAKEHOUSE • MEDALLION 2.0 • IA SOBERANA LOCAL
-    </span>
+<div class="hero-container">
+  <div>
+    <span class="hero-badge">ARQUITECTURA LAKEHOUSE • MEDALLION 2.0 • IA SOBERANA LOCAL</span>
   </div>
-  
-  <h1 style="font-size: 2.2rem; color: #ffffff; margin-bottom: 8px;">
-    Plataforma Extensible de <span style="color: #38bdf8;">Datos y Analítica</span>
-  </h1>
-  
-  <h2 style="font-size: 1.15rem; color: #94a3b8; max-width: 800px; margin: 0 auto 24px auto;">
-    Ingeniería de datos integral con MinIO, Apache Spark, aceleración analítica con DuckDB y Chatbot con LLM Soberano (Qwen 2.5) sin costes de API.
-  </h2>
-
-  <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; max-width: 820px; width: 100%; text-align: left;">
-    <div style="background: #151f32; border: 1px solid #293548; padding: 10px 14px; border-radius: 8px;">
-      <div style="font-size: 0.68rem; color: #64748b; text-transform: uppercase; font-weight: 700;">Almacenamiento</div>
-      <div style="font-size: 0.9rem; font-weight: 700; color: #38bdf8; margin-top: 2px;">MinIO S3 Lakehouse</div>
+  <h1 class="hero-title">Plataforma Extensible de <span style="color: #38bdf8;">Datos y Analítica</span></h1>
+  <div class="hero-subtitle">Ingeniería de datos integral con MinIO, Apache Spark, aceleración analítica con DuckDB y Chatbot con LLM Soberano (Qwen 2.5) sin costes de API.</div>
+  <div class="hero-grid">
+    <div class="hero-card" style="border-top: 3px solid #38bdf8;">
+      <div class="hero-icon-box" style="background: rgba(56, 189, 248, 0.15);">
+        <img src="./images/icons/database.svg" width="14" height="14" alt="almacenamiento" />
+      </div>
+      <div class="hero-card-tag" style="color: #38bdf8;">ALMACENAMIENTO</div>
+      <div class="hero-card-val">MinIO S3</div>
+      <div class="hero-card-desc">Lakehouse Raw crudo &amp; Parquet estructurado.</div>
     </div>
-    <div style="background: #151f32; border: 1px solid #293548; padding: 10px 14px; border-radius: 8px;">
-      <div style="font-size: 0.68rem; color: #64748b; text-transform: uppercase; font-weight: 700;">Procesamiento</div>
-      <div style="font-size: 0.9rem; font-weight: 700; color: #a855f7; margin-top: 2px;">Apache Spark 3.5</div>
+    <div class="hero-card" style="border-top: 3px solid #a855f7;">
+      <div class="hero-icon-box" style="background: rgba(168, 85, 247, 0.15);">
+        <img src="./images/icons/spark.svg" width="14" height="14" alt="procesamiento" />
+      </div>
+      <div class="hero-card-tag" style="color: #c084fc;">PROCESAMIENTO</div>
+      <div class="hero-card-val">Spark 3.5</div>
+      <div class="hero-card-desc">Limpieza y desvío activo a Cuarentena con Spark Gate.</div>
     </div>
-    <div style="background: #151f32; border: 1px solid #293548; padding: 10px 14px; border-radius: 8px;">
-      <div style="font-size: 0.68rem; color: #64748b; text-transform: uppercase; font-weight: 700;">Motor Analítico</div>
-      <div style="font-size: 0.9rem; font-weight: 700; color: #34d399; margin-top: 2px;">DuckDB + Parquet</div>
+    <div class="hero-card" style="border-top: 3px solid #34d399;">
+      <div class="hero-icon-box" style="background: rgba(52, 211, 153, 0.15);">
+        <img src="./images/icons/zap.svg" width="14" height="14" alt="analitica" />
+      </div>
+      <div class="hero-card-tag" style="color: #34d399;">MOTOR ANALÍTICO</div>
+      <div class="hero-card-val">DuckDB</div>
+      <div class="hero-card-desc">Consultas vectorizadas en memoria con latencia &lt; 150 ms.</div>
     </div>
-    <div style="background: #151f32; border: 1px solid #293548; padding: 10px 14px; border-radius: 8px;">
-      <div style="font-size: 0.68rem; color: #64748b; text-transform: uppercase; font-weight: 700;">Inteligencia Artificial</div>
-      <div style="font-size: 0.9rem; font-weight: 700; color: #fbbf24; margin-top: 2px;">Qwen 2.5 (2B Local)</div>
+    <div class="hero-card" style="border-top: 3px solid #fbbf24;">
+      <div class="hero-icon-box" style="background: rgba(251, 191, 36, 0.15);">
+        <img src="./images/icons/cpu.svg" width="14" height="14" alt="ia" />
+      </div>
+      <div class="hero-card-tag" style="color: #fbbf24;">IA SOBERANA</div>
+      <div class="hero-card-val">Qwen 2.5 (2B)</div>
+      <div class="hero-card-desc">NL-to-SQL soberano sin costos por token y cero fallbacks.</div>
     </div>
   </div>
 </div>
