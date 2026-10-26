@@ -18,6 +18,8 @@ if /i "%ACTION%"=="menu" goto :show_menu
 if /i "%ACTION%"=="all" goto :start_all
 if /i "%ACTION%"=="app" goto :start_app
 if /i "%ACTION%"=="docker" goto :start_docker
+if /i "%ACTION%"=="ingest" goto :demo_ingest
+if /i "%ACTION%"=="pipeline" goto :run_pipeline
 if /i "%ACTION%"=="stop" goto :stop_all
 if /i "%ACTION%"=="test" goto :run_tests
 if /i "%ACTION%"=="mock" goto :gen_mock
@@ -41,22 +43,26 @@ echo.
 echo   [1] Iniciar Todo (Docker Desktop + MinIO/Airflow/Spark + FastAPI + Streamlit)
 echo   [2] Iniciar Solo Aplicacion Web (FastAPI :8000 + Streamlit :8501 en modo local)
 echo   [3] Iniciar Solo Stack Docker (Abre Docker Desktop e inicia contenedores)
-echo   [4] Ejecutar Suite Completa de Pruebas Unitarias (Pytest - 71 tests)
-echo   [5] Generar Nuevos Datos Mock Sinteticos (scripts/generate_mock_data.py)
-echo   [6] Detener Contenedores Docker y Servidores Locales
-echo   [7] Salir
+echo   [4] Probar Ingesta en MinIO Landing (Demostracion de Conectores US-04/US-05)
+echo   [5] Ejecutar Pipeline Medallion Completo Local (scripts/run_pipeline_local.py)
+echo   [6] Ejecutar Suite Completa de Pruebas Unitarias (Pytest - 102 tests)
+echo   [7] Generar Nuevos Datos Mock Sinteticos (scripts/generate_mock_data.py)
+echo   [8] Detener Contenedores Docker y Servidores Locales
+echo   [9] Salir
 echo.
 echo ===============================================================================
-set /p "OPT=Seleccione una opcion [1-7] (por defecto 1): "
+set /p "OPT=Seleccione una opcion [1-9] (por defecto 1): "
 if "%OPT%"=="" set "OPT=1"
 
 if "%OPT%"=="1" goto :start_all
 if "%OPT%"=="2" goto :start_app
 if "%OPT%"=="3" goto :start_docker
-if "%OPT%"=="4" goto :run_tests
-if "%OPT%"=="5" goto :gen_mock
-if "%OPT%"=="6" goto :stop_all
-if "%OPT%"=="7" exit /b 0
+if "%OPT%"=="4" goto :demo_ingest
+if "%OPT%"=="5" goto :run_pipeline
+if "%OPT%"=="6" goto :run_tests
+if "%OPT%"=="7" goto :gen_mock
+if "%OPT%"=="8" goto :stop_all
+if "%OPT%"=="9" exit /b 0
 
 echo [ERROR] Opcion no valida.
 pause
@@ -261,6 +267,32 @@ echo ===========================================================================
 if "%ACTION%"=="" pause && goto :show_menu
 exit /b 0
 
+:demo_ingest
+cls
+echo ===============================================================================
+echo     DEMOSTRACION EN VIVO: CONECTORES DE INGESTA MINIO (JEFRI CALDERIN)
+echo ===============================================================================
+echo.
+call :check_venv
+.\.venv\Scripts\python.exe scripts\test_ingestion_demo.py
+echo.
+echo ===============================================================================
+if "%ACTION%"=="" pause && goto :show_menu
+exit /b 0
+
+:run_pipeline
+cls
+echo ===============================================================================
+echo        EJECUTANDO PIPELINE MEDALLION COMPLETO (DEMO LOCAL END-TO-END)
+echo ===============================================================================
+echo.
+call :check_venv
+.\.venv\Scripts\python.exe scripts\run_pipeline_local.py
+echo.
+echo ===============================================================================
+if "%ACTION%"=="" pause && goto :show_menu
+exit /b 0
+
 :gen_mock
 cls
 echo ===============================================================================
@@ -307,8 +339,10 @@ echo   start.bat           Abre el menu interactivo de opciones
 echo   start.bat all       Inicia Docker Desktop + Contenedores + FastAPI + Streamlit
 echo   start.bat app       Inicia unicamente FastAPI :8000 y Streamlit :8501
 echo   start.bat docker    Inicia Docker Desktop y levanta el stack Docker
+echo   start.bat ingest    Ejecuta la prueba de ingesta con MinIO Landing en vivo
+echo   start.bat pipeline  Ejecuta el pipeline Medallion local completo (E2E)
 echo   start.bat stop      Detiene todos los contenedores y servidores locales
-echo   start.bat test      Ejecuta la suite de pruebas unitarias con Pytest
+echo   start.bat test      Ejecuta la suite de pruebas unitarias con Pytest (102 tests)
 echo   start.bat mock      Genera el dataset sintetico de Retail en data/mock/
 echo   start.bat help      Muestra esta ayuda
 echo.
