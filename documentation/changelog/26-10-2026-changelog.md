@@ -1,3 +1,4 @@
 # Changelog: 26-10-2026
 
 - [Monday]-[26/10/2026]-[07:31]-[Dylan Gamero] : Updated medallion pipeline presentation diagram (medallion_pipeline.svg) and slide decks (presentacion_16_9.html, presentacion_diapositivas_16_9.md) to accurately show the Quarantine branch emerging between Bronze and Silver during the data cleaning and quality validation process.
+- [Monday]-[26/10/2026]-[07:56]-[Dylan Gamero] : Fixed SVG rendering across the 16:9 presentation slide deck: extracted inline SVG icons into dedicated files under documentation/images/icons/ to prevent Marp HTML escaping on slides 2, 7, and 9; resolved text clipping and container overflows in arquitectura_lakehouse.svg and medallion_pipeline.svg; deterministic mock date in test_chatbot_date_sub_normalization; recompiled PDF and HTML presentation decks.

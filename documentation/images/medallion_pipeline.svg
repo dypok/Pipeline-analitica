@@ -16,47 +16,47 @@
   <!-- STEP 1: LANDING -->
   <!-- ========================================================================= -->
   <g transform="translate(25, 45)" filter="url(#m-shadow)">
-    <rect width="185" height="230" rx="10" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
-    <rect width="185" height="38" rx="10" fill="#334155"/>
-    <text x="16" y="24" fill="#f1f5f9" font-size="13" font-weight="800">1. LANDING</text>
-    <text x="168" y="24" fill="#94a3b8" font-size="10" text-anchor="end">Crudo</text>
+    <rect width="175" height="230" rx="10" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
+    <rect width="175" height="38" rx="10" fill="#334155"/>
+    <text x="14" y="24" fill="#f1f5f9" font-size="12.5" font-weight="800">1. LANDING</text>
+    <text x="161" y="24" fill="#94a3b8" font-size="9.5" text-anchor="end">Crudo</text>
     
     <g transform="translate(14, 55)">
-      <text x="0" y="14" fill="#38bdf8" font-size="10.5" font-weight="600">Almacenamiento:</text>
-      <text x="0" y="30" fill="#cbd5e1" font-size="10.5">MinIO (S3 Raw)</text>
+      <text x="0" y="14" fill="#38bdf8" font-size="10" font-weight="600">Almacenamiento:</text>
+      <text x="0" y="30" fill="#cbd5e1" font-size="10">MinIO (S3 Raw)</text>
       
-      <text x="0" y="58" fill="#38bdf8" font-size="10.5" font-weight="600">Características:</text>
-      <text x="0" y="75" fill="#94a3b8" font-size="9.5">• Payload inmutable 100%</text>
-      <text x="0" y="93" fill="#94a3b8" font-size="9.5">• Timestamps y source_id</text>
-      <text x="0" y="111" fill="#94a3b8" font-size="9.5">• Preservación histórica</text>
-      <text x="0" y="129" fill="#94a3b8" font-size="9.5">• Formatos CSV, JSON, API</text>
+      <text x="0" y="58" fill="#38bdf8" font-size="10" font-weight="600">Características:</text>
+      <text x="0" y="75" fill="#94a3b8" font-size="9">• Payload inmutable 100%</text>
+      <text x="0" y="93" fill="#94a3b8" font-size="9">• Timestamps y source_id</text>
+      <text x="0" y="111" fill="#94a3b8" font-size="9">• Preservación histórica</text>
+      <text x="0" y="129" fill="#94a3b8" font-size="9">• Formatos CSV, JSON, API</text>
     </g>
   </g>
 
   <!-- Arrow 1 -> 2 (Landing to Bronze) -->
-  <g transform="translate(210, 145)">
-    <line x1="0" y1="0" x2="26" y2="0" stroke="#64748b" stroke-width="2.5"/>
-    <polygon points="26,0 19,-4 19,4" fill="#64748b"/>
+  <g transform="translate(200, 145)">
+    <line x1="0" y1="0" x2="33" y2="0" stroke="#64748b" stroke-width="2.5"/>
+    <polygon points="35,0 27,-4 27,4" fill="#64748b"/>
   </g>
 
   <!-- ========================================================================= -->
   <!-- STEP 2: BRONZE -->
   <!-- ========================================================================= -->
-  <g transform="translate(240, 45)" filter="url(#m-shadow)">
-    <rect width="185" height="230" rx="10" fill="#1e293b" stroke="#d97706" stroke-width="1.5"/>
-    <rect width="185" height="38" rx="10" fill="#78350f"/>
-    <text x="16" y="24" fill="#fef3c7" font-size="13" font-weight="800">2. BRONZE</text>
-    <text x="168" y="24" fill="#fde68a" font-size="10" text-anchor="end">Tipado</text>
+  <g transform="translate(235, 45)" filter="url(#m-shadow)">
+    <rect width="175" height="230" rx="10" fill="#1e293b" stroke="#d97706" stroke-width="1.5"/>
+    <rect width="175" height="38" rx="10" fill="#78350f"/>
+    <text x="14" y="24" fill="#fef3c7" font-size="12.5" font-weight="800">2. BRONZE</text>
+    <text x="161" y="24" fill="#fde68a" font-size="9.5" text-anchor="end">Tipado</text>
     
     <g transform="translate(14, 55)">
-      <text x="0" y="14" fill="#f59e0b" font-size="10.5" font-weight="600">Almacenamiento:</text>
-      <text x="0" y="30" fill="#cbd5e1" font-size="10.5">MinIO / Parquet</text>
+      <text x="0" y="14" fill="#f59e0b" font-size="10" font-weight="600">Almacenamiento:</text>
+      <text x="0" y="30" fill="#cbd5e1" font-size="10">MinIO / Parquet</text>
       
-      <text x="0" y="58" fill="#f59e0b" font-size="10.5" font-weight="600">Características:</text>
-      <text x="0" y="75" fill="#94a3b8" font-size="9.5">• Esquema columnar Parquet</text>
-      <text x="0" y="93" fill="#94a3b8" font-size="9.5">• Conversión estricta tipos</text>
-      <text x="0" y="111" fill="#94a3b8" font-size="9.5">• Cero pérdida de filas</text>
-      <text x="0" y="129" fill="#94a3b8" font-size="9.5">• Particionado temporal</text>
+      <text x="0" y="58" fill="#f59e0b" font-size="10" font-weight="600">Características:</text>
+      <text x="0" y="75" fill="#94a3b8" font-size="9">• Esquema columnar Parquet</text>
+      <text x="0" y="93" fill="#94a3b8" font-size="9">• Conversión estricta tipos</text>
+      <text x="0" y="111" fill="#94a3b8" font-size="9">• Cero pérdida de filas</text>
+      <text x="0" y="129" fill="#94a3b8" font-size="9">• Particionado temporal</text>
     </g>
   </g>
 
@@ -64,25 +64,25 @@
   <!-- TRANSITION BRONZE -> SILVER: CLEANING & QUALITY GATE -->
   <!-- ========================================================================= -->
   <!-- Arrow from Bronze to Gate -->
-  <g transform="translate(425, 145)">
-    <line x1="0" y1="0" x2="16" y2="0" stroke="#f59e0b" stroke-width="2.5"/>
-    <polygon points="16,0 10,-4 10,4" fill="#f59e0b"/>
+  <g transform="translate(410, 145)">
+    <line x1="0" y1="0" x2="23" y2="0" stroke="#f59e0b" stroke-width="2.5"/>
+    <polygon points="25,0 17,-4 17,4" fill="#f59e0b"/>
   </g>
 
   <!-- Quality & Cleaning Gate Node -->
-  <g transform="translate(443, 115)" filter="url(#m-shadow)">
-    <rect width="36" height="60" rx="8" fill="#0f172a" stroke="#a855f7" stroke-width="1.8"/>
+  <g transform="translate(435, 115)" filter="url(#m-shadow)">
+    <rect width="38" height="60" rx="8" fill="#0f172a" stroke="#a855f7" stroke-width="1.8"/>
     <!-- Icon Spark / Filter -->
-    <path d="M 18 10 L 26 23 L 20 23 L 23 35 L 11 21 L 17 21 Z" fill="#c084fc"/>
-    <text x="18" y="47" fill="#e9d5ff" font-size="7.5" font-weight="800" text-anchor="middle">SPARK</text>
-    <text x="18" y="56" fill="#a855f7" font-size="7" font-weight="700" text-anchor="middle">GATE</text>
+    <path d="M 19 10 L 27 23 L 21 23 L 24 35 L 12 21 L 18 21 Z" fill="#c084fc"/>
+    <text x="19" y="47" fill="#e9d5ff" font-size="7.5" font-weight="800" text-anchor="middle">SPARK</text>
+    <text x="19" y="56" fill="#a855f7" font-size="7" font-weight="700" text-anchor="middle">GATE</text>
   </g>
 
   <!-- Sub-arrow A: Valid clean data -> Silver -->
-  <g transform="translate(479, 145)">
-    <line x1="0" y1="0" x2="14" y2="0" stroke="#10b981" stroke-width="3"/>
-    <polygon points="14,0 7,-4 7,4" fill="#10b981"/>
-    <text x="7" y="-8" fill="#34d399" font-size="8.5" font-weight="700" text-anchor="middle">Válidos</text>
+  <g transform="translate(473, 145)">
+    <line x1="0" y1="0" x2="44" y2="0" stroke="#10b981" stroke-width="2.5"/>
+    <polygon points="47,0 39,-4 39,4" fill="#10b981"/>
+    <text x="23.5" y="-8" fill="#34d399" font-size="8" font-weight="700" text-anchor="middle">Válidos</text>
   </g>
 
   <!-- ========================================================================= -->
@@ -91,76 +91,76 @@
   <!-- ========================================================================= -->
   <g>
     <!-- Branch start dot -->
-    <circle cx="461" cy="175" r="4" fill="#ef4444"/>
+    <circle cx="454" cy="175" r="4" fill="#ef4444"/>
     
     <!-- Path down and right into Quarantine box -->
-    <path d="M 461 175 L 461 305 L 735 305" stroke="#ef4444" stroke-width="2.2" stroke-dasharray="5,3" fill="none"/>
-    <polygon points="735,305 725,300 725,310" fill="#ef4444"/>
+    <path d="M 454 175 L 454 305 L 740 305" stroke="#ef4444" stroke-width="2.2" stroke-dasharray="5,3" fill="none"/>
+    <polygon points="740,305 730,300 730,310" fill="#ef4444"/>
     
     <!-- Explanatory Label on the path -->
-    <rect x="478" y="292" width="242" height="26" rx="5" fill="#2d0606" stroke="#ef4444" stroke-width="1.2"/>
-    <circle cx="490" cy="305" r="4" fill="#ef4444"/>
-    <text x="500" y="309" fill="#fecaca" font-size="9.5" font-weight="700">Desvío en Limpieza: datos corruptos / reglas rotas</text>
+    <rect x="487" y="292" width="220" height="26" rx="5" fill="#2d0606" stroke="#ef4444" stroke-width="1.2"/>
+    <circle cx="502" cy="305" r="3.5" fill="#ef4444"/>
+    <text x="604" y="308.5" fill="#fecaca" font-size="8.5" font-weight="700" text-anchor="middle">Desvío: anomalías y datos corruptos</text>
   </g>
 
   <!-- ========================================================================= -->
   <!-- STEP 3: SILVER -->
   <!-- ========================================================================= -->
-  <g transform="translate(495, 45)" filter="url(#m-shadow)">
-    <rect width="185" height="230" rx="10" fill="#1e293b" stroke="#94a3b8" stroke-width="1.5"/>
-    <rect width="185" height="38" rx="10" fill="#334155"/>
-    <text x="16" y="24" fill="#f8fafc" font-size="13" font-weight="800">3. SILVER</text>
-    <text x="168" y="24" fill="#cbd5e1" font-size="10" text-anchor="end">Limpio</text>
+  <g transform="translate(520, 45)" filter="url(#m-shadow)">
+    <rect width="175" height="230" rx="10" fill="#1e293b" stroke="#94a3b8" stroke-width="1.5"/>
+    <rect width="175" height="38" rx="10" fill="#334155"/>
+    <text x="14" y="24" fill="#f8fafc" font-size="12.5" font-weight="800">3. SILVER</text>
+    <text x="161" y="24" fill="#cbd5e1" font-size="9.5" text-anchor="end">Limpio</text>
     
     <g transform="translate(14, 55)">
-      <text x="0" y="14" fill="#e2e8f0" font-size="10.5" font-weight="600">Almacenamiento:</text>
-      <text x="0" y="30" fill="#cbd5e1" font-size="10.5">Spark Parquet Refinado</text>
+      <text x="0" y="14" fill="#e2e8f0" font-size="10" font-weight="600">Almacenamiento:</text>
+      <text x="0" y="30" fill="#cbd5e1" font-size="10">Spark Parquet Refinado</text>
       
-      <text x="0" y="58" fill="#e2e8f0" font-size="10.5" font-weight="600">Características:</text>
-      <text x="0" y="75" fill="#94a3b8" font-size="9.5">• Deduplicación por clave</text>
-      <text x="0" y="93" fill="#94a3b8" font-size="9.5">• Normalización y casting</text>
-      <text x="0" y="111" fill="#94a3b8" font-size="9.5">• Enriquecimiento cruzado</text>
-      <text x="0" y="129" fill="#94a3b8" font-size="9.5">• 100% datos certificados</text>
+      <text x="0" y="58" fill="#e2e8f0" font-size="10" font-weight="600">Características:</text>
+      <text x="0" y="75" fill="#94a3b8" font-size="9">• Deduplicación por clave</text>
+      <text x="0" y="93" fill="#94a3b8" font-size="9">• Normalización y casting</text>
+      <text x="0" y="111" fill="#94a3b8" font-size="9">• Enriquecimiento cruzado</text>
+      <text x="0" y="129" fill="#94a3b8" font-size="9">• 100% datos certificados</text>
     </g>
   </g>
 
   <!-- Arrow 3 -> 4 (Silver to Gold) -->
-  <g transform="translate(680, 115)">
-    <line x1="0" y1="0" x2="52" y2="0" stroke="#38bdf8" stroke-width="2.5"/>
-    <polygon points="52,0 45,-4 45,4" fill="#38bdf8"/>
-    <text x="26" y="-8" fill="#38bdf8" font-size="8.5" font-weight="700" text-anchor="middle">Data Marts</text>
+  <g transform="translate(695, 115)">
+    <line x1="0" y1="0" x2="42" y2="0" stroke="#38bdf8" stroke-width="2.5"/>
+    <polygon points="45,0 37,-4 37,4" fill="#38bdf8"/>
+    <text x="22" y="-8" fill="#38bdf8" font-size="8" font-weight="700" text-anchor="middle">Data Marts</text>
   </g>
 
   <!-- ========================================================================= -->
   <!-- STEP 4: GOLD (CONSUMO ANALÍTICO) -->
   <!-- ========================================================================= -->
-  <g transform="translate(735, 45)" filter="url(#m-shadow)">
-    <rect width="200" height="145" rx="10" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
-    <rect width="200" height="36" rx="10" fill="#0369a1"/>
-    <text x="14" y="23" fill="#f0f9ff" font-size="12.5" font-weight="800">4. GOLD (CONSUMO)</text>
+  <g transform="translate(740, 45)" filter="url(#m-shadow)">
+    <rect width="195" height="145" rx="10" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
+    <rect width="195" height="36" rx="10" fill="#0369a1"/>
+    <text x="14" y="23" fill="#f0f9ff" font-size="12" font-weight="800">4. GOLD (CONSUMO)</text>
     
     <g transform="translate(12, 48)">
-      <text x="0" y="13" fill="#38bdf8" font-size="10.5" font-weight="700">Modelos Analíticos:</text>
-      <text x="0" y="30" fill="#e2e8f0" font-size="10">• daily_sales (Ventas)</text>
-      <text x="0" y="47" fill="#e2e8f0" font-size="10">• customer_360 (RFM + Clientes)</text>
-      <text x="0" y="64" fill="#e2e8f0" font-size="10">• product_performance (Márgenes)</text>
-      <text x="0" y="82" fill="#34d399" font-size="9.5" font-weight="700">→ Consulta instantánea DuckDB</text>
+      <text x="0" y="13" fill="#38bdf8" font-size="10" font-weight="700">Modelos Analíticos:</text>
+      <text x="0" y="30" fill="#e2e8f0" font-size="9.5">• daily_sales (Ventas)</text>
+      <text x="0" y="47" fill="#e2e8f0" font-size="9.5">• customer_360 (RFM + Clientes)</text>
+      <text x="0" y="64" fill="#e2e8f0" font-size="9.5">• product_performance (Márgenes)</text>
+      <text x="0" y="82" fill="#34d399" font-size="9" font-weight="700">→ Consulta instantánea DuckDB</text>
     </g>
   </g>
 
   <!-- ========================================================================= -->
   <!-- ZONA DE CUARENTENA -->
   <!-- ========================================================================= -->
-  <g transform="translate(735, 215)" filter="url(#m-shadow)">
-    <rect width="200" height="120" rx="10" fill="#2d0606" stroke="#ef4444" stroke-width="1.8"/>
-    <rect width="200" height="32" rx="10" fill="#7f1d1d"/>
-    <text x="14" y="21" fill="#fee2e2" font-size="11.5" font-weight="800">ZONA DE CUARENTENA</text>
+  <g transform="translate(740, 215)" filter="url(#m-shadow)">
+    <rect width="195" height="120" rx="10" fill="#2d0606" stroke="#ef4444" stroke-width="1.8"/>
+    <rect width="195" height="32" rx="10" fill="#7f1d1d"/>
+    <text x="14" y="21" fill="#fee2e2" font-size="11" font-weight="800">ZONA DE CUARENTENA</text>
     <g transform="translate(12, 44)">
-      <text x="0" y="11" fill="#fca5a5" font-size="9.5" font-weight="700">Aislamiento sin detener pipeline:</text>
-      <text x="0" y="27" fill="#fecaca" font-size="9">• Error catalogado (error_code)</text>
-      <text x="0" y="42" fill="#fecaca" font-size="9">• Timestamp y motivo de rechazo</text>
-      <text x="0" y="57" fill="#fecaca" font-size="9">• Payload original íntegro (raw)</text>
-      <text x="0" y="70" fill="#f87171" font-size="8.5" font-weight="700">Trazabilidad para auditoría y reingesta</text>
+      <text x="0" y="11" fill="#fca5a5" font-size="9" font-weight="700">Aislamiento sin detener pipeline:</text>
+      <text x="0" y="27" fill="#fecaca" font-size="8.5">• Error catalogado (error_code)</text>
+      <text x="0" y="42" fill="#fecaca" font-size="8.5">• Timestamp y motivo de rechazo</text>
+      <text x="0" y="57" fill="#fecaca" font-size="8.5">• Payload original íntegro (raw)</text>
+      <text x="0" y="70" fill="#f87171" font-size="8" font-weight="700">Trazabilidad para auditoría y reingesta</text>
     </g>
   </g>
 
@@ -170,7 +170,7 @@
   <g transform="translate(25, 350)">
     <rect width="910" height="34" rx="6" fill="#1e293b" stroke="#334155" stroke-width="1"/>
     <circle cx="18" cy="17" r="4" fill="#10b981"/>
-    <text x="30" y="21" fill="#94a3b8" font-size="10.5">
+    <text x="30" y="21" fill="#94a3b8" font-size="10">
       <tspan fill="#34d399" font-weight="700">Calidad Progresiva:</tspan> La limpieza y validación ocurre en la transición <tspan fill="#f59e0b" font-weight="700">Bronze → Silver</tspan>. Los registros corruptos se desvían a <tspan fill="#f87171" font-weight="700">Cuarentena</tspan> antes de entrar a Silver, protegiendo las capas analíticas.
     </text>
   </g>

@@ -70,6 +70,21 @@ style: |
     border-radius: 10px;
     padding: 16px 18px;
   }
+  .card-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .icon-box {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+    flex-shrink: 0;
+  }
   .badge {
     display: inline-block;
     padding: 3px 10px;
@@ -165,9 +180,9 @@ Buenos días a todos. Hoy presentamos la Plataforma Extensible de Datos, una sol
 
 <div class="card-grid">
   <div class="card" style="border-top: 3px solid #f87171;">
-    <div style="display: flex; align-items: center; margin-bottom: 8px;">
-      <div style="width: 28px; height: 28px; border-radius: 6px; background: rgba(248, 113, 113, 0.15); display: flex; align-items: center; justify-content: center; margin-right: 10px;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    <div class="card-header">
+      <div class="icon-box" style="background: rgba(248, 113, 113, 0.15);">
+        <img src="./images/icons/alert.svg" width="16" height="16" alt="alerta" />
       </div>
       <h3 style="color: #f87171; margin: 0;">Silos y Formatos Dispersos</h3>
     </div>
@@ -177,9 +192,9 @@ Buenos días a todos. Hoy presentamos la Plataforma Extensible de Datos, una sol
   </div>
 
   <div class="card" style="border-top: 3px solid #fbbf24;">
-    <div style="display: flex; align-items: center; margin-bottom: 8px;">
-      <div style="width: 28px; height: 28px; border-radius: 6px; background: rgba(251, 191, 36, 0.15); display: flex; align-items: center; justify-content: center; margin-right: 10px;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <div class="card-header">
+      <div class="icon-box" style="background: rgba(251, 191, 36, 0.15);">
+        <img src="./images/icons/search.svg" width="16" height="16" alt="linaje" />
       </div>
       <h3 style="color: #fbbf24; margin: 0;">Linaje Opaco y Calidad Nula</h3>
     </div>
@@ -189,9 +204,9 @@ Buenos días a todos. Hoy presentamos la Plataforma Extensible de Datos, una sol
   </div>
 
   <div class="card" style="border-top: 3px solid #a855f7;">
-    <div style="display: flex; align-items: center; margin-bottom: 8px;">
-      <div style="width: 28px; height: 28px; border-radius: 6px; background: rgba(168, 85, 247, 0.15); display: flex; align-items: center; justify-content: center; margin-right: 10px;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/></svg>
+    <div class="card-header">
+      <div class="icon-box" style="background: rgba(168, 85, 247, 0.15);">
+        <img src="./images/icons/cpu.svg" width="16" height="16" alt="ia" />
       </div>
       <h3 style="color: #c084fc; margin: 0;">Alucinación y Riesgo en IA</h3>
     </div>
@@ -296,9 +311,9 @@ Estos tres modelos resuelven más del 90% de las preguntas frecuentes de negocio
 
 <div class="card-grid-2">
   <div class="card">
-    <div style="display: flex; align-items: center; margin-bottom: 8px;">
-      <div style="width: 28px; height: 28px; border-radius: 6px; background: rgba(52, 211, 153, 0.15); display: flex; align-items: center; justify-content: center; margin-right: 10px;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+    <div class="card-header">
+      <div class="icon-box" style="background: rgba(52, 211, 153, 0.15);">
+        <img src="./images/icons/zap.svg" width="16" height="16" alt="duckdb" />
       </div>
       <h3 style="color: #34d399; margin: 0;">DuckDB como Motor Analítico Embebido</h3>
     </div>
@@ -311,9 +326,9 @@ Estos tres modelos resuelven más del 90% de las preguntas frecuentes de negocio
   </div>
 
   <div class="card">
-    <div style="display: flex; align-items: center; margin-bottom: 8px;">
-      <div style="width: 28px; height: 28px; border-radius: 6px; background: rgba(56, 189, 248, 0.15); display: flex; align-items: center; justify-content: center; margin-right: 10px;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+    <div class="card-header">
+      <div class="icon-box" style="background: rgba(56, 189, 248, 0.15);">
+        <img src="./images/icons/dashboard.svg" width="16" height="16" alt="dashboard" />
       </div>
       <h3 style="color: #38bdf8; margin: 0;">Dashboards Ejecutivos en Streamlit</h3>
     </div>
@@ -354,9 +369,9 @@ El usuario pregunta en español cotidiano. El modelo local Qwen2.5 genera la con
 
 <div class="card-grid">
   <div class="card" style="border-top: 3px solid #3b82f6;">
-    <div style="display: flex; align-items: center; margin-bottom: 8px;">
-      <div style="width: 28px; height: 28px; border-radius: 6px; background: rgba(59, 130, 246, 0.15); display: flex; align-items: center; justify-content: center; margin-right: 10px;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    <div class="card-header">
+      <div class="icon-box" style="background: rgba(59, 130, 246, 0.15);">
+        <img src="./images/icons/clock.svg" width="16" height="16" alt="airflow" />
       </div>
       <h3 style="color: #60a5fa; margin: 0;">Apache Airflow</h3>
     </div>
@@ -366,9 +381,9 @@ El usuario pregunta en español cotidiano. El modelo local Qwen2.5 genera la con
   </div>
 
   <div class="card" style="border-top: 3px solid #8b5cf6;">
-    <div style="display: flex; align-items: center; margin-bottom: 8px;">
-      <div style="width: 28px; height: 28px; border-radius: 6px; background: rgba(139, 92, 246, 0.15); display: flex; align-items: center; justify-content: center; margin-right: 10px;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+    <div class="card-header">
+      <div class="icon-box" style="background: rgba(139, 92, 246, 0.15);">
+        <img src="./images/icons/lineage.svg" width="16" height="16" alt="openmetadata" />
       </div>
       <h3 style="color: #c084fc; margin: 0;">OpenMetadata</h3>
     </div>
@@ -378,9 +393,9 @@ El usuario pregunta en español cotidiano. El modelo local Qwen2.5 genera la con
   </div>
 
   <div class="card" style="border-top: 3px solid #ec4899;">
-    <div style="display: flex; align-items: center; margin-bottom: 8px;">
-      <div style="width: 28px; height: 28px; border-radius: 6px; background: rgba(236, 72, 153, 0.15); display: flex; align-items: center; justify-content: center; margin-right: 10px;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f472b6" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    <div class="card-header">
+      <div class="icon-box" style="background: rgba(236, 72, 153, 0.15);">
+        <img src="./images/icons/shield.svg" width="16" height="16" alt="atlas" />
       </div>
       <h3 style="color: #f472b6; margin: 0;">Apache Atlas</h3>
     </div>
